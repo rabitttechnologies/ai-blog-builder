@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-type PricingPeriod = "monthly" | "yearly";
-type PlanType = "starter" | "professional" | "agency";
+import { PlanType, PricingPeriod, getPlanPrice, getPlanById } from "@/constants/pricing";
 
 interface LocationState {
   plan: PlanType;
@@ -38,25 +36,10 @@ const Checkout = () => {
     return <Navigate to="/pricing" />;
   }
   
-  // Plan pricing data
-  const planPricing = {
-    starter: {
-      monthly: 29,
-      yearly: 290
-    },
-    professional: {
-      monthly: 59,
-      yearly: 590
-    },
-    agency: {
-      monthly: 119,
-      yearly: 1190
-    }
-  };
-  
   const selectedPlan = state.plan;
   const selectedPeriod = state.period;
-  const price = planPricing[selectedPlan][selectedPeriod];
+  const price = getPlanPrice(selectedPlan, selectedPeriod);
+  const planDetails = getPlanById(selectedPlan);
   
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -118,7 +101,7 @@ const Checkout = () => {
       setSuccess(true);
       toast({
         title: "Subscription successful",
-        description: `You are now subscribed to the ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan.`,
+        description: `You are now subscribed to the ${planDetails?.name || selectedPlan} plan.`,
       });
     } catch (err) {
       setError("Payment failed. Please try again.");
@@ -140,7 +123,7 @@ const Checkout = () => {
           </div>
           <h2 className="text-2xl font-bold mb-2">Subscription Confirmed!</h2>
           <p className="text-foreground/70 mb-6">
-            Thank you for subscribing to BlogCraft's {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan. Your subscription is now active.
+            Thank you for subscribing to BlogCraft's {planDetails?.name || selectedPlan} plan. Your subscription is now active.
           </p>
           <Button 
             onClick={() => navigate("/dashboard")}
@@ -168,12 +151,12 @@ const Checkout = () => {
         </button>
         
         <h2 className="text-2xl font-bold mb-2">Complete your subscription</h2>
-        <p className="text-foreground/70 mb-8">You're subscribing to the {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan.</p>
+        <p className="text-foreground/70 mb-8">You're subscribing to the {planDetails?.name || selectedPlan} plan.</p>
         
         <div className="glass p-6 rounded-xl">
           <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg mb-6">
             <div>
-              <h3 className="font-semibold">{selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan ({selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)})</h3>
+              <h3 className="font-semibold">{planDetails?.name || selectedPlan} Plan ({selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)})</h3>
               <p className="text-foreground/70 text-sm">{user?.email}</p>
             </div>
             <div className="text-right">

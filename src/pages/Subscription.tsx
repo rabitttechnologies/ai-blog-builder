@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { CreditCard, CheckCircle, Calendar, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { PRICING_PLANS } from "@/constants/pricing";
 
 const Subscription = () => {
   const { user, isAuthenticated } = useAuth();
@@ -49,6 +50,9 @@ const Subscription = () => {
       description: "Payment method updates will be available soon.",
     });
   };
+  
+  // For demo purposes, we'll use the professional plan as an example
+  const currentPlan = PRICING_PLANS.find(plan => plan.id === "professional");
   
   return (
     <DashboardLayout>
@@ -97,11 +101,11 @@ const Subscription = () => {
               <div className="p-4 bg-gray-50 rounded-lg mb-6">
                 <div className="flex justify-between mb-2">
                   <span className="font-medium">Plan</span>
-                  <span>Professional (Monthly)</span>
+                  <span>{currentPlan?.name} (Monthly)</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="font-medium">Price</span>
-                  <span>$59.00/month</span>
+                  <span>${currentPlan?.priceMonthly.toFixed(2)}/month</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="font-medium">Next billing date</span>
