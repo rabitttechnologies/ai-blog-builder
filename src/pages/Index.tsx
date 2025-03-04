@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -9,7 +8,7 @@ import SignupForm from "@/components/auth/SignupForm";
 import { ArrowRight, CheckCircle, Sparkles, Clock, Target, BarChart } from "lucide-react";
 
 const Index = () => {
-  const handleKeywordSubmit = (niche: string, keywords: string[]) => {
+  const handleKeywordSubmit = (keywords: string[], niche: string) => {
     console.log("Niche:", niche);
     console.log("Keywords:", keywords);
     // This would normally trigger the keyword research process
