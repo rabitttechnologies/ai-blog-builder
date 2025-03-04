@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface KeywordInputProps {
-  onSubmit: (niche: string, keywords: string[]) => void;
+  onSubmit: (keywords: string[], niche: string) => void;
 }
 
 const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
@@ -48,7 +48,7 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
       return;
     }
     
-    onSubmit(niche.trim(), keywords);
+    onSubmit(keywords, niche.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,7 +59,7 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="glass p-6 rounded-xl">
+    <div>
       <h3 className="text-xl font-semibold mb-4">Start with your topic</h3>
       <p className="text-sm text-foreground/70 mb-6">
         Enter your blog niche and 3-5 keywords to help our AI understand your content needs.

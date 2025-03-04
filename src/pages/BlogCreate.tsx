@@ -7,6 +7,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import KeywordInput from "@/components/blog/KeywordInput";
 import TitleSelection from "@/components/blog/TitleSelection";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/Button";
 
 type Step = "keywords" | "titles" | "content" | "review" | "complete";
 
@@ -34,18 +35,18 @@ const BlogCreate = () => {
     return <Navigate to="/pricing" />;
   }
 
-  const handleKeywordsSubmit = (submittedKeywords: string[], submittedNiche: string) => {
-    setKeywords(submittedKeywords);
-    setNiche(submittedNiche);
+  const handleKeywordsSubmit = (keywords: string[], niche: string) => {
+    setKeywords(keywords);
+    setNiche(niche);
     
     // In a real app, this would call an API to generate titles based on keywords
     // For now, we'll mock this with some sample titles
     setGeneratedTitles([
-      `10 Ways to Optimize Your ${submittedNiche} Strategy Using ${submittedKeywords[0]}`,
-      `The Ultimate Guide to ${submittedNiche}: Leveraging ${submittedKeywords[0]} and ${submittedKeywords[1] || "SEO"}`,
-      `How ${submittedKeywords[0]} is Transforming the ${submittedNiche} Industry in 2023`,
-      `${submittedKeywords[0]} vs ${submittedKeywords[1] || "Traditional Methods"}: Which is Better for ${submittedNiche}?`,
-      `Why Every ${submittedNiche} Professional Should Know About ${submittedKeywords[0]}`
+      `10 Ways to Optimize Your ${niche} Strategy Using ${keywords[0]}`,
+      `The Ultimate Guide to ${niche}: Leveraging ${keywords[0]} and ${keywords[1] || "SEO"}`,
+      `How ${keywords[0]} is Transforming the ${niche} Industry in 2023`,
+      `${keywords[0]} vs ${keywords[1] || "Traditional Methods"}: Which is Better for ${niche}?`,
+      `Why Every ${niche} Professional Should Know About ${keywords[0]}`
     ]);
     
     setCurrentStep("titles");
@@ -151,8 +152,5 @@ const BlogCreate = () => {
     </DashboardLayout>
   );
 };
-
-// Import Button here to address the error
-import { Button } from "@/components/ui/Button";
 
 export default BlogCreate;

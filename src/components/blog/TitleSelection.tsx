@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/Button";
 
 interface TitleSelectionProps {
   titles: string[];
-  onSelect: (title: string) => void;
-  onCustomTitle: (title: string) => void;
+  onSelectTitle: (title: string) => void;
+  onBack: () => void;
 }
 
 const TitleSelection: React.FC<TitleSelectionProps> = ({
   titles,
-  onSelect,
-  onCustomTitle,
+  onSelectTitle,
+  onBack,
 }) => {
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,9 +28,9 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
     if (!selectedTitle && !customTitle) return;
     
     if (isEditing && customTitle) {
-      onCustomTitle(customTitle);
+      onSelectTitle(customTitle);
     } else if (selectedTitle) {
-      onSelect(selectedTitle);
+      onSelectTitle(selectedTitle);
     }
   };
 
@@ -42,7 +42,7 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
   };
 
   return (
-    <div className="glass p-6 rounded-xl">
+    <div>
       <h3 className="text-xl font-semibold mb-4">Select a Title for Your Blog</h3>
       <p className="text-sm text-foreground/70 mb-6">
         Choose one of the AI-generated titles below, or create your own custom title.
@@ -113,7 +113,13 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button
+          onClick={onBack}
+          variant="outline"
+        >
+          Back to Keywords
+        </Button>
         <Button
           onClick={handleConfirm}
           disabled={!selectedTitle && !customTitle}
