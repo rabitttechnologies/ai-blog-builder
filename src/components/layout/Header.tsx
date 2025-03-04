@@ -1,12 +1,17 @@
 
 import React, { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +24,12 @@ const Header: React.FC = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setIsUserMenuOpen(false);
   };
 
   return (
@@ -103,10 +114,68 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" size="sm">
-            Log in
-          </Button>
-          <Button size="sm">Start Free Trial</Button>
+          {isAuthenticated ? (
+            <div className="relative">
+              <button 
+                className="flex items-center space-x-2 hover:bg-gray-100 rounded-full p-2"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-500" />
+                </div>
+                <span className="text-sm font-medium">{user?.email?.split('@')[0]}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <Link 
+                    to="/dashboard" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/account" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    Account Settings
+                  </Link>
+                  <Link 
+                    to="/subscription" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    Subscription
+                  </Link>
+                  <button 
+                    className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                    onClick={handleLogout}
+                  >
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/login')}
+              >
+                Log in
+              </Button>
+              <Button 
+                size="sm"
+                onClick={() => navigate('/signup')}
+              >
+                Start Free Trial
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -176,21 +245,66 @@ const Header: React.FC = () => {
             </div>
           </details>
 
-          <div className="mt-auto space-y-4 pt-6">
-            <Button variant="outline" fullWidth onClick={() => setIsMobileMenuOpen(false)}>
-              Log in
-            </Button>
-            <Button fullWidth onClick={() => setIsMobileMenuOpen(false)}>
-              Start Free Trial
-            </Button>
-          </div>
+          {isAuthenticated ? (
+            <div className="mt-auto space-y-4 pt-6">
+              <Link
+                to="/dashboard"
+                className="block text-lg font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/account"
+                className="block text-lg font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Account Settings
+              </Link>
+              <Link
+                to="/subscription"
+                className="block text-lg font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Subscription
+              </Link>
+              <button 
+                className="text-lg font-medium text-red-600"
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div className="mt-auto space-y-4 pt-6">
+              <Button 
+                variant="outline" 
+                fullWidth 
+                onClick={() => {
+                  navigate('/login');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Log in
+              </Button>
+              <Button 
+                fullWidth 
+                onClick={() => {
+                  navigate('/signup');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Start Free Trial
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 };
-
-// Import the cn utility
-import { cn } from "@/lib/utils";
 
 export default Header;

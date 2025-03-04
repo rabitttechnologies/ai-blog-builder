@@ -2,84 +2,47 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const SignupForm: React.FC = () => {
+const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   
-  const { signup } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    return password.length >= 8;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-    
-    if (!validatePassword(password)) {
-      setError("Password must be at least 8 characters long");
+    if (!email || !password) {
+      setError("Please enter both email and password");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      await signup(email, password);
+      await login(email, password);
       toast({
-        title: "Account created successfully",
-        description: "Welcome to your free trial of BlogCraft!",
+        title: "Login successful",
+        description: "Welcome back to BlogCraft!",
       });
-      setSuccess(true);
-      // Wait a bit before redirecting
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 3000);
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Failed to create account. Please try again.");
+      setError(err.message || "Failed to login. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="text-center py-8 space-y-4">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-          <CheckCircle className="h-8 w-8 text-green-600" />
-        </div>
-        <h3 className="text-xl font-semibold">Account Created!</h3>
-        <p className="text-foreground/70 max-w-sm mx-auto">
-          Your free trial is now active. You'll be redirected to your dashboard where you can start creating blogs.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="glass p-6 rounded-xl">
-      <h3 className="text-xl font-semibold mb-2 text-center">Start Your Free Trial</h3>
-      <p className="text-sm text-foreground/70 mb-6 text-center">
-        No credit card required. Get 2 free blogs for 14 days.
-      </p>
-      
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-start">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
@@ -111,15 +74,16 @@ const SignupForm: React.FC = () => {
             id="password"
             type="password"
             className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
-            placeholder="Create a password"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={8}
           />
-          <p className="mt-1 text-xs text-foreground/60">
-            Must be at least 8 characters
-          </p>
+          <div className="flex justify-end mt-1">
+            <a href="/forgot-password" className="text-xs text-primary hover:underline">
+              Forgot password?
+            </a>
+          </div>
         </div>
         
         <Button
@@ -127,22 +91,11 @@ const SignupForm: React.FC = () => {
           fullWidth
           isLoading={isSubmitting}
         >
-          Create Account
+          Log In
         </Button>
-        
-        <p className="text-xs text-center text-foreground/60 pt-2">
-          By signing up, you agree to our{" "}
-          <a href="/terms" className="text-primary hover:underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-primary hover:underline">
-            Privacy Policy
-          </a>
-        </p>
       </form>
     </div>
   );
 };
 
-export default SignupForm;
+export default LoginForm;
