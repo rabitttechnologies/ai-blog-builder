@@ -24,12 +24,14 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       retryDelay: 1000,
-      onError: (error) => {
-        console.error("Query error:", error);
-        // If it's a server error, we could redirect to the server error page
-        if (error instanceof Error && error.message.includes("Network") || 
-            error instanceof Error && error.message.includes("500")) {
-          window.location.href = "/server-error";
+      meta: {
+        onError: (error: unknown) => {
+          console.error("Query error:", error);
+          // If it's a server error, we could redirect to the server error page
+          if (error instanceof Error && error.message.includes("Network") || 
+              error instanceof Error && error.message.includes("500")) {
+            window.location.href = "/server-error";
+          }
         }
       }
     }
