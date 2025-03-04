@@ -5,8 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ServerError from "./pages/ServerError";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -17,36 +19,57 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import { Helmet } from "react-helmet";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      retryDelay: 1000,
+      onError: (error) => {
+        console.error("Query error:", error);
+        // If it's a server error, we could redirect to the server error page
+        if (error instanceof Error && error.message.includes("Network") || 
+            error instanceof Error && error.message.includes("500")) {
+          window.location.href = "/server-error";
+        }
+      }
+    }
+  }
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Helmet titleTemplate="%s | BlogCraft" defaultTitle="BlogCraft - AI Blog Generator">
-          <meta name="description" content="Create SEO-optimized blogs with AI and human-in-the-loop approval" />
-        </Helmet>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/pricing" element={<Pricing />} />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/blog/create" element={<BlogCreate />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/subscription/checkout" element={<Checkout />} />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <ErrorBoundary redirectTo="/error">
+          <Helmet titleTemplate="%s | BlogCraft" defaultTitle="BlogCraft - AI Blog Generator">
+            <meta name="description" content="Create SEO-optimized blogs with AI and human-in-the-loop approval" />
+          </Helmet>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/pricing" element={<Pricing />} />
+              
+              {/* Protected routes */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/blog/create" element={<BlogCreate />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/subscription/checkout" element={<Checkout />} />
+              
+              {/* Error routes */}
+              <Route path="/error" element={<NotFound />} />
+              <Route path="/server-error" element={<ServerError />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </ErrorBoundary>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
