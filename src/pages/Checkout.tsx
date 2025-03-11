@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { PlanType, PricingPeriod, getPlanPrice, getPlanById } from "@/constants/pricing";
+import { 
+  PlanType, 
+  PricingPeriod, 
+  getPlanPrice, 
+  getPlanById,
+  getMonthlyPriceForYearly 
+} from "@/constants/pricing";
 
 interface LocationState {
   plan: PlanType;
@@ -39,6 +45,7 @@ const Checkout = () => {
   const selectedPlan = state.plan;
   const selectedPeriod = state.period;
   const price = getPlanPrice(selectedPlan, selectedPeriod);
+  const monthlyPrice = selectedPeriod === "yearly" ? getMonthlyPriceForYearly(selectedPlan) : price;
   const planDetails = getPlanById(selectedPlan);
   
   const formatCardNumber = (value: string) => {
@@ -160,8 +167,17 @@ const Checkout = () => {
               <p className="text-foreground/70 text-sm">{user?.email}</p>
             </div>
             <div className="text-right">
-              <p className="font-bold">${price}</p>
-              <p className="text-foreground/70 text-sm">per {selectedPeriod === "monthly" ? "month" : "year"}</p>
+              {selectedPeriod === "yearly" ? (
+                <>
+                  <p className="font-bold">${monthlyPrice}/month</p>
+                  <p className="text-foreground/70 text-sm">(${price} billed annually)</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold">${price}</p>
+                  <p className="text-foreground/70 text-sm">per month</p>
+                </>
+              )}
             </div>
           </div>
           
@@ -245,7 +261,11 @@ const Checkout = () => {
               fullWidth
               isLoading={isSubmitting}
             >
-              Subscribe for ${price}/{selectedPeriod === "monthly" ? "month" : "year"}
+              {selectedPeriod === "yearly" ? (
+                <>Subscribe for ${monthlyPrice}/month</>
+              ) : (
+                <>Subscribe for ${price}/month</>
+              )}
             </Button>
             
             <p className="text-xs text-foreground/60 text-center pt-2">

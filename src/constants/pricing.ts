@@ -70,6 +70,18 @@ export const getPlanPrice = (planId: PlanType, period: PricingPeriod): number =>
   return period === "monthly" ? plan.priceMonthly : plan.priceYearly;
 };
 
+// Calculate per month price for yearly subscription
+export const getMonthlyPriceForYearly = (planId: PlanType): number => {
+  const plan = PRICING_PLANS.find(plan => plan.id === planId);
+  if (!plan) return 0;
+  
+  return Math.round(plan.priceYearly / 12);
+};
+
 export const getPlanById = (planId: PlanType): PricingPlan | undefined => {
   return PRICING_PLANS.find(plan => plan.id === planId);
 };
+
+// Trial information
+export const TRIAL_LENGTH_DAYS = 14;
+export const TRIAL_SUBSCRIPTION_LENGTH_DAYS = 7;

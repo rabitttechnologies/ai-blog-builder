@@ -7,7 +7,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { PRICING_PLANS, PlanType, PricingPeriod } from "@/constants/pricing";
+import { 
+  PRICING_PLANS, 
+  PlanType, 
+  PricingPeriod, 
+  getMonthlyPriceForYearly,
+  TRIAL_LENGTH_DAYS 
+} from "@/constants/pricing";
 
 const Pricing = () => {
   const [period, setPeriod] = useState<PricingPeriod>("monthly");
@@ -77,12 +83,17 @@ const Pricing = () => {
                 <div className="mt-6 mb-6">
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold">
-                      ${period === "monthly" ? plan.priceMonthly : plan.priceYearly}
+                      ${period === "monthly" ? plan.priceMonthly : getMonthlyPriceForYearly(plan.id)}
                     </span>
                     <span className="text-foreground/70 ml-2">
-                      /{period === "monthly" ? "month" : "year"}
+                      /month
                     </span>
                   </div>
+                  {period === "yearly" && (
+                    <div className="text-sm text-foreground/70 mt-1">
+                      Billed annually (${plan.priceYearly})
+                    </div>
+                  )}
                 </div>
                 
                 <Button 
@@ -91,7 +102,7 @@ const Pricing = () => {
                   className="mb-8"
                   onClick={() => handleSelectPlan(plan.id as PlanType)}
                 >
-                  {isAuthenticated ? "Select Plan" : "Start Free Trial"}
+                  {isAuthenticated ? "Select Plan" : `Start ${TRIAL_LENGTH_DAYS}-Day Free Trial`}
                 </Button>
                 
                 <div className="space-y-3">
@@ -115,7 +126,7 @@ const Pricing = () => {
               </div>
               <div>
                 <h3 className="font-semibold mb-2">What happens after my free trial?</h3>
-                <p className="text-foreground/70 text-sm">After your 14-day trial expires, you'll need to choose a plan to continue using BlogCraft.</p>
+                <p className="text-foreground/70 text-sm">After your {TRIAL_LENGTH_DAYS}-day trial expires, you'll need to choose a plan to continue using BlogCraft.</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Do you offer refunds?</h3>

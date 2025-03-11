@@ -2,6 +2,8 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Link } from "react-router-dom";
+import { TRIAL_LENGTH_DAYS } from "@/constants/pricing";
 
 const Hero: React.FC = () => {
   return (
@@ -27,17 +29,29 @@ const Hero: React.FC = () => {
           Create SEO-optimized content in minutes with our AI agents and human-in-the-loop approvals. Perfect for marketers, bloggers, and businesses.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in [animation-delay:450ms]">
-          <Button size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-            Try for Free
-          </Button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in [animation-delay:450ms]">
+          <Link to="/signup">
+            <Button size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
+              Start {TRIAL_LENGTH_DAYS}-Day Free Trial
+            </Button>
+          </Link>
           <Button variant="outline" size="lg">
             See How It Works
           </Button>
         </div>
 
+        <div className="p-4 bg-blue-50 rounded-lg max-w-md mx-auto mb-16 animate-fade-in [animation-delay:400ms]">
+          <p className="text-sm text-blue-800">
+            <strong>No credit card required.</strong> Get a full {TRIAL_LENGTH_DAYS}-day free trial with 2 blog posts.
+          </p>
+        </div>
+
         <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms]">
-          <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 backdrop-blur-sm"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
+            alt="Person using BlogCraft on laptop" 
+            className="w-full h-auto rounded-t-xl object-cover"
+          />
           
           {/* Mock Browser UI */}
           <div className="relative bg-white rounded-xl overflow-hidden">
