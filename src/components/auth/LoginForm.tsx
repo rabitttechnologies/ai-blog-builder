@@ -138,23 +138,28 @@ const LoginForm: React.FC = () => {
         </div>
         
         <div>
+          <label htmlFor="country" className="block text-sm font-medium mb-1">
+            Country <span className="text-red-500">*</span>
+          </label>
+          <CountryDropdown 
+            value={country} 
+            onChange={(code) => {
+              setCountry(code);
+              // Reset city when country changes
+              setCity("");
+            }}
+            required 
+          />
+        </div>
+        
+        <div>
           <label htmlFor="city" className="block text-sm font-medium mb-1">
             City <span className="text-red-500">*</span>
           </label>
           <CityDropdown 
             value={city} 
             onChange={setCity} 
-            required 
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="country" className="block text-sm font-medium mb-1">
-            Country <span className="text-red-500">*</span>
-          </label>
-          <CountryDropdown 
-            value={country} 
-            onChange={setCountry} 
+            countryCode={country}
             required 
           />
         </div>
