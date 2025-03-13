@@ -1,19 +1,28 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+interface UserProfile {
+  name?: string;
+  phone: string;
+  organization: string;
+  city: string;
+  country: string;
+}
+
 interface User {
   id: string;
   email: string;
   trialBlogsRemaining: number;
   trialEndsAt: Date;
+  profile: UserProfile;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
+  signup: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
   logout: () => void;
 }
 
@@ -40,11 +49,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
     setIsLoading(true);
     try {
       // This would be an API call in a real app
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Get existing user profile from localStorage or create a new one
+      let existingProfile: UserProfile = {
+        phone: "",
+        organization: "",
+        city: "",
+        country: ""
+      };
+      
+      // Combine existing profile with the new profile data
+      const updatedProfile = {
+        ...existingProfile,
+        ...profile
+      };
       
       // Mock user data
       const mockUser: User = {
@@ -52,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         trialBlogsRemaining: 2,
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+        profile: updatedProfile as UserProfile
       };
       
       setUser(mockUser);
@@ -64,11 +88,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (email: string, password: string): Promise<void> => {
+  const signup = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
     setIsLoading(true);
     try {
       // This would be an API call in a real app
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create a default profile and merge with provided profile
+      const userProfile: UserProfile = {
+        phone: "",
+        organization: "",
+        city: "",
+        country: "",
+        ...profile
+      };
       
       // Mock user data
       const mockUser: User = {
@@ -76,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         trialBlogsRemaining: 2,
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+        profile: userProfile
       };
       
       setUser(mockUser);

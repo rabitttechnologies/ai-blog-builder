@@ -5,10 +5,16 @@ import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import CityDropdown from "./CityDropdown";
+import CountryDropdown from "./CountryDropdown";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   
@@ -20,15 +26,30 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setError("");
     
-    if (!email || !password) {
-      setError("Please enter both email and password");
+    if (!email || !password || !phone || !organization || !city || !country) {
+      setError("Please fill in all the required fields");
+      return;
+    }
+    
+    // Basic phone validation
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (!phoneRegex.test(phone)) {
+      setError("Please enter a valid phone number (10-15 digits)");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      // We'll pass all the user data to the login function
+      // In a real Supabase implementation, you might update the user's profile after login
+      await login(email, password, {
+        phone,
+        organization,
+        city,
+        country
+      });
+      
       toast({
         title: "Login successful",
         description: "Welcome back to BlogCraft!",
@@ -53,7 +74,7 @@ const LoginForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email Address
+            Email Address <span className="text-red-500">*</span>
           </label>
           <input
             id="email"
@@ -68,7 +89,7 @@ const LoginForm: React.FC = () => {
         
         <div>
           <label htmlFor="password" className="block text-sm font-medium mb-1">
-            Password
+            Password <span className="text-red-500">*</span>
           </label>
           <input
             id="password"
@@ -84,6 +105,58 @@ const LoginForm: React.FC = () => {
               Forgot password?
             </a>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium mb-1">
+            Phone Number <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
+            placeholder="+1234567890"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="organization" className="block text-sm font-medium mb-1">
+            Organization Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="organization"
+            type="text"
+            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
+            placeholder="Your company or organization"
+            value={organization}
+            onChange={(e) => setOrganization(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="city" className="block text-sm font-medium mb-1">
+            City <span className="text-red-500">*</span>
+          </label>
+          <CityDropdown 
+            value={city} 
+            onChange={setCity} 
+            required 
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="country" className="block text-sm font-medium mb-1">
+            Country <span className="text-red-500">*</span>
+          </label>
+          <CountryDropdown 
+            value={country} 
+            onChange={setCountry} 
+            required 
+          />
         </div>
         
         <Button
