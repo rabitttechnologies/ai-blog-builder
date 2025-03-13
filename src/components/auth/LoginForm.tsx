@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -86,10 +85,9 @@ const LoginForm: React.FC = () => {
           <label htmlFor="email" className="block text-sm font-medium mb-1">
             Email Address <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="email"
             type="email"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -101,19 +99,18 @@ const LoginForm: React.FC = () => {
           <label htmlFor="password" className="block text-sm font-medium mb-1">
             Password <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="password"
             type="password"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <div className="flex justify-end mt-1">
-            <a href="/forgot-password" className="text-xs text-primary hover:underline">
+            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
               Forgot password?
-            </a>
+            </Link>
           </div>
         </div>
 

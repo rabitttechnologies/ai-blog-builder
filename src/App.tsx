@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound";
 import ServerError from "./pages/ServerError";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import BlogCreate from "./pages/BlogCreate";
 import Account from "./pages/Account";
@@ -54,6 +56,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/pricing" element={<Pricing />} />
               
               {/* Protected routes */}

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface UserProfile {
@@ -24,6 +23,8 @@ interface AuthContextType {
   login: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
   signup: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
   logout: () => void;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -127,6 +128,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("blogcraft_user");
   };
 
+  const requestPasswordReset = async (email: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // This would be an API call in a real app
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real implementation, this would send an email with a reset link
+      console.log(`Password reset requested for ${email}`);
+      
+      // For demo, we'll store the token in localStorage to simulate the email link
+      const resetToken = "reset_" + Math.random().toString(36).substring(2, 15);
+      const resetData = {
+        email,
+        token: resetToken,
+        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString() // 1 hour from now
+      };
+      
+      localStorage.setItem("blogcraft_reset_token", JSON.stringify(resetData));
+      
+      // In a real app, this would send an email with a link like:
+      // https://yourdomain.com/reset-password?token=resetToken
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      throw new Error("Failed to send password reset email. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // This would be an API call in a real app
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Validate token (in a real app, this would verify against a database)
+      const resetDataString = localStorage.getItem("blogcraft_reset_token");
+      
+      if (!resetDataString) {
+        throw new Error("Invalid or expired reset token. Please request a new password reset.");
+      }
+      
+      const resetData = JSON.parse(resetDataString);
+      
+      // Check if token is valid and not expired
+      if (resetData.token !== token || new Date(resetData.expiresAt) < new Date()) {
+        localStorage.removeItem("blogcraft_reset_token");
+        throw new Error("Invalid or expired reset token. Please request a new password reset.");
+      }
+      
+      // In a real app, this would update the user's password in the database
+      console.log(`Password reset completed for ${resetData.email}`);
+      
+      // For demo purposes, if we have a saved user with this email, update their entry
+      const savedUser = localStorage.getItem("blogcraft_user");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.email === resetData.email) {
+          // In a real app, we'd hash the password before storing it
+          // Here we're just simulating the process
+          localStorage.setItem("blogcraft_user", JSON.stringify(parsedUser));
+        }
+      }
+      
+      // Clear the reset token
+      localStorage.removeItem("blogcraft_reset_token");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      throw error instanceof Error 
+        ? error 
+        : new Error("Failed to reset password. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -136,6 +213,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signup,
         logout,
+        requestPasswordReset,
+        resetPassword,
       }}
     >
       {children}
