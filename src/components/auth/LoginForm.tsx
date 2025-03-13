@@ -7,14 +7,19 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import CityDropdown from "./CityDropdown";
 import CountryDropdown from "./CountryDropdown";
+import CountryCodeDropdown from "./CountryCodeDropdown";
+import { Input } from "@/components/ui/input";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+1"); // Default to US code
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [organization, setOrganization] = useState("");
   const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("US"); // Default to US
+  const [otherCity, setOtherCity] = useState("");
+  const [isCustomCity, setIsCustomCity] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   
@@ -26,15 +31,21 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setError("");
     
-    if (!email || !password || !phone || !organization || !city || !country) {
+    // Combine country code and phone number
+    const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+    
+    // Get the actual city (either selected from dropdown or manually entered)
+    const actualCity = isCustomCity ? otherCity : city;
+    
+    if (!email || !password || !phoneNumber || !organization || !actualCity || !country) {
       setError("Please fill in all the required fields");
       return;
     }
     
-    // Basic phone validation
-    const phoneRegex = /^\+?[0-9]{10,15}$/;
-    if (!phoneRegex.test(phone)) {
-      setError("Please enter a valid phone number (10-15 digits)");
+    // Basic phone validation - just check for digits now since we have the country code separate
+    const phoneRegex = /^[0-9]{6,15}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      setError("Please enter a valid phone number (6-15 digits, numbers only)");
       return;
     }
     
@@ -42,11 +53,10 @@ const LoginForm: React.FC = () => {
     
     try {
       // We'll pass all the user data to the login function
-      // In a real Supabase implementation, you might update the user's profile after login
       await login(email, password, {
-        phone,
+        phone: fullPhoneNumber,
         organization,
-        city,
+        city: actualCity,
         country
       });
       
@@ -111,15 +121,25 @@ const LoginForm: React.FC = () => {
           <label htmlFor="phone" className="block text-sm font-medium mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
-          <input
-            id="phone"
-            type="tel"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
-            placeholder="+1234567890"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+          <div className="flex gap-2">
+            <div className="w-1/3">
+              <CountryCodeDropdown
+                value={countryCode}
+                onChange={setCountryCode}
+                required
+              />
+            </div>
+            <div className="w-2/3">
+              <Input
+                id="phoneNumber"
+                type="tel"
+                placeholder="Phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+              />
+            </div>
+          </div>
         </div>
         
         <div>
@@ -147,8 +167,10 @@ const LoginForm: React.FC = () => {
               setCountry(code);
               // Reset city when country changes
               setCity("");
+              setIsCustomCity(false);
             }}
             required 
+            showAllCountries={true}
           />
         </div>
         
@@ -156,12 +178,33 @@ const LoginForm: React.FC = () => {
           <label htmlFor="city" className="block text-sm font-medium mb-1">
             City <span className="text-red-500">*</span>
           </label>
-          <CityDropdown 
-            value={city} 
-            onChange={setCity} 
-            countryCode={country}
-            required 
-          />
+          {isCustomCity ? (
+            <Input
+              id="otherCity"
+              type="text"
+              placeholder="Enter your city"
+              value={otherCity}
+              onChange={(e) => setOtherCity(e.target.value)}
+              required
+            />
+          ) : (
+            <CityDropdown 
+              value={city} 
+              onChange={setCity} 
+              countryCode={country}
+              required
+              onSelectOther={() => setIsCustomCity(true)}
+            />
+          )}
+          {isCustomCity && (
+            <button 
+              type="button" 
+              className="text-xs text-primary hover:underline mt-1"
+              onClick={() => setIsCustomCity(false)}
+            >
+              Choose from list
+            </button>
+          )}
         </div>
         
         <Button
