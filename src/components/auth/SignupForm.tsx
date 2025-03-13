@@ -1,21 +1,22 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Globe, MapPin, Phone } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import CityDropdown from "./CityDropdown";
-import CountryDropdown from "./CountryDropdown";
+import CountryDropdown, { COUNTRIES } from "./CountryDropdown";
+import CountryCodeDropdown from "./CountryCodeDropdown";
 
 const SignupForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [organization, setOrganization] = useState("");
+  const [countryValue, setCountryValue] = useState("");
   const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -46,28 +47,34 @@ const SignupForm: React.FC = () => {
       return;
     }
 
-    if (!name || !phone || !organization || !city || !country) {
+    if (!name || !phoneNumber || !organization || !city || !countryValue || !countryCode) {
       setError("Please fill in all the required fields");
       return;
     }
     
     // Basic phone validation
-    const phoneRegex = /^\+?[0-9]{10,15}$/;
-    if (!phoneRegex.test(phone)) {
-      setError("Please enter a valid phone number (10-15 digits)");
+    const phoneRegex = /^[0-9]{6,12}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      setError("Please enter a valid phone number (6-12 digits)");
       return;
     }
+
+    const selectedCountry = COUNTRIES.find(country => country.code === countryValue);
+    const countryName = selectedCountry ? selectedCountry.name : countryValue;
     
     setIsSubmitting(true);
     
     try {
+      // Format the phone with country code
+      const fullPhone = `${countryCode}${phoneNumber}`;
+      
       // We'll pass all the user data to the signup function
       await signup(email, password, {
         name,
-        phone,
+        phone: fullPhone,
         organization,
         city,
-        country
+        country: countryName
       });
       
       toast({
@@ -149,15 +156,29 @@ const SignupForm: React.FC = () => {
           <label htmlFor="phone" className="block text-sm font-medium mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
-          <input
-            id="phone"
-            type="tel"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
-            placeholder="+1234567890"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+          <div className="flex space-x-2">
+            <div className="w-1/3">
+              <CountryCodeDropdown
+                value={countryCode}
+                onChange={setCountryCode}
+                required
+              />
+            </div>
+            <div className="w-2/3">
+              <input
+                id="phone"
+                type="tel"
+                className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
+                placeholder="Phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-foreground/60">
+            Enter numbers only, no spaces or special characters
+          </p>
         </div>
         
         <div>
@@ -176,25 +197,40 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="city" className="block text-sm font-medium mb-1">
-            City <span className="text-red-500">*</span>
-          </label>
-          <CityDropdown 
-            value={city} 
-            onChange={setCity} 
-            required 
-          />
-        </div>
-        
-        <div>
           <label htmlFor="country" className="block text-sm font-medium mb-1">
             Country <span className="text-red-500">*</span>
           </label>
-          <CountryDropdown 
-            value={country} 
-            onChange={setCountry} 
-            required 
-          />
+          <div className="flex items-center">
+            <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+            <div className="w-full">
+              <CountryDropdown 
+                value={countryValue} 
+                onChange={(code) => {
+                  setCountryValue(code);
+                  // Reset city when country changes
+                  setCity("");
+                }} 
+                required 
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <label htmlFor="city" className="block text-sm font-medium mb-1">
+            City <span className="text-red-500">*</span>
+          </label>
+          <div className="flex items-center">
+            <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
+            <div className="w-full">
+              <CityDropdown 
+                value={city} 
+                onChange={setCity}
+                countryCode={countryValue}
+                required 
+              />
+            </div>
+          </div>
         </div>
         
         <div>
