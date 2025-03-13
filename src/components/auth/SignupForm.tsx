@@ -1,21 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { CheckCircle, AlertCircle, Globe, MapPin, Phone } from "lucide-react";
+import { CheckCircle, AlertCircle, Globe, MapPin } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import CityDropdown from "./CityDropdown";
 import CountryDropdown, { COUNTRIES } from "./CountryDropdown";
 import CountryCodeDropdown from "./CountryCodeDropdown";
+import { Input } from "@/components/ui/input";
 
 const SignupForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState("");
+  const [countryCode, setCountryCode] = useState("+1"); // Default to US code
   const [phoneNumber, setPhoneNumber] = useState("");
   const [organization, setOrganization] = useState("");
-  const [countryValue, setCountryValue] = useState("");
+  const [countryValue, setCountryValue] = useState("US"); // Default to US
   const [city, setCity] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -126,10 +127,9 @@ const SignupForm: React.FC = () => {
           <label htmlFor="email" className="block text-sm font-medium mb-1">
             Email Address <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="email"
             type="email"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -141,10 +141,9 @@ const SignupForm: React.FC = () => {
           <label htmlFor="name" className="block text-sm font-medium mb-1">
             Full Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="name"
             type="text"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="Your full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -165,10 +164,9 @@ const SignupForm: React.FC = () => {
               />
             </div>
             <div className="w-2/3">
-              <input
+              <Input
                 id="phone"
                 type="tel"
-                className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
                 placeholder="Phone number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -185,10 +183,9 @@ const SignupForm: React.FC = () => {
           <label htmlFor="organization" className="block text-sm font-medium mb-1">
             Organization Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="organization"
             type="text"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="Your company or organization"
             value={organization}
             onChange={(e) => setOrganization(e.target.value)}
@@ -237,10 +234,9 @@ const SignupForm: React.FC = () => {
           <label htmlFor="password" className="block text-sm font-medium mb-1">
             Password <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="password"
             type="password"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
             placeholder="Create a password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

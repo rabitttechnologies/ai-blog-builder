@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Flag } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -205,6 +206,22 @@ const COUNTRY_CODES = [
   { code: "+263", country: "ZW", flag: "🇿🇼", name: "Zimbabwe" }
 ];
 
+// Group and sort country codes for better organization
+const GROUPED_CODES = {
+  popular: [
+    { code: "+1", country: "US", flag: "🇺🇸", name: "United States" },
+    { code: "+1", country: "CA", flag: "🇨🇦", name: "Canada" },
+    { code: "+44", country: "GB", flag: "🇬🇧", name: "United Kingdom" },
+    { code: "+61", country: "AU", flag: "🇦🇺", name: "Australia" },
+    { code: "+49", country: "DE", flag: "🇩🇪", name: "Germany" },
+    { code: "+33", country: "FR", flag: "🇫🇷", name: "France" },
+    { code: "+91", country: "IN", flag: "🇮🇳", name: "India" },
+    { code: "+81", country: "JP", flag: "🇯🇵", name: "Japan" },
+    { code: "+86", country: "CN", flag: "🇨🇳", name: "China" }
+  ],
+  all: [...COUNTRY_CODES].sort((a, b) => a.name.localeCompare(b.name))
+};
+
 interface CountryCodeDropdownProps {
   value: string;
   onChange: (value: string) => void;
@@ -218,8 +235,8 @@ const CountryCodeDropdown: React.FC<CountryCodeDropdownProps> = ({
   required = false,
   className = ""
 }) => {
-  // Sort country codes alphabetically by name
-  const sortedCountryCodes = [...COUNTRY_CODES].sort((a, b) => a.name.localeCompare(b.name));
+  // Find the selected country to display its flag
+  const selectedCountry = COUNTRY_CODES.find(c => c.code === value);
   
   return (
     <Select
@@ -227,19 +244,48 @@ const CountryCodeDropdown: React.FC<CountryCodeDropdownProps> = ({
       onValueChange={onChange}
       required={required}
     >
-      <SelectTrigger className={`w-full ${className}`}>
-        <SelectValue placeholder="Code" />
+      <SelectTrigger className={`w-full ${className} pl-2.5`}>
+        {selectedCountry ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{selectedCountry.flag}</span>
+            <span>{value}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <Flag className="h-4 w-4 text-muted-foreground" />
+            <span>Code</span>
+          </div>
+        )}
       </SelectTrigger>
       <SelectContent className="max-h-[300px]">
-        {sortedCountryCodes.map((country) => (
-          <SelectItem key={`${country.code}-${country.country}`} value={country.code}>
-            <div className="flex items-center">
-              <span className="mr-2">{country.flag}</span>
-              <span>{country.code}</span>
-              <span className="ml-2 text-muted-foreground text-xs">({country.name})</span>
-            </div>
-          </SelectItem>
-        ))}
+        <div className="p-1 pb-2">
+          <h4 className="px-2 text-xs font-medium text-muted-foreground mb-1">Popular</h4>
+          <div className="grid grid-cols-2 gap-1">
+            {GROUPED_CODES.popular.map((country) => (
+              <div
+                key={`${country.code}-${country.country}-pop`}
+                className="flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-muted"
+                onClick={() => onChange(country.code)}
+              >
+                <span className="text-base">{country.flag}</span>
+                <span className="text-sm font-medium">{country.code}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="border-t border-border pt-2">
+          <h4 className="px-2 text-xs font-medium text-muted-foreground mb-1">All Countries</h4>
+          {GROUPED_CODES.all.map((country) => (
+            <SelectItem key={`${country.code}-${country.country}`} value={country.code}>
+              <div className="flex items-center gap-2">
+                <span className="text-base">{country.flag}</span>
+                <span>{country.code}</span>
+                <span className="ml-1 text-muted-foreground text-xs truncate max-w-[150px]">({country.name})</span>
+              </div>
+            </SelectItem>
+          ))}
+        </div>
       </SelectContent>
     </Select>
   );
