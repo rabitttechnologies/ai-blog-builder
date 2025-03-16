@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -43,6 +42,7 @@ const LoginForm: React.FC = () => {
     try {
       console.log("Starting login process");
       await login(email, password);
+      console.log("Login successful");
       
       setLoginStatus("Login successful! Redirecting...");
       
@@ -51,7 +51,7 @@ const LoginForm: React.FC = () => {
         description: "Welcome back to BlogCraft!",
       });
       
-      // The useEffect will handle navigation when isAuthenticated changes
+      // Let the Login component handle the redirect through its useEffect
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");

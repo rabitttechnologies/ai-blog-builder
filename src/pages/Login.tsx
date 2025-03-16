@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -16,6 +15,8 @@ const Login = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  console.log("Login page - Auth state:", { isAuthenticated, isLoading });
+
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
     return (
@@ -26,9 +27,9 @@ const Login = () => {
     );
   }
 
-  // If already authenticated, redirect to dashboard
+  // If already authenticated, use Navigate component for immediate redirect
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
