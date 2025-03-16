@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +9,7 @@ import CityDropdown from "./CityDropdown";
 import CountryDropdown, { COUNTRIES } from "./CountryDropdown";
 import CountryCodeDropdown from "./CountryCodeDropdown";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SignupForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -124,9 +126,9 @@ const SignupForm: React.FC = () => {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
+          <Label htmlFor="email" className="text-sm font-medium mb-1">
             Email Address <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <Input
             id="email"
             type="email"
@@ -138,9 +140,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="name" className="block text-sm font-medium mb-1">
+          <Label htmlFor="name" className="text-sm font-medium mb-1">
             Full Name <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <Input
             id="name"
             type="text"
@@ -152,9 +154,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium mb-1">
+          <Label htmlFor="phone" className="text-sm font-medium mb-1">
             Phone Number <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <div className="flex space-x-2">
             <div className="w-1/3">
               <CountryCodeDropdown
@@ -180,9 +182,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="organization" className="block text-sm font-medium mb-1">
+          <Label htmlFor="organization" className="text-sm font-medium mb-1">
             Organization Name <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <Input
             id="organization"
             type="text"
@@ -194,9 +196,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="country" className="block text-sm font-medium mb-1">
+          <Label htmlFor="country" className="text-sm font-medium mb-1">
             Country <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <div className="flex items-center">
             <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
             <div className="w-full">
@@ -214,9 +216,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="city" className="block text-sm font-medium mb-1">
+          <Label htmlFor="city" className="text-sm font-medium mb-1">
             City <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <div className="flex items-center">
             <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
             <div className="w-full">
@@ -231,9 +233,9 @@ const SignupForm: React.FC = () => {
         </div>
         
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
+          <Label htmlFor="password" className="text-sm font-medium mb-1">
             Password <span className="text-red-500">*</span>
-          </label>
+          </Label>
           <Input
             id="password"
             type="password"
