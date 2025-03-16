@@ -19,6 +19,7 @@ import Account from "./pages/Account";
 import Subscription from "./pages/Subscription";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
+import AdminDashboard from "./pages/AdminDashboard";
 import { Helmet } from "react-helmet";
 
 const queryClient = new QueryClient({
@@ -66,6 +67,9 @@ const App = () => (
               <Route path="/account" element={<Account />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/subscription/checkout" element={<Checkout />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
               
               {/* Error routes */}
               <Route path="/error" element={<NotFound />} />

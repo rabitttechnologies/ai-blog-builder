@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -12,12 +11,16 @@ interface UserProfile {
   country: string;
 }
 
+type UserRole = 'user' | 'admin';
+
 interface AuthUser {
   id: string;
   email: string;
   trialBlogsRemaining: number;
   trialEndsAt: Date;
   profile: UserProfile;
+  roles: UserRole[];
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -29,6 +32,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
+  makeUserAdmin: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,6 +98,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Error fetching user profile:", profileError);
       }
       
+      // Get user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', supabaseUser.id);
+      
+      if (rolesError) {
+        console.error("Error fetching user roles:", rolesError);
+      }
+      
+      // Extract roles from the result
+      const roles = userRoles?.map(r => r.role as UserRole) || ['user'];
+      const isAdmin = roles.includes('admin');
+      
       // Default profile values
       const defaultProfile: UserProfile = {
         name: supabaseUser.user_metadata.name || '',
@@ -118,7 +136,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: profile.organization || '',
           city: profile.city || '',
           country: profile.country || ''
-        }
+        },
+        roles,
+        isAdmin
       });
     } catch (error) {
       console.error("Error processing authenticated user:", error);
@@ -237,6 +257,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const makeUserAdmin = async (userId: string): Promise<void> => {
+    if (!user?.isAdmin) {
+      throw new Error("Only administrators can promote users to admin role");
+    }
+    
+    try {
+      // Check if user exists
+      const { data: userExists, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+      
+      if (userError || !userExists) {
+        throw new Error("User not found");
+      }
+      
+      // Add admin role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: 'admin'
+        });
+      
+      if (error) {
+        if (error.code === '23505') { // Unique violation
+          throw new Error("User is already an admin");
+        } else {
+          throw error;
+        }
+      }
+      
+      toast({
+        title: "Success",
+        description: "User has been promoted to admin",
+      });
+    } catch (error: any) {
+      console.error("Error making user admin:", error);
+      throw error instanceof Error 
+        ? error 
+        : new Error("Failed to make user admin");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -248,6 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         requestPasswordReset,
         resetPassword,
+        makeUserAdmin,
       }}
     >
       {children}

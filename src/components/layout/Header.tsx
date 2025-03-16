@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { ChevronDown, Menu, X, User } from "lucide-react";
+import { ChevronDown, Menu, X, User, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
@@ -136,6 +136,16 @@ const Header: React.FC = () => {
                   >
                     Dashboard
                   </Link>
+                  {user?.isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Shield className="w-4 h-4 mr-2 text-primary" />
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <Link 
                     to="/account" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
@@ -254,6 +264,16 @@ const Header: React.FC = () => {
               >
                 Dashboard
               </Link>
+              {user?.isAdmin && (
+                <Link
+                  to="/admin"
+                  className="block text-lg font-medium flex items-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Shield className="w-5 h-5 mr-2 text-primary" />
+                  Admin Dashboard
+                </Link>
+              )}
               <Link
                 to="/account"
                 className="block text-lg font-medium"
