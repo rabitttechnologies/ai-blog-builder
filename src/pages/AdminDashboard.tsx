@@ -37,16 +37,14 @@ const AdminDashboard = () => {
         
         if (profilesError) throw profilesError;
         
-        // Get all admins
-        const { data: adminRoles, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'admin');
+        // Get admin roles using our custom RPC function
+        const { data: adminRolesData, error: rolesError } = await supabase
+          .rpc('get_all_admin_users');
         
         if (rolesError) throw rolesError;
         
         // Extract admin user IDs for easier checking
-        const adminUserIds = new Set(adminRoles.map(r => r.user_id));
+        const adminUserIds = new Set(adminRolesData.map((r: {user_id: string}) => r.user_id));
         
         // Get user emails from auth metadata
         const userEmails = await Promise.all(

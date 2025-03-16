@@ -98,18 +98,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Error fetching user profile:", profileError);
       }
       
-      // Get user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', supabaseUser.id);
+      // Get user roles - using a raw query to workaround type issues
+      const { data: rolesData, error: rolesError } = await supabase
+        .rpc('get_user_roles', { user_id_param: supabaseUser.id });
       
       if (rolesError) {
         console.error("Error fetching user roles:", rolesError);
       }
       
       // Extract roles from the result
-      const roles = userRoles?.map(r => r.role as UserRole) || ['user'];
+      const roles = rolesData?.map((r: {role: string}) => r.role as UserRole) || ['user'];
       const isAdmin = roles.includes('admin');
       
       // Default profile values
@@ -274,20 +272,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("User not found");
       }
       
-      // Add admin role
+      // Add admin role using our safe RPC function
       const { error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: 'admin'
-        });
+        .rpc('add_user_admin_role', { user_id_param: userId });
       
       if (error) {
-        if (error.code === '23505') { // Unique violation
-          throw new Error("User is already an admin");
-        } else {
-          throw error;
-        }
+        throw error;
       }
       
       toast({
