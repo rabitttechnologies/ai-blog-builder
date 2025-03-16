@@ -110,9 +110,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser({
         id: supabaseUser.id,
         email: supabaseUser.email || '',
-        trialBlogsRemaining: 2, // Default for new users
-        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-        profile: profile
+        trialBlogsRemaining: profileData?.trial_blogs_remaining ?? 2, // Use DB value or default
+        trialEndsAt: profileData?.trial_ends_at ? new Date(profileData.trial_ends_at) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        profile: {
+          name: profile.name,
+          phone: profile.phone || '',
+          organization: profile.organization || '',
+          city: profile.city || '',
+          country: profile.country || ''
+        }
       });
     } catch (error) {
       console.error("Error processing authenticated user:", error);
