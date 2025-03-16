@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -11,6 +12,7 @@ const Login = () => {
   useEffect(() => {
     // If authenticated and not loading, redirect to dashboard
     if (isAuthenticated && !isLoading) {
+      console.log("Login page - Redirecting to dashboard because authenticated");
       navigate("/dashboard");
     }
   }, [isAuthenticated, isLoading, navigate]);
@@ -29,6 +31,7 @@ const Login = () => {
 
   // If already authenticated, use Navigate component for immediate redirect
   if (isAuthenticated) {
+    console.log("Login page - Already authenticated, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 

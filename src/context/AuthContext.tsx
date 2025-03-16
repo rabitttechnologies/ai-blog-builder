@@ -47,12 +47,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const getInitialSession = async () => {
       try {
         setIsLoading(true);
+        console.log("AuthContext - Getting initial session");
         
         // Check for active session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
+          console.log("AuthContext - Session found");
           await handleSessionFound(session);
+        } else {
+          console.log("AuthContext - No session found");
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error getting initial session:", error);
@@ -61,7 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "There was a problem with your authentication. Please try again.",
           variant: "destructive",
         });
-      } finally {
         setIsLoading(false);
       }
     };
@@ -71,10 +75,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("AuthContext - Auth state changed:", event);
+        
         if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           await handleSessionFound(session);
         } else if (event === 'SIGNED_OUT') {
+          console.log("AuthContext - User signed out");
           setUser(null);
+          setIsLoading(false);
         }
       }
     );
@@ -86,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleSessionFound = async (session: Session) => {
     try {
       const supabaseUser = session.user;
+      console.log("AuthContext - Processing session for user:", supabaseUser.id);
       
       // Try to get existing profile from Supabase
       const { data: profileData, error: profileError } = await supabase
@@ -138,6 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         roles,
         isAdmin
       });
+      
+      console.log("AuthContext - User authenticated:", supabaseUser.email);
     } catch (error) {
       console.error("Error processing authenticated user:", error);
       toast({
@@ -153,12 +164,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
     setIsLoading(true);
     try {
+      console.log("AuthContext - Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
       if (error) throw error;
+      console.log("AuthContext - Login successful for:", email);
 
       // If additional profile data is provided, update user metadata
       if (profile && Object.keys(profile).length > 0 && data.user) {
@@ -170,11 +183,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error("Error updating user metadata:", updateError);
         }
       }
+      
+      // Don't set isLoading to false here - the auth state listener will handle that
     } catch (error: any) {
       console.error("Login error:", error);
-      throw new Error(error.message || "Login failed. Please check your credentials and try again.");
-    } finally {
       setIsLoading(false);
+      throw new Error(error.message || "Login failed. Please check your credentials and try again.");
     }
   };
 

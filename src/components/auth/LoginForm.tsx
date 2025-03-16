@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -14,16 +15,8 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const [loginStatus, setLoginStatus] = useState("");
   
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-
-  // Add effect to handle navigation when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard");
-    }
-  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +33,7 @@ const LoginForm: React.FC = () => {
     setLoginStatus("Attempting to log in...");
     
     try {
-      console.log("Starting login process");
+      console.log("Starting login process with email:", email);
       await login(email, password);
       console.log("Login successful");
       
@@ -51,7 +44,7 @@ const LoginForm: React.FC = () => {
         description: "Welcome back to BlogCraft!",
       });
       
-      // Let the Login component handle the redirect through its useEffect
+      // The Login component will handle redirection
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");
