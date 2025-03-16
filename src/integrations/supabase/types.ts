@@ -81,12 +81,52 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_user_admin_role: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: boolean
+      }
+      get_all_admin_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+        }[]
+      }
+      get_user_roles: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: {
+          role: string
+        }[]
+      }
     }
     Enums: {
       "Trigger for Primary Keyword":

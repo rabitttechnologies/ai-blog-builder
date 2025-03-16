@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
@@ -13,32 +13,49 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [loginStatus, setLoginStatus] = useState("");
   
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Add effect to handle navigation when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoginStatus("Validating input...");
     
     if (!email || !password) {
       setError("Please fill in all the required fields");
+      setLoginStatus("");
       return;
     }
     
     setIsSubmitting(true);
+    setLoginStatus("Attempting to log in...");
     
     try {
+      console.log("Starting login process");
       await login(email, password);
+      
+      setLoginStatus("Login successful! Redirecting...");
       
       toast({
         title: "Login successful",
         description: "Welcome back to BlogCraft!",
       });
-      navigate("/dashboard");
+      
+      // The useEffect will handle navigation when isAuthenticated changes
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");
+      setLoginStatus("");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,6 +69,12 @@ const LoginForm: React.FC = () => {
         <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-start">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
           <span className="text-sm">{error}</span>
+        </div>
+      )}
+      
+      {loginStatus && (
+        <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm">
+          {loginStatus}
         </div>
       )}
       
