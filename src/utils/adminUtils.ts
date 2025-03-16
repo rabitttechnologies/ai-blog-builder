@@ -3,18 +3,49 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const makeUserAdminByEmail = async (email: string): Promise<boolean> => {
   try {
-    // First, get the user by email using a direct query instead of filters
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    // First, query the auth.users table to find the user by email
+    const { data: userData, error: userError } = await supabase
+      .from('auth.users')
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    if (userError || !userData.user) {
-      console.error("User not found:", userError);
-      return false;
+    if (userError) {
+      console.error("Error finding user by email:", userError);
+      
+      // Alternative approach: list users and find by email
+      const { data: authUsers, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error("Failed to list users:", listError);
+        return false;
+      }
+      
+      // Find the user with matching email
+      const user = authUsers.users.find(u => u.email === email);
+      
+      if (!user) {
+        console.error("User not found with email:", email);
+        return false;
+      }
+      
+      // Call function to add admin role
+      const { error } = await supabase.rpc('add_user_admin_role', {
+        user_id_param: user.id
+      });
+      
+      if (error) {
+        console.error("Error setting admin role:", error);
+        return false;
+      }
+      
+      return true;
     }
 
-    const userId = userData.user.id;
-
-    // Add admin role to the user using raw SQL query instead of type-checked insert
-    // This works around the TypeScript limitations until the types are regenerated
+    // If we got here, we found the user using the first method
+    const userId = userData.id;
+    
+    // Add admin role to the user
     const { error } = await supabase.rpc('add_user_admin_role', {
       user_id_param: userId
     });
