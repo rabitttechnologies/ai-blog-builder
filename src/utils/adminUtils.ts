@@ -13,6 +13,7 @@ export const makeUserAdminByEmail = async (email: string): Promise<boolean> => {
     }
     
     // Find the user with matching email
+    // Add type assertion to let TypeScript know the structure
     const user = authUsers.users.find(u => u.email === email);
     
     if (!user) {
