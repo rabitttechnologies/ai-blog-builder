@@ -1,6 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// Define a type for the user object returned by auth.admin.listUsers()
+interface AuthUser {
+  id: string;
+  email?: string;
+  // Add other properties as needed
+}
+
 export const makeUserAdminByEmail = async (email: string): Promise<boolean> => {
   try {
     // We can't directly query auth.users through the client API
@@ -13,8 +20,8 @@ export const makeUserAdminByEmail = async (email: string): Promise<boolean> => {
     }
     
     // Find the user with matching email
-    // Add type assertion to let TypeScript know the structure
-    const user = authUsers.users.find(u => u.email === email);
+    // Cast to our defined type to help TypeScript understand the structure
+    const user = (authUsers.users as AuthUser[]).find(u => u.email === email);
     
     if (!user) {
       console.error("User not found with email:", email);
