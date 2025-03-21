@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { handleSessionFound } from "./authUtils";
 import { AuthContextType, UserProfile } from "./types";
 
-// Make sure to export the AuthContext
+// Create the auth context
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
