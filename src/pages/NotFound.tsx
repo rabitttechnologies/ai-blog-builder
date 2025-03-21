@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
@@ -23,12 +24,12 @@ const NotFound = () => {
         </p>
         
         <div className="flex flex-col items-stretch space-y-4">
-          <Button asChild>
-            <Link to="/">Go to Homepage</Link>
+          <Button className="w-full" onClick={() => window.location.href = "/"}>
+            Go to Homepage
           </Button>
           {isAuthenticated && (
-            <Button asChild variant="secondary">
-              <Link to="/dashboard">Go to Dashboard</Link>
+            <Button className="w-full" variant="secondary" onClick={() => window.location.href = "/dashboard"}>
+              Go to Dashboard
             </Button>
           )}
         </div>

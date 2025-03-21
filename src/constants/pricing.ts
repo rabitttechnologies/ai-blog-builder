@@ -2,13 +2,20 @@
 export type PlanType = "starter" | "professional" | "agency";
 export type PricingPeriod = "monthly" | "yearly";
 
+export interface PlanFeatures {
+  blogs: number;
+  keywords: number;
+  support: string;
+  [key: string]: string | number | boolean; // Allow for additional feature properties
+}
+
 export interface PricingPlan {
   id: PlanType;
   name: string;
   description: string;
   priceMonthly: number;
   priceYearly: number;
-  features: string[];
+  features: PlanFeatures;
   popular?: boolean;
 }
 
@@ -19,13 +26,13 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "Perfect for individuals just getting started",
     priceMonthly: 29,
     priceYearly: 290,
-    features: [
-      "5 AI-generated blogs per month",
-      "SEO keyword research",
-      "3 title options per blog",
-      "Basic content structure",
-      "Email support"
-    ]
+    features: {
+      blogs: 5,
+      keywords: 10,
+      support: "Email support",
+      basic_content: true,
+      title_options: 3
+    }
   },
   {
     id: "professional",
@@ -33,15 +40,15 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "Ideal for content creators and small businesses",
     priceMonthly: 59,
     priceYearly: 590,
-    features: [
-      "15 AI-generated blogs per month",
-      "Advanced SEO keyword research",
-      "5 title options per blog",
-      "Custom content structure",
-      "Priority email support",
-      "Google Drive integration",
-      "Analytics and performance tracking"
-    ],
+    features: {
+      blogs: 15,
+      keywords: 30,
+      support: "Priority email support",
+      custom_content: true,
+      title_options: 5,
+      google_drive: true,
+      analytics: true
+    },
     popular: true
   },
   {
@@ -50,16 +57,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "For teams and agencies with multiple clients",
     priceMonthly: 119,
     priceYearly: 1190,
-    features: [
-      "50 AI-generated blogs per month",
-      "Enterprise-grade SEO research",
-      "Unlimited title options",
-      "Custom branding and templates",
-      "Dedicated account manager",
-      "Team collaboration features",
-      "API access",
-      "White-label exports"
-    ]
+    features: {
+      blogs: 50,
+      keywords: 100,
+      support: "Dedicated account manager",
+      custom_branding: true,
+      title_options: 999, // Unlimited
+      team_collab: true,
+      api_access: true,
+      white_label: true
+    }
   }
 ];
 

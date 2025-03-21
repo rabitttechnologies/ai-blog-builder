@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate } from "react-router-dom";
@@ -108,4 +109,3 @@ const Pricing = () => {
 };
 
 export default Pricing;
-
