@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Login = () => {

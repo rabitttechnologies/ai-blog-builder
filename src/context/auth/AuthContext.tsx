@@ -1,44 +1,14 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-
-interface UserProfile {
-  name?: string;
-  phone: string;
-  organization: string;
-  city: string;
-  country: string;
-}
-
-type UserRole = 'user' | 'admin';
-
-interface AuthUser {
-  id: string;
-  email: string;
-  trialBlogsRemaining: number;
-  trialEndsAt: Date;
-  profile: UserProfile;
-  roles: UserRole[];
-  isAdmin: boolean;
-}
-
-interface AuthContextType {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
-  signup: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;
-  logout: () => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
-  makeUserAdmin: (userId: string) => Promise<void>;
-}
+import { handleSessionFound } from "./authUtils";
+import { AuthContextType, UserProfile } from "./types";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -56,7 +26,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (session) {
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 console.log("AuthContext - User authenticated or token refreshed");
-                await handleSessionFound(session);
+                const userData = await handleSessionFound(session);
+                if (userData) {
+                  setUser(userData);
+                }
+                setIsLoading(false);
               }
             } else if (event === 'SIGNED_OUT') {
               console.log("AuthContext - User signed out");
@@ -71,7 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session) {
           console.log("AuthContext - Existing session found");
-          await handleSessionFound(session);
+          const userData = await handleSessionFound(session);
+          if (userData) {
+            setUser(userData);
+          }
+          setIsLoading(false);
         } else {
           console.log("AuthContext - No existing session found");
           setIsLoading(false);
@@ -88,76 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
   }, []);
-
-  const handleSessionFound = async (session: Session) => {
-    try {
-      const supabaseUser = session.user;
-      console.log("AuthContext - Processing session for user:", supabaseUser.id);
-      
-      // Try to get existing profile from Supabase
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
-      
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error("Error fetching user profile:", profileError);
-      }
-      
-      // Get user roles - using a raw query to workaround type issues
-      const { data: rolesData, error: rolesError } = await supabase
-        .rpc('get_user_roles', { user_id_param: supabaseUser.id });
-      
-      if (rolesError) {
-        console.error("Error fetching user roles:", rolesError);
-      }
-      
-      // Extract roles from the result
-      const roles = rolesData?.map((r: {role: string}) => r.role as UserRole) || ['user'];
-      const isAdmin = roles.includes('admin');
-      
-      // Default profile values
-      const defaultProfile: UserProfile = {
-        name: supabaseUser.user_metadata.name || '',
-        phone: supabaseUser.user_metadata.phone || '',
-        organization: supabaseUser.user_metadata.organization || '',
-        city: supabaseUser.user_metadata.city || '',
-        country: supabaseUser.user_metadata.country || ''
-      };
-      
-      // Use profile from DB if it exists, otherwise use metadata
-      const profile = profileData || defaultProfile;
-      
-      // Set user state
-      setUser({
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        trialBlogsRemaining: profileData?.trial_blogs_remaining ?? 2, // Use DB value or default
-        trialEndsAt: profileData?.trial_ends_at ? new Date(profileData.trial_ends_at) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-        profile: {
-          name: profile.name,
-          phone: profile.phone || '',
-          organization: profile.organization || '',
-          city: profile.city || '',
-          country: profile.country || ''
-        },
-        roles,
-        isAdmin
-      });
-      
-      console.log("AuthContext - User fully authenticated:", supabaseUser.email);
-    } catch (error) {
-      console.error("Error processing authenticated user:", error);
-      toast({
-        title: "Profile Error",
-        description: "There was a problem loading your profile data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const login = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
     setIsLoading(true);
@@ -321,12 +229,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };
