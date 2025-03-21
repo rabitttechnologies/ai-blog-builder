@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle, AlertCircle, Globe, MapPin } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import { useToast } from "@/hooks/use-toast";
 import CityDropdown from "./CityDropdown";
 import CountryDropdown, { COUNTRIES } from "./CountryDropdown";

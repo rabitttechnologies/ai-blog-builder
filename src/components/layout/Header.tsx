@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { ChevronDown, Menu, X, User, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);

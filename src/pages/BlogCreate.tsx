@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import KeywordInput from "@/components/blog/KeywordInput";
 import TitleSelection from "@/components/blog/TitleSelection";
