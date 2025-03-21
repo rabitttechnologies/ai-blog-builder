@@ -43,52 +43,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
+    const initializeAuth = async () => {
       try {
+        console.log("AuthContext - Initializing auth state");
         setIsLoading(true);
-        console.log("AuthContext - Getting initial session");
         
-        // Check for active session
+        // First set up the auth state listener to catch any authentication changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log("AuthContext - Auth state changed:", event);
+            
+            if (session) {
+              if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                console.log("AuthContext - User authenticated or token refreshed");
+                await handleSessionFound(session);
+              }
+            } else if (event === 'SIGNED_OUT') {
+              console.log("AuthContext - User signed out");
+              setUser(null);
+              setIsLoading(false);
+            }
+          }
+        );
+
+        // Then check for an existing session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log("AuthContext - Session found");
+          console.log("AuthContext - Existing session found");
           await handleSessionFound(session);
         } else {
-          console.log("AuthContext - No session found");
+          console.log("AuthContext - No existing session found");
           setIsLoading(false);
         }
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
-        console.error("Error getting initial session:", error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with your authentication. Please try again.",
-          variant: "destructive",
-        });
+        console.error("Error initializing auth:", error);
         setIsLoading(false);
       }
     };
 
-    getInitialSession();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("AuthContext - Auth state changed:", event);
-        
-        if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          await handleSessionFound(session);
-        } else if (event === 'SIGNED_OUT') {
-          console.log("AuthContext - User signed out");
-          setUser(null);
-          setIsLoading(false);
-        }
-      }
-    );
-
-    // Cleanup subscription
-    return () => subscription.unsubscribe();
+    initializeAuth();
   }, []);
 
   const handleSessionFound = async (session: Session) => {
@@ -148,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAdmin
       });
       
-      console.log("AuthContext - User authenticated:", supabaseUser.email);
+      console.log("AuthContext - User fully authenticated:", supabaseUser.email);
     } catch (error) {
       console.error("Error processing authenticated user:", error);
       toast({

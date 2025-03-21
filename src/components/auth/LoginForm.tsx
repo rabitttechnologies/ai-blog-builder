@@ -15,7 +15,7 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const [loginStatus, setLoginStatus] = useState("");
   
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,9 +33,9 @@ const LoginForm: React.FC = () => {
     setLoginStatus("Attempting to log in...");
     
     try {
-      console.log("Starting login process with email:", email);
+      console.log("LoginForm - Starting login process with email:", email);
       await login(email, password);
-      console.log("Login successful");
+      console.log("LoginForm - Login successful, isAuthenticated:", isAuthenticated);
       
       setLoginStatus("Login successful! Redirecting...");
       
@@ -44,9 +44,9 @@ const LoginForm: React.FC = () => {
         description: "Welcome back to BlogCraft!",
       });
       
-      // The Login component will handle redirection
+      // The Login component will handle redirection via the isAuthenticated state
     } catch (err: any) {
-      console.error("Login error:", err);
+      console.error("LoginForm - Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");
       setLoginStatus("");
     } finally {

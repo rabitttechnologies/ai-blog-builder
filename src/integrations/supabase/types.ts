@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      "Google Custom Search Data": {
+        Row: {
+          countryCode: string | null
+          created_at: string
+          "historical keyword search data": Json[] | null
+          id: number
+          requestId: string
+          searchQuery: string | null
+        }
+        Insert: {
+          countryCode?: string | null
+          created_at?: string
+          "historical keyword search data"?: Json[] | null
+          id?: number
+          requestId: string
+          searchQuery?: string | null
+        }
+        Update: {
+          countryCode?: string | null
+          created_at?: string
+          "historical keyword search data"?: Json[] | null
+          id?: number
+          requestId?: string
+          searchQuery?: string | null
+        }
+        Relationships: []
+      }
       "Primary Research Table": {
         Row: {
           created_at: string

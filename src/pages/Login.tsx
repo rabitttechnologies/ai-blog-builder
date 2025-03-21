@@ -1,37 +1,33 @@
 
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // If authenticated and not loading, redirect to dashboard
-    if (isAuthenticated && !isLoading) {
-      console.log("Login page - Redirecting to dashboard because authenticated");
-      navigate("/dashboard");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  console.log("Login page - Auth state:", { isAuthenticated, isLoading });
+  
+  console.log("Login page render - Auth state:", { isAuthenticated, isLoading });
 
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-foreground/70">Checking authentication...</p>
+        <div className="w-full max-w-md">
+          <Skeleton className="h-8 w-32 mb-6" />
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64 mb-8" />
+          <Skeleton className="h-[300px] w-full rounded-xl mb-8" />
+        </div>
       </div>
     );
   }
 
   // If already authenticated, use Navigate component for immediate redirect
   if (isAuthenticated) {
-    console.log("Login page - Already authenticated, redirecting to dashboard");
+    console.log("Login page - Already authenticated, redirecting to dashboard immediately");
     return <Navigate to="/dashboard" replace />;
   }
 
