@@ -13,7 +13,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BenefitItem {
   title: string;
@@ -45,33 +52,40 @@ const benefitItems: BenefitItem[] = [
 ];
 
 const BenefitsSlider: React.FC = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="w-full py-6 sm:py-10">
       <Carousel
         opts={{
           align: "start",
           loop: true,
+          slidesToScroll: isMobile ? 1 : 2,
         }}
         className="w-full"
       >
         <CarouselContent>
           {benefitItems.map((item, index) => (
-            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
-              <Card className="glass card-hover h-full transition-all duration-300 hover:shadow-lg">
-                <CardContent className="flex flex-col items-center p-6 text-center">
-                  <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50">
+            <CarouselItem key={index} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4 pl-4">
+              <Card className="h-full transition-all duration-300 hover:shadow-lg border border-blue-100/40 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-2 pt-6 flex items-center justify-center">
+                  <div className="mb-2 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
                     {item.icon}
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
-                  <p className="text-foreground/70">{item.description}</p>
+                </CardHeader>
+                <CardContent className="text-center px-4 pb-6">
+                  <CardTitle className="mb-2 text-xl font-semibold">{item.title}</CardTitle>
+                  <CardDescription className="text-foreground/70 text-sm md:text-base">
+                    {item.description}
+                  </CardDescription>
                 </CardContent>
               </Card>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="flex justify-center gap-2 mt-4">
-          <CarouselPrevious className="relative inset-auto translate-y-0" />
-          <CarouselNext className="relative inset-auto translate-y-0" />
+        <div className="flex justify-center gap-2 mt-6">
+          <CarouselPrevious className="relative inset-auto translate-y-0 h-9 w-9" />
+          <CarouselNext className="relative inset-auto translate-y-0 h-9 w-9" />
         </div>
       </Carousel>
     </div>
