@@ -18,7 +18,7 @@ const Hero: React.FC = () => {
       <div className="container-tight text-center relative z-10">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-8 animate-fade-in">
           <span className="badge badge-primary mr-2">New</span>
-          <span className="text-sm">Introducing BlogCraft AI</span>
+          <span className="text-sm">Introducing Insight Writer AI</span>
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">

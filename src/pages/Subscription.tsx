@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Helmet } from "react-helmet";
 import { Navigate } from "react-router-dom";
@@ -18,7 +19,7 @@ const Subscription = () => {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Subscription - BlogCraft</title>
+        <title>Subscription - Insight Writer AI</title>
       </Helmet>
 
       <div className="container max-w-4xl py-8">

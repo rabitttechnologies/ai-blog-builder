@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +8,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link to="/" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
-              BlogCraft
+              Insight Writer AI
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
               AI-powered blog generator with human-in-the-loop approvals for SEO-optimized content.
@@ -110,7 +109,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="mt-12 pt-8 border-t border-border/40">
           <p className="text-sm text-foreground/60">
-            &copy; {new Date().getFullYear()} BlogCraft. All rights reserved.
+            &copy; {new Date().getFullYear()} Insight Writer AI. All rights reserved.
           </p>
         </div>
       </div>

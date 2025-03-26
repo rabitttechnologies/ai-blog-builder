@@ -41,7 +41,7 @@ const LoginForm: React.FC = () => {
       
       toast({
         title: "Login successful",
-        description: "Welcome back to BlogCraft!",
+        description: "Welcome back to Insight Writer AI!",
       });
       
       // The Login component will handle redirection via the isAuthenticated state

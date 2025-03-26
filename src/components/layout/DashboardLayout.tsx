@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -47,7 +48,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </button>
             
             <Link to="/dashboard" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
-              BlogCraft
+              Insight Writer AI
             </Link>
           </div>
           

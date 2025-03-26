@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate } from "react-router-dom";
@@ -24,7 +23,7 @@ const Pricing = () => {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Pricing - BlogCraft</title>
+        <title>Pricing - Insight Writer AI</title>
       </Helmet>
       
       <div className="container max-w-6xl py-8">
@@ -82,9 +81,9 @@ const Pricing = () => {
           
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium">What is BlogCraft?</h3>
+              <h3 className="font-medium">What is Insight Writer AI?</h3>
               <p className="text-foreground/70">
-                BlogCraft is an AI-powered platform that helps you create SEO-optimized blog posts quickly and easily.
+                Insight Writer AI is an AI-powered platform that helps you create SEO-optimized blog posts quickly and easily.
               </p>
             </div>
             

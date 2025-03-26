@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -45,7 +46,7 @@ const Header: React.FC = () => {
           to="/" 
           className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400"
         >
-          BlogCraft
+          Insight Writer AI
         </Link>
 
         <nav className="hidden md:flex items-center space-x-8">
