@@ -90,5 +90,5 @@ export const getPlanById = (planId: PlanType): PricingPlan | undefined => {
 };
 
 // Trial information
-export const TRIAL_LENGTH_DAYS = 14;
+export const TRIAL_LENGTH_DAYS = 3;
 export const TRIAL_SUBSCRIPTION_LENGTH_DAYS = 7;

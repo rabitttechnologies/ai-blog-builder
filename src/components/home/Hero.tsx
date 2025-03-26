@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Link } from "react-router-dom";
 import { TRIAL_LENGTH_DAYS } from "@/constants/pricing";
+import BenefitsSlider from "./BenefitsSlider";
 
 const Hero: React.FC = () => {
   return (
@@ -22,11 +23,11 @@ const Hero: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">
-          AI-Powered Blog Generation with Human Touch
+          Write Articles That Rank #1 – Powered by AI & Search Data
         </h1>
 
-        <p className="text-xl text-foreground/70 max-w-2xl mx-auto mb-10 animate-fade-in [animation-delay:300ms]">
-          Create SEO-optimized content in minutes with our AI agents and human-in-the-loop approvals. Perfect for marketers, bloggers, and businesses.
+        <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-10 animate-fade-in [animation-delay:300ms]">
+          We transform search data and insights into high-quality, engaging content powered by AI in minutes - giving you the competitive edge in content marketing
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in [animation-delay:450ms]">
@@ -40,16 +41,19 @@ const Hero: React.FC = () => {
           </Button>
         </div>
 
-        <div className="p-4 bg-blue-50 rounded-lg max-w-md mx-auto mb-16 animate-fade-in [animation-delay:400ms]">
+        <div className="p-4 bg-blue-50 rounded-lg max-w-md mx-auto mb-10 animate-fade-in [animation-delay:400ms]">
           <p className="text-sm text-blue-800">
             <strong>No credit card required.</strong> Get a full {TRIAL_LENGTH_DAYS}-day free trial with 2 blog posts.
           </p>
         </div>
 
-        <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms]">
+        {/* Benefits Slider */}
+        <BenefitsSlider />
+
+        <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms] mt-8">
           <img 
             src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
-            alt="Person using BlogCraft on laptop" 
+            alt="Person using Insight Writer AI on laptop" 
             className="w-full h-auto rounded-t-xl object-cover"
           />
           
@@ -62,7 +66,7 @@ const Hero: React.FC = () => {
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
               <div className="mx-auto w-80 h-6 rounded-full bg-white flex items-center px-3 text-xs text-gray-400">
-                blogcraft.ai/dashboard
+                insightwriter.ai/dashboard
               </div>
             </div>
             
