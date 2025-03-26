@@ -34,13 +34,13 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/80 px-4">
       <Helmet>
-        <title>Log In - BlogCraft</title>
+        <title>Log In - Insight Writer AI</title>
       </Helmet>
       
       <div className="w-full max-w-md mb-8">
         <Link to="/" className="inline-block mb-6">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
-            BlogCraft
+            Insight Writer AI
           </h1>
         </Link>
         <h2 className="text-2xl font-bold mb-2">Welcome back</h2>

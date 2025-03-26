@@ -9,30 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      "Blog Creation": {
+        Row: {
+          "Blog Creation Status": Database["public"]["Enums"]["Blog Creation Status"]
+          "blog creation workflow execution id": string | null
+          created_at: string
+          Discription: string | null
+          "Final Article": string | null
+          "Final Title": string | null
+          "Goal of the Article": string | null
+          "Hidden Insight": string | null
+          id: number
+          "Image Prompt": string | null
+          Keywords: string | null
+          "Meta Description": string | null
+          "options for blog title and description data": Json[] | null
+          "primary keyword": string | null
+          "Search Intent": string | null
+          "selected blog title, discription": Json[] | null
+          "Semantic Analysis": string | null
+          "Target Audience": string | null
+          Title: string | null
+          Tone: string | null
+          "workflow execution id": string
+          "Writing Style": string | null
+        }
+        Insert: {
+          "Blog Creation Status"?: Database["public"]["Enums"]["Blog Creation Status"]
+          "blog creation workflow execution id"?: string | null
+          created_at?: string
+          Discription?: string | null
+          "Final Article"?: string | null
+          "Final Title"?: string | null
+          "Goal of the Article"?: string | null
+          "Hidden Insight"?: string | null
+          id?: number
+          "Image Prompt"?: string | null
+          Keywords?: string | null
+          "Meta Description"?: string | null
+          "options for blog title and description data"?: Json[] | null
+          "primary keyword"?: string | null
+          "Search Intent"?: string | null
+          "selected blog title, discription"?: Json[] | null
+          "Semantic Analysis"?: string | null
+          "Target Audience"?: string | null
+          Title?: string | null
+          Tone?: string | null
+          "workflow execution id": string
+          "Writing Style"?: string | null
+        }
+        Update: {
+          "Blog Creation Status"?: Database["public"]["Enums"]["Blog Creation Status"]
+          "blog creation workflow execution id"?: string | null
+          created_at?: string
+          Discription?: string | null
+          "Final Article"?: string | null
+          "Final Title"?: string | null
+          "Goal of the Article"?: string | null
+          "Hidden Insight"?: string | null
+          id?: number
+          "Image Prompt"?: string | null
+          Keywords?: string | null
+          "Meta Description"?: string | null
+          "options for blog title and description data"?: Json[] | null
+          "primary keyword"?: string | null
+          "Search Intent"?: string | null
+          "selected blog title, discription"?: Json[] | null
+          "Semantic Analysis"?: string | null
+          "Target Audience"?: string | null
+          Title?: string | null
+          Tone?: string | null
+          "workflow execution id"?: string
+          "Writing Style"?: string | null
+        }
+        Relationships: []
+      }
       "Google Custom Search Data": {
         Row: {
+          "AI suggested data:title, description and other": Json[] | null
+          "category of keyword": Json[] | null
           countryCode: string | null
           created_at: string
           "historical keyword search data": Json[] | null
           id: number
+          "keyword clusters": Json[] | null
+          "organic Results": Json[] | null
+          "people also ask": Json[] | null
+          "piller and supporting content": Json[] | null
+          "related queries": Json[] | null
           requestId: string
           searchQuery: string | null
+          uuid: string
+          "workflow execution id": string
         }
         Insert: {
+          "AI suggested data:title, description and other"?: Json[] | null
+          "category of keyword"?: Json[] | null
           countryCode?: string | null
           created_at?: string
           "historical keyword search data"?: Json[] | null
           id?: number
+          "keyword clusters"?: Json[] | null
+          "organic Results"?: Json[] | null
+          "people also ask"?: Json[] | null
+          "piller and supporting content"?: Json[] | null
+          "related queries"?: Json[] | null
           requestId: string
           searchQuery?: string | null
+          uuid?: string
+          "workflow execution id": string
         }
         Update: {
+          "AI suggested data:title, description and other"?: Json[] | null
+          "category of keyword"?: Json[] | null
           countryCode?: string | null
           created_at?: string
           "historical keyword search data"?: Json[] | null
           id?: number
+          "keyword clusters"?: Json[] | null
+          "organic Results"?: Json[] | null
+          "people also ask"?: Json[] | null
+          "piller and supporting content"?: Json[] | null
+          "related queries"?: Json[] | null
           requestId?: string
           searchQuery?: string | null
+          uuid?: string
+          "workflow execution id"?: string
         }
         Relationships: []
       }
@@ -40,32 +142,38 @@ export type Database = {
         Row: {
           created_at: string
           Depth: number | null
+          "execution Id": string | null
           id: number
           Laungage: string | null
           Limit: number | null
           Location: string | null
           "Primary Keyword": string | null
           Trigger: Database["public"]["Enums"]["Trigger for Primary Keyword"]
+          uuid: string
         }
         Insert: {
           created_at?: string
           Depth?: number | null
+          "execution Id"?: string | null
           id?: number
           Laungage?: string | null
           Limit?: number | null
           Location?: string | null
           "Primary Keyword"?: string | null
           Trigger?: Database["public"]["Enums"]["Trigger for Primary Keyword"]
+          uuid?: string
         }
         Update: {
           created_at?: string
           Depth?: number | null
+          "execution Id"?: string | null
           id?: number
           Laungage?: string | null
           Limit?: number | null
           Location?: string | null
           "Primary Keyword"?: string | null
           Trigger?: Database["public"]["Enums"]["Trigger for Primary Keyword"]
+          uuid?: string
         }
         Relationships: []
       }
@@ -156,6 +264,10 @@ export type Database = {
       }
     }
     Enums: {
+      "Blog Creation Status":
+        | "Create Blog Now"
+        | "Create Blog Later"
+        | "No Action"
       "Trigger for Primary Keyword":
         | "Not Started"
         | "Get the Past Search Data"
