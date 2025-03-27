@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,16 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import AdminDashboard from "./pages/AdminDashboard";
 import { Helmet } from "react-helmet";
+
+// New pages
+import AboutUs from "./pages/AboutUs";
+import Blog from "./pages/Blog";
+import Features from "./pages/Features";
+import ContactUs from "./pages/ContactUs";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Guides from "./pages/Guides";
+import Security from "./pages/Security";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +76,16 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/pricing" element={<Pricing />} />
+              
+              {/* New public routes */}
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/security" element={<Security />} />
               
               {/* Protected routes */}
               <Route path="/dashboard" element={<Dashboard />} />
