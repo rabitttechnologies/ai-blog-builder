@@ -1,9 +1,23 @@
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Search, BarChart3, FileText, Sparkles } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Link } from "react-router-dom";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi
+} from "@/components/ui/carousel";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const steps = [
   {
@@ -37,8 +51,27 @@ const steps = [
 ];
 
 const HowItWorks: React.FC = () => {
+  const [api, setApi] = React.useState<CarouselApi>();
+  const intervalRef = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (!api) return;
+    
+    // Start autoplay
+    intervalRef.current = window.setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+    
+    // Cleanup on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [api]);
+
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-blue-50">
+    <section id="how-it-works" className="py-20 bg-gradient-to-b from-white to-blue-50">
       <div className="container-wide">
         <div className="text-center mb-16">
           <div className="badge badge-primary mb-3">Workflow</div>
@@ -47,33 +80,47 @@ const HowItWorks: React.FC = () => {
             From keywords to published content in minutes, not days.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              <div className="glass p-6 rounded-xl h-full">
-                <div className="absolute -top-4 -left-4 h-10 w-10 rounded-full bg-primary text-white font-bold flex items-center justify-center">{step.number}</div>
-                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-                  {step.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 pt-1">{step.title}</h3>
-                <p className="text-foreground/70 mb-4">
-                  {step.description}
-                </p>
-                <img
-                  src={step.image}
-                  alt={step.title}
-                  className="rounded-lg w-full aspect-video object-cover"
-                />
-              </div>
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2 z-10">
-                  <ArrowRight className="h-8 w-8 text-primary/30" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+
+        <Carousel
+          opts={{
+            align: "center",
+            loop: true,
+          }}
+          setApi={setApi}
+          className="w-full"
+        >
+          <CarouselContent>
+            {steps.map((step, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                <Card className="h-full">
+                  <CardHeader className="relative pb-2">
+                    <div className="absolute -top-4 -left-4 h-10 w-10 rounded-full bg-primary text-white font-bold flex items-center justify-center">
+                      {step.number}
+                    </div>
+                    <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-4 ml-6">
+                      {step.icon}
+                    </div>
+                    <CardTitle className="text-xl font-semibold mb-3 pt-1">{step.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground/70 mb-4">
+                      {step.description}
+                    </p>
+                    <img
+                      src={step.image}
+                      alt={step.title}
+                      className="rounded-lg w-full aspect-video object-cover"
+                    />
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex justify-center gap-4 mt-8">
+            <CarouselPrevious />
+            <CarouselNext />
+          </div>
+        </Carousel>
 
         <div className="mt-16 text-center">
           <Link to="/signup">

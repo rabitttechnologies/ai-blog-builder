@@ -7,6 +7,13 @@ import { TRIAL_LENGTH_DAYS } from "@/constants/pricing";
 import BenefitsSlider from "./BenefitsSlider";
 
 const Hero: React.FC = () => {
+  const scrollToHowItWorks = () => {
+    const section = document.getElementById('how-it-works');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-24">
       {/* Background decoration */}
@@ -36,7 +43,7 @@ const Hero: React.FC = () => {
               Start {TRIAL_LENGTH_DAYS}-Day Free Trial
             </Button>
           </Link>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={scrollToHowItWorks}>
             See How It Works
           </Button>
         </div>
@@ -51,8 +58,8 @@ const Hero: React.FC = () => {
 
         <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms] mt-8">
           <img 
-            src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
-            alt="Person using Insight Writer AI on laptop" 
+            src="https://images.unsplash.com/photo-1498050108023-c5249f4df085" 
+            alt="AI-powered content creation on laptop" 
             className="w-full h-auto rounded-t-xl object-cover"
           />
           

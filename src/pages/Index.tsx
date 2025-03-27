@@ -1,29 +1,38 @@
+
 import React from "react";
+import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
 import FeaturesSection from "@/components/home/FeaturesSection";
-import TryItNowSection from "@/components/home/TryItNowSection";
+import FreeAITools from "@/components/home/FreeAITools";
 import Testimonials from "@/components/home/Testimonials";
 import CTASection from "@/components/home/CTASection";
 
 const Index = () => {
-  const handleKeywordSubmit = (keywords: string[], niche: string) => {
-    console.log("Niche:", niche);
-    console.log("Keywords:", keywords);
-    // This would normally trigger the keyword research process
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <meta name="description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" />
+        <link rel="canonical" href="https://insightwriter.ai" />
+        <meta name="keywords" content="AI blog writer, article generator, content creation, SEO writing, blogging tools" />
+        <meta property="og:title" content="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger" />
+        <meta property="og:description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://insightwriter.ai" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger" />
+        <meta name="twitter:description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence." />
+      </Helmet>
+      
       <Header />
       
       <main className="flex-1">
         <Hero />
         <HowItWorks />
         <FeaturesSection />
-        <TryItNowSection onKeywordSubmit={handleKeywordSubmit} />
+        <FreeAITools />
         <Testimonials />
         <CTASection />
       </main>

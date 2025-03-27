@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { 
   BarChart3, 
   Sparkles, 
@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { type CarouselApi } from "@/components/ui/carousel";
 
 interface BenefitItem {
   title: string;
@@ -53,6 +54,24 @@ const benefitItems: BenefitItem[] = [
 
 const BenefitsSlider: React.FC = () => {
   const isMobile = useIsMobile();
+  const [api, setApi] = React.useState<CarouselApi>();
+  const intervalRef = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (!api) return;
+    
+    // Start autoplay
+    intervalRef.current = window.setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+    
+    // Cleanup on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [api]);
   
   return (
     <div className="w-full py-6 sm:py-10">
@@ -62,6 +81,7 @@ const BenefitsSlider: React.FC = () => {
           loop: true,
           slidesToScroll: isMobile ? 1 : 2,
         }}
+        setApi={setApi}
         className="w-full"
       >
         <CarouselContent>
