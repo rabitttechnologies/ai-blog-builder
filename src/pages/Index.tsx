@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -21,22 +20,11 @@ const Index = () => {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
         <Hero />
-        
-        {/* How It Works Section */}
         <HowItWorks />
-        
-        {/* Features Section */}
         <FeaturesSection />
-        
-        {/* Try It Now Section */}
         <TryItNowSection onKeywordSubmit={handleKeywordSubmit} />
-        
-        {/* Testimonials Section */}
         <Testimonials />
-        
-        {/* CTA Section */}
         <CTASection />
       </main>
       

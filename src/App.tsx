@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,8 +45,14 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <ErrorBoundary redirectTo="/error">
-          <Helmet titleTemplate="%s | Insight Writer AI" defaultTitle="Insight Writer AI - AI Blog Generator">
-            <meta name="description" content="Create SEO-optimized blogs with AI and human-in-the-loop approval" />
+          <Helmet
+            titleTemplate="%s | Insight Writer AI"
+            defaultTitle="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger"
+          >
+            <meta 
+              name="description" 
+              content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" 
+            />
           </Helmet>
           <Toaster />
           <Sonner />

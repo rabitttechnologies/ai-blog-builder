@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -23,11 +22,11 @@ const Hero: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">
-          Write Articles That Rank #1 – Powered by AI & Search Data
+          AI Blog Writer & Article Writer for Blogger – Empower Your Blogging with AI & Search Data to Rank #1
         </h1>
 
         <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-10 animate-fade-in [animation-delay:300ms]">
-          We transform search data and insights into high-quality, engaging content powered by AI in minutes - giving you the competitive edge in content marketing
+          Transform your blogging with our AI platform. Get an intelligent article writer and blog writer to streamline your blog writing and create standout articles for every blogger
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in [animation-delay:450ms]">
@@ -46,8 +45,7 @@ const Hero: React.FC = () => {
             <strong>No credit card required.</strong> Get a full {TRIAL_LENGTH_DAYS}-day free trial with 2 blog posts.
           </p>
         </div>
-
-        {/* Benefits Slider */}
+        
         <BenefitsSlider />
 
         <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms] mt-8">
