@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +23,7 @@ const Hero: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">
-          AI Blog Writer & Article Writer for Blogger – Empower Your Blogging with AI & Search Data to Rank #1
+          Use AI Blogger to Empower Your Blogging with AI & Search Data to Rank #1
         </h1>
 
         <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-10 animate-fade-in [animation-delay:300ms]">
