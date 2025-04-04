@@ -188,8 +188,8 @@ const Blog = () => {
                       <span>{featuredPost.category}</span>
                     </div>
                   </div>
-                  <Button asChild>
-                    <a href={`/blog/${featuredPost.id}`}>
+                  <Button>
+                    <a href={`/blog/${featuredPost.id}`} className="flex items-center">
                       Read Article <ArrowRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>

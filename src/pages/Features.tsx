@@ -40,11 +40,11 @@ const Features = () => {
               Our AI-powered platform offers everything you need to create high-ranking, engaging content that stands out from the competition.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <a href="/signup">Start Free Trial</a>
+              <Button size="lg">
+                <a href="/signup" className="flex items-center">Start Free Trial</a>
               </Button>
-              <Button variant="outline" size="lg" asChild>
-                <a href="#core-features">Explore Features</a>
+              <Button variant="outline" size="lg">
+                <a href="#core-features" className="flex items-center">Explore Features</a>
               </Button>
             </div>
           </div>
@@ -76,8 +76,8 @@ const Features = () => {
                     </li>
                   ))}
                 </ul>
-                <Button asChild>
-                  <a href="/signup">Try the AI Writer</a>
+                <Button>
+                  <a href="/signup" className="flex items-center">Try the AI Writer</a>
                 </Button>
               </div>
               <div className="bg-blue-50 p-8 rounded-2xl">
@@ -207,11 +207,11 @@ const Features = () => {
               Choose the plan that's right for you and start creating amazing content today.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" asChild>
-                <a href="/pricing">View Pricing</a>
+              <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg">
+                <a href="/pricing" className="flex items-center">View Pricing</a>
               </Button>
-              <Button variant="outline" className="border-white text-white hover:bg-white/10" size="lg" asChild>
-                <a href="/contact">Contact Sales</a>
+              <Button variant="outline" className="border-white text-white hover:bg-white/10" size="lg">
+                <a href="/contact" className="flex items-center">Contact Sales</a>
               </Button>
             </div>
           </div>

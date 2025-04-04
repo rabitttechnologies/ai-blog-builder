@@ -152,8 +152,8 @@ const Terms = () => {
                 <p className="text-sm text-foreground/60">
                   Have questions about our terms?
                 </p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/contact">
+                <Button variant="outline" size="sm">
+                  <a href="/contact" className="flex items-center">
                     Contact Us <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>

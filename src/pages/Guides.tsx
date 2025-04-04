@@ -5,7 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Bookmark, FileText, Search, Clock, BookOpen, BookMarkIcon } from "lucide-react";
+import { ArrowRight, Bookmark, FileText, Search, Clock, BookOpen } from "lucide-react";
 
 const guides = [
   {
@@ -65,9 +65,7 @@ const guides = [
     image: "/placeholder.svg",
   },
   {
-    id: {
-      8: "Technical SEO for Content Creators"
-    },
+    id: 8,
     title: "Technical SEO for Content Creators",
     description: "Essential technical SEO knowledge every content creator should understand.",
     category: "Advanced",
@@ -167,8 +165,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     Your comprehensive guide to creating high-quality content that ranks and converts.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/handbook">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <a href="/guides/handbook" className="flex items-center justify-center w-full">
                       Download PDF <ArrowRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
@@ -184,8 +182,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     The ultimate checklist to ensure your content meets the latest SEO requirements.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/seo-checklist">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <a href="/guides/seo-checklist" className="flex items-center justify-center w-full">
                       Download PDF <ArrowRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
@@ -201,8 +199,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     A collection of ready-to-use templates for different types of content.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/templates">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <a href="/guides/templates" className="flex items-center justify-center w-full">
                       Browse Templates <ArrowRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
@@ -327,8 +325,8 @@ const Guides = () => {
             </div>
             
             <div className="text-center mt-10">
-              <Button variant="outline" asChild>
-                <a href="/tutorials/videos">
+              <Button variant="outline">
+                <a href="/tutorials/videos" className="flex items-center">
                   View All Video Tutorials <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -381,8 +379,8 @@ const Guides = () => {
                     </div>
                   </div>
                   <p className="text-foreground/70 mb-4">{webinar.description}</p>
-                  <Button size="sm" asChild>
-                    <a href={`/webinars/${webinar.id}`}>Register Now</a>
+                  <Button size="sm">
+                    <a href={`/webinars/${webinar.id}`} className="flex items-center">Register Now</a>
                   </Button>
                 </div>
               ))}
@@ -397,8 +395,8 @@ const Guides = () => {
             <p className="text-xl max-w-2xl mx-auto mb-8">
               Visit our help center for frequently asked questions, troubleshooting tips, and direct support.
             </p>
-            <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" asChild>
-              <a href="/help-center">Visit Help Center</a>
+            <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg">
+              <a href="/help-center" className="flex items-center">Visit Help Center</a>
             </Button>
           </div>
         </section>

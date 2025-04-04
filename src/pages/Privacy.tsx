@@ -157,8 +157,8 @@ const Privacy = () => {
                 <p className="text-sm text-foreground/60">
                   Need to contact us about your privacy?
                 </p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/contact">
+                <Button variant="outline" size="sm">
+                  <a href="/contact" className="flex items-center">
                     Contact Us <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
