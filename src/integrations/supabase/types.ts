@@ -140,6 +140,7 @@ export type Database = {
       }
       "Primary Research Table": {
         Row: {
+          auto_complete: Json[] | null
           created_at: string
           Depth: number | null
           "execution Id": string | null
@@ -150,8 +151,11 @@ export type Database = {
           "Primary Keyword": string | null
           Trigger: Database["public"]["Enums"]["Trigger for Primary Keyword"]
           uuid: string
+          webhook_response: Json | null
+          workflow_execution_id: string | null
         }
         Insert: {
+          auto_complete?: Json[] | null
           created_at?: string
           Depth?: number | null
           "execution Id"?: string | null
@@ -162,8 +166,11 @@ export type Database = {
           "Primary Keyword"?: string | null
           Trigger?: Database["public"]["Enums"]["Trigger for Primary Keyword"]
           uuid?: string
+          webhook_response?: Json | null
+          workflow_execution_id?: string | null
         }
         Update: {
+          auto_complete?: Json[] | null
           created_at?: string
           Depth?: number | null
           "execution Id"?: string | null
@@ -174,6 +181,8 @@ export type Database = {
           "Primary Keyword"?: string | null
           Trigger?: Database["public"]["Enums"]["Trigger for Primary Keyword"]
           uuid?: string
+          webhook_response?: Json | null
+          workflow_execution_id?: string | null
         }
         Relationships: []
       }

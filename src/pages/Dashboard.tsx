@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
@@ -7,10 +7,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
 import { PlusCircle, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { KeywordResearchModal } from "@/components/blog/KeywordResearchModal";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [isKeywordResearchOpen, setIsKeywordResearchOpen] = useState(false);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -20,7 +22,7 @@ const Dashboard = () => {
   
   const handleCreateBlog = () => {
     if (user?.trialBlogsRemaining && user.trialBlogsRemaining > 0) {
-      window.location.href = "/blog/create";
+      setIsKeywordResearchOpen(true);
     } else {
       toast({
         title: "Trial limit reached",
@@ -112,6 +114,11 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <KeywordResearchModal 
+        isOpen={isKeywordResearchOpen} 
+        onClose={() => setIsKeywordResearchOpen(false)} 
+      />
     </DashboardLayout>
   );
 };
