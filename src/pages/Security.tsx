@@ -45,11 +45,11 @@ const Security = () => {
                   From encrypted data storage to secure access controls, we implement best practices at every level of our infrastructure.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild>
-                    <a href="#security-measures">Explore Our Security Measures</a>
+                  <Button onClick={() => window.location.href = "#security-measures"}>
+                    Explore Our Security Measures
                   </Button>
-                  <Button variant="outline" asChild>
-                    <a href="/security/whitepaper">Download Security Whitepaper</a>
+                  <Button variant="outline" onClick={() => window.location.href = "/security/whitepaper"}>
+                    Download Security Whitepaper
                   </Button>
                 </div>
               </div>
@@ -238,8 +238,8 @@ const Security = () => {
                 <p className="text-xl mb-8">
                   We take security vulnerabilities seriously. If you've discovered a potential security issue, please let us know immediately.
                 </p>
-                <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" asChild>
-                  <a href="mailto:security@insightwriter.ai">Report a Vulnerability</a>
+                <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" onClick={() => window.location.href = "mailto:security@insightwriter.ai"}>
+                  Report a Vulnerability
                 </Button>
               </div>
               <div className="bg-white/10 p-8 rounded-2xl">
