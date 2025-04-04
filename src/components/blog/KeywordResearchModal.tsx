@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
-import { Spinner } from 'lucide-react';
+import { Loader2 } from 'lucide-react';  // Replace Spinner with Loader2
 
 interface KeywordResearchModalProps {
   isOpen: boolean;
@@ -59,7 +59,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
               onClick={submitKeyword} 
               disabled={isLoading}
             >
-              {isLoading ? <Spinner className="mr-2" /> : 'Research'}
+              {isLoading ? <Loader2 className="mr-2 animate-spin" /> : 'Research'}
             </Button>
           </div>
 
