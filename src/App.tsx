@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import AdminDashboard from "./pages/AdminDashboard";
 import { Helmet } from "react-helmet";
+import AuthGuard from "./components/layout/AuthGuard";
 
 // New pages
 import AboutUs from "./pages/AboutUs";
@@ -88,14 +89,38 @@ const App = () => (
               <Route path="/security" element={<Security />} />
               
               {/* Protected routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/blog/create" element={<BlogCreate />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/subscription/checkout" element={<Checkout />} />
+              <Route path="/dashboard" element={
+                <AuthGuard>
+                  <Dashboard />
+                </AuthGuard>
+              } />
+              <Route path="/blog/create" element={
+                <AuthGuard>
+                  <BlogCreate />
+                </AuthGuard>
+              } />
+              <Route path="/account" element={
+                <AuthGuard>
+                  <Account />
+                </AuthGuard>
+              } />
+              <Route path="/subscription" element={
+                <AuthGuard>
+                  <Subscription />
+                </AuthGuard>
+              } />
+              <Route path="/subscription/checkout" element={
+                <AuthGuard>
+                  <Checkout />
+                </AuthGuard>
+              } />
               
               {/* Admin routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={
+                <AuthGuard requireAdmin={true}>
+                  <AdminDashboard />
+                </AuthGuard>
+              } />
               
               {/* Error routes */}
               <Route path="/error" element={<NotFound />} />

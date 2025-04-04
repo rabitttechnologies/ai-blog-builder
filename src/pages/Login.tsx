@@ -1,15 +1,28 @@
 
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Try to get the return URL from location state, default to dashboard
+  const from = location.state?.from?.pathname || "/dashboard";
   
   console.log("Login page render - Auth state:", { isAuthenticated, isLoading });
+
+  // Redirect authenticated users to where they were trying to go
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log(`Login page - Authenticated, redirecting to: ${from}`);
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, from]);
 
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
@@ -25,10 +38,9 @@ const Login = () => {
     );
   }
 
-  // If already authenticated, use Navigate component for immediate redirect
+  // Skip rendering the login form if already authenticated
   if (isAuthenticated) {
-    console.log("Login page - Already authenticated, redirecting to dashboard immediately");
-    return <Navigate to="/dashboard" replace />;
+    return null; // Don't render anything, the useEffect will handle redirection
   }
 
   return (

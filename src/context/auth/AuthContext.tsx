@@ -74,7 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("AuthContext - Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          // Set session to expire in 7 days (604800 seconds)
+          expiresIn: 604800
+        }
       });
       
       if (error) throw error;
@@ -106,7 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
-          data: profile || {}
+          data: profile || {},
+          // Set session to expire in 7 days (604800 seconds)
+          expiresIn: 604800
         }
       });
       

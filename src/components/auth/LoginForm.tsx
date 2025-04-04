@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/auth";
@@ -17,6 +17,7 @@ const LoginForm: React.FC = () => {
   
   const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +45,8 @@ const LoginForm: React.FC = () => {
         description: "Welcome back to Insight Writer AI!",
       });
       
-      // The Login component will handle redirection via the isAuthenticated state
+      // Redirect to dashboard on successful login
+      navigate('/dashboard');
     } catch (err: any) {
       console.error("LoginForm - Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");
