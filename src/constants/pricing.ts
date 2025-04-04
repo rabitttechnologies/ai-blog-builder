@@ -1,12 +1,17 @@
 
-export type PlanType = "starter" | "professional" | "agency";
+export type PlanType = "basic" | "pro" | "enterprise";
 export type PricingPeriod = "monthly" | "yearly";
 
 export interface PlanFeatures {
-  blogs: number;
-  keywords: number;
-  support: string;
-  [key: string]: string | number | boolean; // Allow for additional feature properties
+  wordCount: number;
+  aiGeneration: boolean;
+  searchData: boolean;
+  seoTools: boolean;
+  outlineGenerator: boolean;
+  headlineAnalyzer: boolean;
+  prioritySupport: boolean;
+  teamMembers?: number;
+  [key: string]: string | number | boolean | undefined; // Allow for additional feature properties
 }
 
 export interface PricingPlan {
@@ -21,51 +26,53 @@ export interface PricingPlan {
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    id: "starter",
-    name: "Starter",
-    description: "Perfect for individuals just getting started",
-    priceMonthly: 29,
-    priceYearly: 290,
+    id: "basic",
+    name: "Basic",
+    description: "Perfect for individual bloggers and content creators",
+    priceMonthly: 19,
+    priceYearly: 199,
     features: {
-      blogs: 5,
-      keywords: 10,
-      support: "Email support",
-      basic_content: true,
-      title_options: 3
+      wordCount: 10000,
+      aiGeneration: true,
+      searchData: true,
+      seoTools: true,
+      outlineGenerator: true,
+      headlineAnalyzer: true,
+      prioritySupport: false
     }
   },
   {
-    id: "professional",
-    name: "Professional",
-    description: "Ideal for content creators and small businesses",
-    priceMonthly: 59,
-    priceYearly: 590,
+    id: "pro",
+    name: "Pro",
+    description: "Ideal for professional content marketers and small businesses",
+    priceMonthly: 49,
+    priceYearly: 499,
     features: {
-      blogs: 15,
-      keywords: 30,
-      support: "Priority email support",
-      custom_content: true,
-      title_options: 5,
-      google_drive: true,
-      analytics: true
+      wordCount: 35000,
+      aiGeneration: true,
+      searchData: true,
+      seoTools: true,
+      outlineGenerator: true,
+      headlineAnalyzer: true,
+      prioritySupport: true
     },
     popular: true
   },
   {
-    id: "agency",
-    name: "Agency",
+    id: "enterprise",
+    name: "Enterprise",
     description: "For teams and agencies with multiple clients",
-    priceMonthly: 119,
-    priceYearly: 1190,
+    priceMonthly: 99,
+    priceYearly: 999,
     features: {
-      blogs: 50,
-      keywords: 100,
-      support: "Dedicated account manager",
-      custom_branding: true,
-      title_options: 999, // Unlimited
-      team_collab: true,
-      api_access: true,
-      white_label: true
+      wordCount: 75000,
+      aiGeneration: true,
+      searchData: true,
+      seoTools: true,
+      outlineGenerator: true,
+      headlineAnalyzer: true,
+      prioritySupport: true,
+      teamMembers: 5
     }
   }
 ];
@@ -85,10 +92,17 @@ export const getMonthlyPriceForYearly = (planId: PlanType): number => {
   return Math.round(plan.priceYearly / 12);
 };
 
+// Calculate yearly savings
+export const getYearlySavings = (planId: PlanType): number => {
+  const plan = PRICING_PLANS.find(plan => plan.id === planId);
+  if (!plan) return 0;
+  
+  return (plan.priceMonthly * 12) - plan.priceYearly;
+};
+
 export const getPlanById = (planId: PlanType): PricingPlan | undefined => {
   return PRICING_PLANS.find(plan => plan.id === planId);
 };
 
 // Trial information
-export const TRIAL_LENGTH_DAYS = 3;
-export const TRIAL_SUBSCRIPTION_LENGTH_DAYS = 7;
+export const TRIAL_LENGTH_DAYS = 14;
