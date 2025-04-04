@@ -44,11 +44,20 @@ const AdminDashboard = () => {
         if (rolesError) throw rolesError;
         
         // Extract admin user IDs for easier checking
-        const adminUserIds = new Set(adminRolesData.map((r: {user_id: string}) => r.user_id));
+        const adminUserIds = new Set((adminRolesData && Array.isArray(adminRolesData)) 
+          ? adminRolesData.map((r: {user_id: string}) => r.user_id) 
+          : []);
         
         // Get user emails from auth metadata
+        if (!profiles) {
+          setUsers([]);
+          setIsLoading(false);
+          return;
+        }
+        
         const userEmails = await Promise.all(
           profiles.map(async (profile) => {
+            if (!profile) return null;
             const { data: authUser } = await supabase.auth.admin.getUserById(profile.id);
             return {
               id: profile.id,
@@ -59,7 +68,7 @@ const AdminDashboard = () => {
           })
         );
         
-        setUsers(userEmails);
+        setUsers(userEmails.filter(Boolean) as UserListItem[]);
       } catch (error) {
         console.error("Error fetching users:", error);
         toast({
@@ -75,7 +84,7 @@ const AdminDashboard = () => {
     if (isAuthenticated && user?.isAdmin) {
       fetchUsers();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, toast]);
 
   // Redirect if not admin
   if (!isAuthenticated) {

@@ -12,7 +12,7 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', supabaseUser.id)
+      .eq('id', supabaseUser.id as string)
       .single();
     
     if (profileError && profileError.code !== 'PGRST116') {
@@ -21,14 +21,17 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     
     // Get user roles - using a raw query to workaround type issues
     const { data: rolesData, error: rolesError } = await supabase
-      .rpc('get_user_roles', { user_id_param: supabaseUser.id });
+      .rpc('get_user_roles', { user_id_param: supabaseUser.id as string });
     
     if (rolesError) {
       console.error("Error fetching user roles:", rolesError);
     }
     
     // Extract roles from the result
-    const roles = rolesData?.map((r: {role: string}) => r.role as UserRole) || ['user'];
+    const roles = (rolesData && Array.isArray(rolesData)) 
+      ? rolesData.map((r: {role: string}) => r.role as UserRole) 
+      : ['user'];
+    
     const isAdmin = roles.includes('admin');
     
     // Default profile values

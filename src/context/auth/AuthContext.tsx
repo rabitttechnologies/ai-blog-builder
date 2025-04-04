@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -186,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: userExists, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('id', userId)
+        .eq('id', userId as string)
         .single();
       
       if (userError || !userExists) {
@@ -195,7 +196,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Add admin role using our safe RPC function
       const { error } = await supabase
-        .rpc('add_user_admin_role', { user_id_param: userId });
+        .rpc('add_user_admin_role', { user_id_param: userId as string });
       
       if (error) {
         throw error;
