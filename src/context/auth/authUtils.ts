@@ -27,10 +27,17 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
       console.error("Error fetching user roles:", rolesError);
     }
     
-    // Extract roles from the result
-    const roles = (rolesData && Array.isArray(rolesData)) 
-      ? rolesData.map((r: {role: string}) => r.role as UserRole) 
-      : ['user'];
+    // Extract roles from the result and ensure they conform to UserRole type
+    const roles: UserRole[] = (rolesData && Array.isArray(rolesData)) 
+      ? rolesData.map((r: {role: string}) => {
+          // Validate that role values match our defined UserRole type
+          if (r.role !== 'user' && r.role !== 'admin') {
+            console.warn(`Unknown role type encountered: ${r.role}, defaulting to 'user'`);
+            return 'user' as UserRole;
+          }
+          return r.role as UserRole;
+        })
+      : ['user' as UserRole];
     
     const isAdmin = roles.includes('admin');
     
