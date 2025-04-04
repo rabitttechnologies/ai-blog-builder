@@ -142,7 +142,7 @@ const Pricing = () => {
                   to="/checkout"
                   state={{ plan: plan.id as PlanType, period: billingPeriod }}
                 >
-                  <Button fullWidth variant={plan.popular ? "default" : "outline"}>
+                  <Button fullWidth variant={plan.popular ? "primary" : "outline"}>
                     Choose {plan.name}
                   </Button>
                 </Link>

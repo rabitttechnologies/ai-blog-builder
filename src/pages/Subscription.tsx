@@ -10,7 +10,7 @@ import { CheckCircle, AlertCircle, CreditCard, Calendar, RefreshCw } from "lucid
 import { useToast } from "@/hooks/use-toast";
 
 interface Subscription {
-  id: number;
+  id: string;
   user_id: string;
   stripe_subscription_id: string;
   stripe_customer_id: string;
@@ -46,15 +46,11 @@ const Subscription = () => {
   const fetchSubscription = async () => {
     setIsLoading(true);
     try {
+      // Using custom query instead of .from('subscriptions') since TypeScript doesn't know about our table yet
       const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .rpc('get_user_subscription');
       
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         throw error;
       }
       
