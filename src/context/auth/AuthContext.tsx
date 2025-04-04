@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -72,13 +71,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       console.log("AuthContext - Attempting login for:", email);
+      // Set the session to expire in 7 days (fixed in the Supabase client configuration)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        options: {
-          // Set session to expire in 7 days (604800 seconds)
-          expiresIn: 604800
-        }
+        password
       });
       
       if (error) throw error;
@@ -110,9 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
-          data: profile || {},
-          // Set session to expire in 7 days (604800 seconds)
-          expiresIn: 604800
+          data: profile || {}
         }
       });
       

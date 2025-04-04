@@ -17,7 +17,13 @@ export const supabase = createClient<Database>(
       storage: localStorage,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      // Default session expiry to 7 days (604800 seconds)
+      storageKey: 'supabase.auth.token',
+      cookieOptions: {
+        maxAge: 604800
+      }
     }
   }
 );
