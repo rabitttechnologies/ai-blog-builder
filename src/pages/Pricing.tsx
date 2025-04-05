@@ -1,8 +1,9 @@
 
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import PublicLayout from "@/components/layout/PublicLayout";
 import { useAuth } from "@/context/auth";
 import { PricingPeriod } from "@/constants/pricing";
 
@@ -14,14 +15,29 @@ import PricingFAQ from "@/components/pricing/PricingFAQ";
 
 const Pricing = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<PricingPeriod>("yearly");
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+
+  const handlePlanSelect = (planId: string) => {
+    if (!isAuthenticated) {
+      // If not authenticated, redirect to signup with plan info
+      navigate('/signup', { state: { selectedPlan: planId, billingPeriod } });
+    } else {
+      // If authenticated, redirect to checkout with plan info
+      navigate('/subscription/checkout', { 
+        state: { 
+          plan: planId, 
+          period: billingPeriod 
+        } 
+      });
+    }
+  };
+
+  // Use appropriate layout based on authentication status
+  const Layout = isAuthenticated ? DashboardLayout : PublicLayout;
 
   return (
-    <DashboardLayout>
+    <Layout>
       <Helmet>
         <title>Pricing - Insight Writer AI</title>
       </Helmet>
@@ -32,13 +48,17 @@ const Pricing = () => {
           setBillingPeriod={setBillingPeriod} 
         />
         
-        <PricingPlans billingPeriod={billingPeriod} />
+        <PricingPlans 
+          billingPeriod={billingPeriod}
+          isAuthenticated={isAuthenticated}
+          onSelectPlan={handlePlanSelect}
+        />
         
         <PricingFeatures />
         
         <PricingFAQ />
       </div>
-    </DashboardLayout>
+    </Layout>
   );
 };
 
