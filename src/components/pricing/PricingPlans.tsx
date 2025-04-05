@@ -14,6 +14,8 @@ const PricingPlans: React.FC<PricingPlansProps> = ({
   isAuthenticated = false,
   onSelectPlan
 }) => {
+  console.log("Rendering PricingPlans with", PRICING_PLANS.length, "plans");
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
       {PRICING_PLANS.map((plan) => (

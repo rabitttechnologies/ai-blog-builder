@@ -58,7 +58,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         
         <Button 
           className="w-full mt-6"
-          variant={plan.popular ? "primary" : "outline"}
+          variant={plan.popular ? "default" : "outline"}
           onClick={onSelectPlan}
         >
           {buttonText}

@@ -7,7 +7,7 @@ import PublicLayout from "@/components/layout/PublicLayout";
 import { useAuth } from "@/context/auth";
 import { PricingPeriod } from "@/constants/pricing";
 
-// Import refactored components
+// Import pricing components
 import PricingHeader from "@/components/pricing/PricingHeader";
 import PricingPlans from "@/components/pricing/PricingPlans";
 import PricingFeatures from "@/components/pricing/PricingFeatures";
@@ -35,6 +35,8 @@ const Pricing = () => {
 
   // Use appropriate layout based on authentication status
   const Layout = isAuthenticated ? DashboardLayout : PublicLayout;
+
+  console.log("Rendering Pricing page with layout:", isAuthenticated ? "DashboardLayout" : "PublicLayout");
 
   return (
     <Layout>
