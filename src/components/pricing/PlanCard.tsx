@@ -5,7 +5,15 @@ import { Check } from "lucide-react";
 import { PlanType, PricingPeriod, getPlanPrice, getMonthlyPriceForYearly } from "@/constants/pricing";
 
 interface PlanCardProps {
-  plan: any; // Using 'any' to match the existing type in the original file
+  plan: {
+    id: string;
+    name: string;
+    description: string;
+    priceMonthly: number;
+    priceYearly: number;
+    features: string[];
+    popular?: boolean;
+  };
   billingPeriod: PricingPeriod;
   isAuthenticated?: boolean;
   onSelectPlan: () => void;

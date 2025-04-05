@@ -14,7 +14,11 @@ const PricingPlans: React.FC<PricingPlansProps> = ({
   isAuthenticated = false,
   onSelectPlan
 }) => {
-  console.log("Rendering PricingPlans with", PRICING_PLANS.length, "plans");
+  console.log("Rendering PricingPlans with", {
+    plansCount: PRICING_PLANS.length,
+    plans: PRICING_PLANS,
+    billingPeriod
+  });
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">

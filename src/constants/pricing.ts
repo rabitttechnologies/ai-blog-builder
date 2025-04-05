@@ -20,7 +20,7 @@ export interface PricingPlan {
   description: string;
   priceMonthly: number;
   priceYearly: number;
-  features: PlanFeatures;
+  features: string[]; // Changed to string[] to match actual usage in PlanCard
   popular?: boolean;
 }
 
@@ -31,15 +31,14 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "Perfect for individual bloggers and content creators",
     priceMonthly: 19,
     priceYearly: 199,
-    features: {
-      wordCount: 10000,
-      aiGeneration: true,
-      searchData: true,
-      seoTools: true,
-      outlineGenerator: true,
-      headlineAnalyzer: true,
-      prioritySupport: false
-    }
+    features: [
+      "10,000 words per month",
+      "AI-powered content generation",
+      "Search data analysis",
+      "Basic SEO tools",
+      "Outline generator",
+      "Headline analyzer"
+    ]
   },
   {
     id: "pro",
@@ -47,15 +46,15 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "Ideal for professional content marketers and small businesses",
     priceMonthly: 49,
     priceYearly: 499,
-    features: {
-      wordCount: 35000,
-      aiGeneration: true,
-      searchData: true,
-      seoTools: true,
-      outlineGenerator: true,
-      headlineAnalyzer: true,
-      prioritySupport: true
-    },
+    features: [
+      "35,000 words per month",
+      "Advanced AI content generation",
+      "Comprehensive search data",
+      "Full SEO toolkit",
+      "Advanced outline generator",
+      "Headline analyzer with A/B testing",
+      "Priority support"
+    ],
     popular: true
   },
   {
@@ -64,16 +63,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "For teams and agencies with multiple clients",
     priceMonthly: 99,
     priceYearly: 999,
-    features: {
-      wordCount: 75000,
-      aiGeneration: true,
-      searchData: true,
-      seoTools: true,
-      outlineGenerator: true,
-      headlineAnalyzer: true,
-      prioritySupport: true,
-      teamMembers: 5
-    }
+    features: [
+      "75,000 words per month",
+      "Enterprise-grade AI generation",
+      "Premium search data access",
+      "Complete SEO suite",
+      "Team collaboration tools",
+      "Custom templates",
+      "Dedicated account manager",
+      "5 team members included"
+    ]
   }
 ];
 
