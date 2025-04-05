@@ -11,7 +11,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-50">
+      <main className="flex-grow bg-gray-50 pt-20">
         {children}
       </main>
       <Footer />
