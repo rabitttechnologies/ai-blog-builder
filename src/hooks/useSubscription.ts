@@ -22,15 +22,24 @@ export const useSubscription = () => {
   const fetchSubscription = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_user_subscription');
+      // Using invoke with a type assertion since the RPC function isn't in the TypeScript types
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
       
       if (error) {
-        throw error;
+        console.error("Error fetching subscription:", error);
+        setSubscription(null);
+      } else {
+        setSubscription(data as Subscription);
       }
-      
-      setSubscription(data || null);
     } catch (error) {
       console.error("Error fetching subscription:", error);
+      setSubscription(null);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +70,7 @@ export const useSubscription = () => {
     }
   };
   
-  const trialDaysRemaining = user ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+  const trialDaysRemaining = user?.trialEndsAt ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
 
   useEffect(() => {
     if (isAuthenticated && user) {
