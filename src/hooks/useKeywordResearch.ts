@@ -36,6 +36,9 @@ export const useKeywordResearch = () => {
     setIsLoading(true);
 
     try {
+      // Generate a unique workflow execution ID
+      const executionId = crypto.randomUUID();
+      
       // Insert into Primary Research Table
       const { data: insertedData, error: insertError } = await supabase
         .from('Primary Research Table')
@@ -45,13 +48,17 @@ export const useKeywordResearch = () => {
           "Location": user?.profile.country || 'US',
           "Depth": 12,
           "Limit": 20,
-          "Trigger": "Get the Past Search Data"
+          "Trigger": "Get the Past Search Data",
+          "execution Id": executionId,
+          "uuid": user?.id // Include the user's ID
         })
         .select();
 
       if (insertError) throw insertError;
 
-      // Simulate webhook call (in a real app, this would be handled by a backend/edge function)
+      console.log("Keyword research data inserted:", insertedData);
+
+      // Call webhook with enhanced data
       const webhookResponse = await fetch('https://www.n8n.agiagentworld.com/googlesearchresponse', {
         method: 'POST',
         headers: {
@@ -62,11 +69,18 @@ export const useKeywordResearch = () => {
           language: 'English',
           location: user?.profile.country || 'US',
           depth: 12,
-          limit: 20
+          limit: 20,
+          userId: user?.id || 'anonymous',
+          executionId: executionId
         })
       });
 
+      if (!webhookResponse.ok) {
+        throw new Error(`Webhook responded with status: ${webhookResponse.status}`);
+      }
+
       const responseData = await webhookResponse.json();
+      console.log("Webhook response:", responseData);
 
       // Update suggestions based on webhook response
       setSuggestions({
@@ -76,11 +90,16 @@ export const useKeywordResearch = () => {
         topSuggestions: responseData.autoComplete || []
       });
 
-    } catch (error) {
+      toast({
+        title: 'Research Complete',
+        description: 'Keyword research has been completed successfully.',
+      });
+
+    } catch (error: any) {
       console.error('Keyword research error:', error);
       toast({
         title: 'Research Failed',
-        description: 'Unable to complete keyword research. Please try again.',
+        description: `Unable to complete keyword research: ${error.message || 'Please try again.'}`,
         variant: 'destructive'
       });
     } finally {

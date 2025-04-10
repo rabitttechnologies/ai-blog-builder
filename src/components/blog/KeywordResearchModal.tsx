@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
-import { Loader2 } from 'lucide-react';  // Replace Spinner with Loader2
+import { Loader2 } from 'lucide-react';
 
 interface KeywordResearchModalProps {
   isOpen: boolean;
@@ -40,6 +40,11 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
     );
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitKeyword();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
@@ -48,7 +53,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="flex space-x-2">
+          <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input 
               placeholder="Enter your keyword" 
               value={keyword}
@@ -56,15 +61,16 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
               disabled={isLoading}
             />
             <Button 
-              onClick={submitKeyword} 
+              type="submit"
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="mr-2 animate-spin" /> : 'Research'}
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Research'}
             </Button>
-          </div>
+          </form>
 
           {isLoading && (
             <div className="text-center py-4">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
               <p>Researching keyword suggestions...</p>
             </div>
           )}
@@ -75,6 +81,18 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
               {renderSuggestionSection('Hot Keyword Ideas', suggestions.hotKeywordIdeas)}
               {renderSuggestionSection('Popular Right Now', suggestions.popularRightNow)}
               {renderSuggestionSection('Top Suggestions', suggestions.topSuggestions)}
+              
+              {/* Show a message if no results were returned */}
+              {!suggestions.topInSERP.length && 
+               !suggestions.hotKeywordIdeas.length && 
+               !suggestions.popularRightNow.length && 
+               !suggestions.topSuggestions.length && (
+                <div className="text-center py-4 text-muted-foreground">
+                  {keyword ? 
+                    "No results found. Try another keyword or check your connection." : 
+                    "Enter a keyword above to start your research."}
+                </div>
+              )}
             </div>
           )}
         </div>

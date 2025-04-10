@@ -15,7 +15,7 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const [loginStatus, setLoginStatus] = useState("");
   
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -36,7 +36,6 @@ const LoginForm: React.FC = () => {
     try {
       console.log("LoginForm - Starting login process with email:", email);
       await login(email, password);
-      console.log("LoginForm - Login successful, isAuthenticated:", isAuthenticated);
       
       setLoginStatus("Login successful! Redirecting...");
       
@@ -44,9 +43,8 @@ const LoginForm: React.FC = () => {
         title: "Login successful",
         description: "Welcome back to Insight Writer AI!",
       });
-      
-      // Redirect to dashboard on successful login
-      navigate('/dashboard');
+
+      // No need to navigate here as the Login component will handle redirection
     } catch (err: any) {
       console.error("LoginForm - Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials and try again.");

@@ -24,6 +24,11 @@ const Login = () => {
     }
   }, [isAuthenticated, isLoading, navigate, from]);
 
+  // Skip rendering the login form if already authenticated
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
+
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
     return (
@@ -36,11 +41,6 @@ const Login = () => {
         </div>
       </div>
     );
-  }
-
-  // Skip rendering the login form if already authenticated
-  if (isAuthenticated) {
-    return null; // Don't render anything, the useEffect will handle redirection
   }
 
   return (
