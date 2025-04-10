@@ -21,17 +21,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // First set up the auth state listener to catch any authentication changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
+          (event, session) => {
             console.log("AuthContext - Auth state changed:", event);
             
             if (session) {
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 console.log("AuthContext - User authenticated or token refreshed");
-                const userData = await handleSessionFound(session);
-                if (userData) {
-                  setUser(userData);
-                }
-                setIsLoading(false);
+                // Use setTimeout to prevent auth deadlock
+                setTimeout(async () => {
+                  const userData = await handleSessionFound(session);
+                  if (userData) {
+                    setUser(userData);
+                  }
+                  setIsLoading(false);
+                }, 0);
               }
             } else if (event === 'SIGNED_OUT') {
               console.log("AuthContext - User signed out");
@@ -69,16 +72,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
+    console.log("AuthContext - Login attempt starting for:", email);
     setIsLoading(true);
     try {
-      console.log("AuthContext - Attempting login for:", email);
       // Set the session to expire in 7 days (fixed in the Supabase client configuration)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("AuthContext - Login error:", error);
+        throw error;
+      }
+      
       console.log("AuthContext - Login successful for:", email);
 
       // If additional profile data is provided, update user metadata
@@ -92,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      // Don't set isLoading to false here - the auth state listener will handle that
+      // The auth state listener will handle setting the user and isLoading
     } catch (error: any) {
       console.error("Login error:", error);
       setIsLoading(false);

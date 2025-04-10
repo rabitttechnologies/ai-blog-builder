@@ -25,6 +25,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
   
   // Show loading state while checking authentication
   if (isLoading) {
+    console.log("AuthGuard - Loading auth state");
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-7xl">
@@ -41,6 +42,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
   
   // If not authenticated, redirect to login
   if (!isAuthenticated) {
+    console.log("AuthGuard - Not authenticated, redirecting to login");
     // Save the location they were trying to access for redirection after login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

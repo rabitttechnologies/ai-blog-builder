@@ -24,13 +24,9 @@ const Login = () => {
     }
   }, [isAuthenticated, isLoading, navigate, from]);
 
-  // Skip rendering the login form if already authenticated
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
-  }
-
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
+    console.log("Login page - Loading auth state");
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="w-full max-w-md">
@@ -41,6 +37,12 @@ const Login = () => {
         </div>
       </div>
     );
+  }
+
+  // Skip rendering the login form if already authenticated
+  if (isAuthenticated) {
+    console.log("Login page - Already authenticated, redirecting");
+    return <Navigate to={from} replace />;
   }
 
   return (
