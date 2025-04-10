@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,8 +19,34 @@ export const useKeywordResearch = () => {
     topSuggestions: []
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  // Effect to animate the progress bar
+  useEffect(() => {
+    if (isLoading && loadingProgress < 95) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          // Slow down as we approach 95%
+          const increment = prev < 50 ? 2 : prev < 80 ? 1 : 0.5;
+          return Math.min(prev + increment, 95);
+        });
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isLoading, loadingProgress]);
 
   const submitKeyword = async () => {
     if (!keyword.trim()) {
@@ -33,15 +59,23 @@ export const useKeywordResearch = () => {
     }
 
     setIsLoading(true);
-
+    setLoadingProgress(0);
+    
     try {
       // Generate a unique execution ID for tracking
       const executionId = crypto.randomUUID();
       
       console.log("Sending keyword research request to webhook");
       
-      // Call webhook with enhanced data
-      const webhookResponse = await fetch('https://www.n8n.agiagentworld.com/googlesearchresponse', {
+      // Set a timeout to handle cases where the webhook doesn't respond
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timerRef.current = setTimeout(() => {
+          reject(new Error('Request timed out after 60 seconds. Please try again or check your connection.'));
+        }, 60000);
+      });
+      
+      // Call webhook with explicit POST method
+      const fetchPromise = fetch('https://www.n8n.agiagentworld.com/googlesearchresponse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,12 +91,24 @@ export const useKeywordResearch = () => {
         })
       });
 
+      // Race between the fetch and the timeout
+      const webhookResponse = await Promise.race([fetchPromise, timeoutPromise]);
+
+      // Clear the timeout if fetch completes successfully
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+
       if (!webhookResponse.ok) {
         throw new Error(`Webhook responded with status: ${webhookResponse.status}`);
       }
 
       const responseData = await webhookResponse.json();
       console.log("Webhook response:", responseData);
+
+      // Set progress to 100% when we get data back
+      setLoadingProgress(100);
 
       // Update suggestions based on webhook response
       setSuggestions({
@@ -81,7 +127,7 @@ export const useKeywordResearch = () => {
       console.error('Keyword research error:', error);
       toast({
         title: 'Research Failed',
-        description: `Unable to complete keyword research: ${error.message || 'Please try again.'}`,
+        description: `${error.message || 'Unable to complete keyword research. Please try again or check your connection.'}`,
         variant: 'destructive'
       });
     } finally {
@@ -94,6 +140,7 @@ export const useKeywordResearch = () => {
     setKeyword,
     suggestions,
     isLoading,
+    loadingProgress,
     submitKeyword
   };
 };

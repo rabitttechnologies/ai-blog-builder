@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, RefreshCcw } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface KeywordResearchModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
     setKeyword, 
     suggestions, 
     isLoading, 
+    loadingProgress,
     submitKeyword 
   } = useKeywordResearch();
 
@@ -46,11 +48,21 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
     submitKeyword();
   };
 
+  const isTimeoutError = !isLoading && 
+    !suggestions.topInSERP.length && 
+    !suggestions.hotKeywordIdeas.length && 
+    !suggestions.popularRightNow.length && 
+    !suggestions.topSuggestions.length && 
+    keyword.trim().length > 0;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Keyword Research</DialogTitle>
+          <DialogDescription>
+            Enter a keyword to research SEO opportunities and get content ideas
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -64,16 +76,20 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
             <Button 
               type="submit"
               disabled={isLoading}
+              leftIcon={<Search className="w-4 h-4" />}
             >
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Research'}
+              {isLoading ? 'Researching...' : 'Research'}
             </Button>
           </form>
 
           {isLoading && (
             <div className="text-center py-6 space-y-4">
               <div className="relative">
-                <Progress value={65} className="h-2" />
-                <div className="absolute -top-1 left-[65%] w-4 h-4 rounded-full bg-primary animate-pulse"></div>
+                <Progress value={loadingProgress} className="h-2" />
+                <div 
+                  className="absolute -top-1 w-4 h-4 rounded-full bg-primary animate-pulse"
+                  style={{ left: `${loadingProgress}%`, transform: 'translateX(-50%)' }}
+                ></div>
               </div>
               <Loader2 className="h-10 w-10 animate-spin mx-auto mb-2 text-primary" />
               <div className="space-y-1">
@@ -85,22 +101,45 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
             </div>
           )}
 
-          {!isLoading && (
+          {isTimeoutError && (
+            <Alert variant="destructive" className="my-4">
+              <AlertDescription className="flex flex-col space-y-3">
+                <span>We couldn't retrieve results for your keyword. This might be due to connection issues or server availability.</span>
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setKeyword('')}
+                  >
+                    Try Another Keyword
+                  </Button>
+                  <Button 
+                    size="sm"
+                    leftIcon={<RefreshCcw className="w-4 h-4" />}
+                    onClick={() => submitKeyword()}
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!isLoading && !isTimeoutError && (
             <div>
               {renderSuggestionSection('Top in SERP', suggestions.topInSERP)}
               {renderSuggestionSection('Hot Keyword Ideas', suggestions.hotKeywordIdeas)}
               {renderSuggestionSection('Popular Right Now', suggestions.popularRightNow)}
               {renderSuggestionSection('Top Suggestions', suggestions.topSuggestions)}
               
-              {/* Show a message if no results were returned */}
+              {/* Show a message if no results were returned and no keyword has been entered */}
               {!suggestions.topInSERP.length && 
                !suggestions.hotKeywordIdeas.length && 
                !suggestions.popularRightNow.length && 
-               !suggestions.topSuggestions.length && (
+               !suggestions.topSuggestions.length && 
+               !keyword && (
                 <div className="text-center py-4 text-muted-foreground">
-                  {keyword ? 
-                    "No results found. Try another keyword or check your connection." : 
-                    "Enter a keyword above to start your research."}
+                  Enter a keyword above to start your research.
                 </div>
               )}
             </div>
