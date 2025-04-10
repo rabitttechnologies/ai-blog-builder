@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
 import { Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface KeywordResearchModalProps {
   isOpen: boolean;
@@ -69,9 +70,18 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
           </form>
 
           {isLoading && (
-            <div className="text-center py-4">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-              <p>Researching keyword suggestions...</p>
+            <div className="text-center py-6 space-y-4">
+              <div className="relative">
+                <Progress value={65} className="h-2" />
+                <div className="absolute -top-1 left-[65%] w-4 h-4 rounded-full bg-primary animate-pulse"></div>
+              </div>
+              <Loader2 className="h-10 w-10 animate-spin mx-auto mb-2 text-primary" />
+              <div className="space-y-1">
+                <p className="font-medium">Researching keyword suggestions...</p>
+                <p className="text-sm text-muted-foreground">
+                  Analyzing search trends and gathering related topics
+                </p>
+              </div>
             </div>
           )}
 

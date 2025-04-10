@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,28 +35,11 @@ export const useKeywordResearch = () => {
     setIsLoading(true);
 
     try {
-      // Generate a unique workflow execution ID
+      // Generate a unique execution ID for tracking
       const executionId = crypto.randomUUID();
       
-      // Insert into Primary Research Table
-      const { data: insertedData, error: insertError } = await supabase
-        .from('Primary Research Table')
-        .insert({
-          "Primary Keyword": keyword,
-          "Laungage": "English",
-          "Location": user?.profile.country || 'US',
-          "Depth": 12,
-          "Limit": 20,
-          "Trigger": "Get the Past Search Data",
-          "execution Id": executionId,
-          "uuid": user?.id // Include the user's ID
-        })
-        .select();
-
-      if (insertError) throw insertError;
-
-      console.log("Keyword research data inserted:", insertedData);
-
+      console.log("Sending keyword research request to webhook");
+      
       // Call webhook with enhanced data
       const webhookResponse = await fetch('https://www.n8n.agiagentworld.com/googlesearchresponse', {
         method: 'POST',
