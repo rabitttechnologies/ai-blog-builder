@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import KeywordInput from "@/components/blog/KeywordInput";
@@ -16,6 +16,7 @@ const BlogCreate = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>("keywords");
   const [keywords, setKeywords] = useState<string[]>([]);
   const [niche, setNiche] = useState("");
@@ -26,15 +27,14 @@ const BlogCreate = () => {
 
   // Extract keyword from URL if present
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const keywordParam = query.get('keyword');
+    const keywordParam = searchParams.get('keyword');
     
     if (keywordParam) {
       // Initialize with the keyword from URL parameter
       setKeywords([keywordParam]);
-      console.log("Initializing with keyword from URL:", keywordParam);
+      console.log("Initialized with keyword from URL:", keywordParam);
     }
-  }, [location.search]);
+  }, [searchParams]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -54,6 +54,8 @@ const BlogCreate = () => {
     setNiche(niche);
     
     // In a real app, this would call an API to generate titles based on keywords
+    console.log("Generating titles for keywords:", keywords, "niche:", niche);
+    
     // For now, we'll mock this with some sample titles
     setGeneratedTitles([
       `10 Ways to Optimize Your ${niche} Strategy Using ${keywords[0]}`,
@@ -68,6 +70,7 @@ const BlogCreate = () => {
 
   const handleTitleSelect = (title: string) => {
     setSelectedTitle(title);
+    console.log("Selected title:", title);
     // In a real app, we would now generate the content
     // But for this demo, we'll just simulate completion
     

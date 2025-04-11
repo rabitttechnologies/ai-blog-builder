@@ -87,9 +87,9 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({
   } = useKeywordResearch();
 
   const handleSelectKeyword = (keyword: string) => {
+    console.log("Keyword selected in modal:", keyword);
     if (onKeywordSelected) {
       onKeywordSelected(keyword);
-      onClose();
     }
   };
 
@@ -157,6 +157,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({
                   />
                 </div>
               </div>
+              
               
               <div>
                 <FormLabel>Language</FormLabel>
@@ -259,6 +260,8 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({
               </div>
             </div>
           </form>
+
+          
 
           {isLoading && (
             <div className="text-center py-6 space-y-4">

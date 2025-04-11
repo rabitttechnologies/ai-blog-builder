@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -24,6 +25,7 @@ const Dashboard = () => {
     e.preventDefault(); // Prevent default navigation
     
     if (user?.trialBlogsRemaining && user.trialBlogsRemaining > 0) {
+      // Open the keyword research modal directly instead of navigating
       setIsKeywordResearchOpen(true);
     } else {
       toast({
@@ -39,11 +41,15 @@ const Dashboard = () => {
   };
   
   const handleKeywordResearchComplete = (selectedKeyword: string) => {
-    // When keyword research is complete, navigate to the blog creation page
-    // with the selected keyword as a parameter
+    // Close the modal first
+    setIsKeywordResearchOpen(false);
+    
+    // Then navigate to the blog creation page with the selected keyword
     if (selectedKeyword) {
+      console.log("Navigating to blog create with keyword:", selectedKeyword);
       navigate(`/blog/create?keyword=${encodeURIComponent(selectedKeyword)}`);
     } else {
+      console.log("Navigating to blog create without keyword");
       navigate('/blog/create');
     }
   };
