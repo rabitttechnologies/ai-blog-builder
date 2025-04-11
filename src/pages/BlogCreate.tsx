@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import KeywordInput from "@/components/blog/KeywordInput";
@@ -14,6 +14,8 @@ type Step = "keywords" | "titles" | "content" | "review" | "complete";
 const BlogCreate = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState<Step>("keywords");
   const [keywords, setKeywords] = useState<string[]>([]);
   const [niche, setNiche] = useState("");
@@ -21,6 +23,18 @@ const BlogCreate = () => {
   
   // Mock generated titles
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
+
+  // Extract keyword from URL if present
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const keywordParam = query.get('keyword');
+    
+    if (keywordParam) {
+      // Initialize with the keyword from URL parameter
+      setKeywords([keywordParam]);
+      console.log("Initializing with keyword from URL:", keywordParam);
+    }
+  }, [location.search]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -66,6 +80,10 @@ const BlogCreate = () => {
     setCurrentStep("complete");
   };
 
+  const handleGoBack = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <DashboardLayout>
       <Helmet>
@@ -104,7 +122,7 @@ const BlogCreate = () => {
         
         <div className="glass p-6 rounded-xl">
           {currentStep === "keywords" && (
-            <KeywordInput onSubmit={handleKeywordsSubmit} />
+            <KeywordInput onSubmit={handleKeywordsSubmit} initialKeywords={keywords} />
           )}
           
           {currentStep === "titles" && (
@@ -128,7 +146,7 @@ const BlogCreate = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <Button 
-                  onClick={() => window.location.href = "/dashboard"} 
+                  onClick={handleGoBack}
                   variant="outline"
                 >
                   Back to Dashboard

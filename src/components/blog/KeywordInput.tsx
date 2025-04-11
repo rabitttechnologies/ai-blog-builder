@@ -1,145 +1,160 @@
 
-import React, { useState } from "react";
-import { X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
+import { Label } from "@/components/ui/label";
+import { PlusCircle, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface KeywordInputProps {
   onSubmit: (keywords: string[], niche: string) => void;
+  initialKeywords?: string[];
 }
 
-const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
+const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit, initialKeywords = [] }) => {
+  const [keywords, setKeywords] = useState<string[]>(initialKeywords);
+  const [currentKeyword, setCurrentKeyword] = useState("");
   const [niche, setNiche] = useState("");
-  const [keyword, setKeyword] = useState("");
-  const [keywords, setKeywords] = useState<string[]>([]);
-  const [error, setError] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (initialKeywords.length > 0) {
+      setKeywords(initialKeywords);
+    }
+  }, [initialKeywords]);
 
   const handleAddKeyword = () => {
-    if (!keyword.trim()) return;
+    const trimmedKeyword = currentKeyword.trim();
     
-    if (keywords.includes(keyword.trim())) {
-      setError("This keyword has already been added");
+    if (!trimmedKeyword) {
+      return;
+    }
+    
+    if (keywords.includes(trimmedKeyword)) {
+      toast({
+        title: "Duplicate keyword",
+        description: "This keyword is already in your list.",
+        variant: "destructive",
+      });
       return;
     }
     
     if (keywords.length >= 5) {
-      setError("You can add a maximum of 5 keywords");
+      toast({
+        title: "Maximum keywords reached",
+        description: "You can only add up to 5 keywords.",
+        variant: "destructive",
+      });
       return;
     }
     
-    setKeywords([...keywords, keyword.trim()]);
-    setKeyword("");
-    setError("");
+    setKeywords([...keywords, trimmedKeyword]);
+    setCurrentKeyword("");
   };
-
-  const handleRemoveKeyword = (keywordToRemove: string) => {
-    setKeywords(keywords.filter(k => k !== keywordToRemove));
+  
+  const handleRemoveKeyword = (indexToRemove: number) => {
+    setKeywords(keywords.filter((_, index) => index !== indexToRemove));
   };
-
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!niche.trim()) {
-      setError("Please enter a niche");
+    if (keywords.length === 0) {
+      toast({
+        title: "No keywords added",
+        description: "Please add at least one keyword.",
+        variant: "destructive",
+      });
       return;
     }
     
-    if (keywords.length < 3) {
-      setError("Please add at least 3 keywords");
+    if (!niche.trim()) {
+      toast({
+        title: "Missing niche",
+        description: "Please specify your blog niche.",
+        variant: "destructive",
+      });
       return;
     }
     
     onSubmit(keywords, niche.trim());
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddKeyword();
-    }
-  };
-
   return (
-    <div>
-      <h3 className="text-xl font-semibold mb-4">Start with your topic</h3>
-      <p className="text-sm text-foreground/70 mb-6">
-        Enter your blog niche and 3-5 keywords to help our AI understand your content needs.
-      </p>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="niche" className="block text-sm font-medium mb-1">
-            Blog Niche / Topic Area
-          </label>
-          <input
-            id="niche"
-            type="text"
-            className="w-full px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
-            placeholder="e.g., Content Marketing, Fitness, Cryptocurrency"
-            value={niche}
-            onChange={(e) => setNiche(e.target.value)}
-            required
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <Label htmlFor="keywords" className="text-base font-medium">
+          Target Keywords (max 5)
+        </Label>
+        <p className="text-sm text-foreground/70 mb-4">
+          Add keywords that best describe the topic of your blog.
+        </p>
+        
+        <div className="flex items-center mb-3">
+          <Input
+            id="keywords"
+            value={currentKeyword}
+            onChange={(e) => setCurrentKeyword(e.target.value)}
+            placeholder="Enter a keyword"
+            className="flex-grow"
           />
+          <Button
+            type="button"
+            onClick={handleAddKeyword}
+            className="ml-2"
+            disabled={!currentKeyword.trim() || keywords.length >= 5}
+            leftIcon={<PlusCircle className="w-4 h-4" />}
+          >
+            Add
+          </Button>
         </div>
         
-        <div>
-          <label htmlFor="keywords" className="block text-sm font-medium mb-1">
-            Keywords (3-5)
-          </label>
-          <div className="flex">
-            <input
-              id="keywords"
-              type="text"
-              className="flex-1 px-4 py-2 rounded-l-lg border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary/20 outline-none transition-all"
-              placeholder="Add a keyword and press Enter"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              type="button"
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-r-lg border border-l-0 border-border hover:bg-secondary/80 transition-colors"
-              onClick={handleAddKeyword}
-            >
-              Add
-            </button>
-          </div>
-          
-          {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-          
-          {keywords.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {keywords.map((kw, index) => (
-                <div 
-                  key={index}
-                  className="inline-flex items-center px-3 py-1 rounded-full bg-secondary text-sm"
+        {keywords.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {keywords.map((keyword, index) => (
+              <div
+                key={index}
+                className="bg-secondary/30 text-foreground rounded-md px-3 py-1 text-sm flex items-center"
+              >
+                {keyword}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveKeyword(index)}
+                  className="ml-2 text-foreground/70 hover:text-foreground"
                 >
-                  {kw}
-                  <button
-                    type="button"
-                    className="ml-2 text-foreground/60 hover:text-foreground transition-colors"
-                    onClick={() => handleRemoveKeyword(kw)}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <p className="mt-2 text-xs text-foreground/60">
-            {keywords.length}/5 keywords added
-          </p>
-        </div>
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <div>
+        <Label htmlFor="niche" className="text-base font-medium">
+          Blog Niche
+        </Label>
+        <p className="text-sm text-foreground/70 mb-4">
+          What industry or topic does your blog focus on?
+        </p>
         
-        <Button
-          type="submit"
-          fullWidth
-          disabled={!niche.trim() || keywords.length < 3}
-        >
-          Generate Blog Ideas
-        </Button>
-      </form>
-    </div>
+        <Input
+          id="niche"
+          value={niche}
+          onChange={(e) => setNiche(e.target.value)}
+          placeholder="e.g., Digital Marketing, Health & Wellness, Personal Finance"
+          className="w-full"
+        />
+      </div>
+      
+      <Button
+        type="submit"
+        className="w-full mt-8"
+        disabled={keywords.length === 0 || !niche.trim()}
+      >
+        Generate Title Ideas
+      </Button>
+    </form>
   );
 };
 

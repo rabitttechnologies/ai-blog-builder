@@ -25,6 +25,7 @@ import { useForm } from 'react-hook-form';
 interface KeywordResearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onKeywordSelected?: (keyword: string) => void;
 }
 
 // List of common languages
@@ -42,7 +43,6 @@ const languageOptions = [
   { value: 'Hindi', label: 'Hindi' }
 ];
 
-// List of countries (abbreviated for brevity)
 const countryOptions = [
   { value: 'US', label: 'United States' },
   { value: 'GB', label: 'United Kingdom' },
@@ -64,17 +64,19 @@ const countryOptions = [
   { value: 'ZA', label: 'South Africa' },
   { value: 'SG', label: 'Singapore' },
   { value: 'AE', label: 'United Arab Emirates' }
-  // Note: In a real implementation, we would include all ~200 countries
 ];
 
-// Generate number options for depth and limit
 const generateNumberOptions = (min: number, max: number) => 
   Array.from({ length: max - min + 1 }, (_, i) => ({ value: i + min, label: `${i + min}` }));
 
 const depthOptions = generateNumberOptions(1, 30);
 const limitOptions = generateNumberOptions(1, 30);
 
-export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOpen, onClose }) => {
+export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ 
+  isOpen, 
+  onClose,
+  onKeywordSelected 
+}) => {
   const { 
     formData,
     updateFormField,
@@ -83,6 +85,13 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
     loadingProgress,
     submitKeyword 
   } = useKeywordResearch();
+
+  const handleSelectKeyword = (keyword: string) => {
+    if (onKeywordSelected) {
+      onKeywordSelected(keyword);
+      onClose();
+    }
+  };
 
   const renderSuggestionSection = (title: string, items: string[]) => {
     if (!items || items.length === 0) return null;
@@ -94,7 +103,8 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
           {items.slice(0, 6).map((item, index) => (
             <div 
               key={index} 
-              className="bg-secondary/30 p-2 rounded-md text-sm truncate"
+              className="bg-secondary/30 p-2 rounded-md text-sm truncate cursor-pointer hover:bg-secondary/50"
+              onClick={() => handleSelectKeyword(item)}
             >
               {item}
             </div>
@@ -107,6 +117,12 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     submitKeyword();
+  };
+
+  const handleProceedWithCurrentKeyword = () => {
+    if (formData.keyword.trim()) {
+      handleSelectKeyword(formData.keyword.trim());
+    }
   };
 
   const isTimeoutError = !isLoading && 
@@ -129,7 +145,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
         <div className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Keyword Field */}
               <div className="md:col-span-2">
                 <FormLabel>Keyword</FormLabel>
                 <div className="flex space-x-2">
@@ -143,7 +158,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                 </div>
               </div>
               
-              {/* Language Field */}
               <div>
                 <FormLabel>Language</FormLabel>
                 <Select 
@@ -164,7 +178,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                 </Select>
               </div>
               
-              {/* Country/Location Field */}
               <div>
                 <FormLabel>Country/Location</FormLabel>
                 <Select 
@@ -185,7 +198,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                 </Select>
               </div>
               
-              {/* Depth Field */}
               <div>
                 <FormLabel>Search Depth</FormLabel>
                 <Select 
@@ -206,7 +218,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                 </Select>
               </div>
               
-              {/* Limit Field */}
               <div>
                 <FormLabel>Result Limit</FormLabel>
                 <Select 
@@ -227,15 +238,23 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                 </Select>
               </div>
               
-              {/* Submit Button */}
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 flex flex-col sm:flex-row gap-2">
                 <Button 
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full"
+                  disabled={isLoading || !formData.keyword.trim()}
+                  className="flex-1"
                   leftIcon={<Search className="w-4 h-4" />}
                 >
                   {isLoading ? 'Researching...' : 'Research Keyword'}
+                </Button>
+                <Button 
+                  type="button"
+                  variant="outline"
+                  disabled={isLoading || !formData.keyword.trim()}
+                  className="flex-1"
+                  onClick={handleProceedWithCurrentKeyword}
+                >
+                  Proceed with Current Keyword
                 </Button>
               </div>
             </div>
@@ -291,7 +310,6 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
               {renderSuggestionSection('Popular Right Now', suggestions.popularRightNow)}
               {renderSuggestionSection('Top Suggestions', suggestions.topSuggestions)}
               
-              {/* Show a message if no results were returned and no keyword has been entered */}
               {!suggestions.topInSERP.length && 
                !suggestions.hotKeywordIdeas.length && 
                !suggestions.popularRightNow.length && 

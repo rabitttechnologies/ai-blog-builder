@@ -1,7 +1,6 @@
-
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +11,7 @@ import { KeywordResearchModal } from "@/components/blog/KeywordResearchModal";
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isKeywordResearchOpen, setIsKeywordResearchOpen] = useState(false);
 
   if (!isAuthenticated) {
@@ -31,6 +31,20 @@ const Dashboard = () => {
         description: "Please upgrade to continue creating blogs.",
         variant: "destructive",
       });
+    }
+  };
+  
+  const handleKeywordModalClose = () => {
+    setIsKeywordResearchOpen(false);
+  };
+  
+  const handleKeywordResearchComplete = (selectedKeyword: string) => {
+    // When keyword research is complete, navigate to the blog creation page
+    // with the selected keyword as a parameter
+    if (selectedKeyword) {
+      navigate(`/blog/create?keyword=${encodeURIComponent(selectedKeyword)}`);
+    } else {
+      navigate('/blog/create');
     }
   };
 
@@ -119,7 +133,8 @@ const Dashboard = () => {
 
       <KeywordResearchModal 
         isOpen={isKeywordResearchOpen} 
-        onClose={() => setIsKeywordResearchOpen(false)} 
+        onClose={handleKeywordModalClose}
+        onKeywordSelected={handleKeywordResearchComplete}
       />
     </DashboardLayout>
   );
