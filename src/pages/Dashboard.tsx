@@ -20,7 +20,9 @@ const Dashboard = () => {
 
   const daysRemaining = user ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
   
-  const handleCreateBlog = () => {
+  const handleCreateBlog = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default navigation
+    
     if (user?.trialBlogsRemaining && user.trialBlogsRemaining > 0) {
       setIsKeywordResearchOpen(true);
     } else {
