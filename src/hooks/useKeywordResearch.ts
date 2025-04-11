@@ -51,7 +51,16 @@ export const useKeywordResearch = () => {
             .eq('id', user.id)
             .single();
 
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error('Error fetching profile data:', profileError);
+          } else {
+            // Update form data with fetched profile values
+            setFormData(prev => ({
+              ...prev,
+              language: profileData?.language || prev.language,
+              country: profileData?.country || prev.country
+            }));
+          }
 
           // Fetch depth and limit from Primary Research Table
           const { data: researchData, error: researchError } = await supabase
@@ -60,16 +69,16 @@ export const useKeywordResearch = () => {
             .eq('uuid', user.id)
             .maybeSingle();
 
-          if (researchError) throw researchError;
-
-          // Update form data with fetched values
-          setFormData(prev => ({
-            ...prev,
-            language: profileData?.language || prev.language,
-            country: profileData?.country || prev.country,
-            depth: researchData?.Depth || prev.depth,
-            limit: researchData?.Limit || prev.limit
-          }));
+          if (researchError) {
+            console.error('Error fetching research data:', researchError);
+          } else {
+            // Update form data with fetched research values
+            setFormData(prev => ({
+              ...prev,
+              depth: researchData?.Depth || prev.depth,
+              limit: researchData?.Limit || prev.limit
+            }));
+          }
         } catch (error) {
           console.error('Error fetching user preferences:', error);
         }
@@ -112,13 +121,18 @@ export const useKeywordResearch = () => {
 
     try {
       // Update profile with language and country
-      await supabase
+      const { error: profileUpdateError } = await supabase
         .from('profiles')
         .update({
           language: formData.language,
           country: formData.country
         })
         .eq('id', user.id);
+
+      if (profileUpdateError) {
+        console.error('Error updating profile:', profileUpdateError);
+        throw profileUpdateError;
+      }
 
       // Check if the user has an entry in Primary Research Table
       const { data: existingEntry } = await supabase
@@ -129,15 +143,20 @@ export const useKeywordResearch = () => {
 
       // Update or insert research preferences
       if (existingEntry) {
-        await supabase
+        const { error: researchUpdateError } = await supabase
           .from('Primary Research Table')
           .update({
             Depth: formData.depth,
             Limit: formData.limit
           })
           .eq('uuid', user.id);
+          
+        if (researchUpdateError) {
+          console.error('Error updating research preferences:', researchUpdateError);
+          throw researchUpdateError;
+        }
       } else {
-        await supabase
+        const { error: researchInsertError } = await supabase
           .from('Primary Research Table')
           .insert({
             uuid: user.id,
@@ -147,6 +166,11 @@ export const useKeywordResearch = () => {
             Location: formData.country,
             Laungage: formData.language
           });
+          
+        if (researchInsertError) {
+          console.error('Error inserting research preferences:', researchInsertError);
+          throw researchInsertError;
+        }
       }
     } catch (error) {
       console.error('Error saving user preferences:', error);
