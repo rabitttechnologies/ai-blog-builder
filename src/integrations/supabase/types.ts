@@ -192,6 +192,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           id: string
+          language: string | null
           name: string | null
           organization: string | null
           phone: string | null
@@ -204,6 +205,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           id: string
+          language?: string | null
           name?: string | null
           organization?: string | null
           phone?: string | null
@@ -216,6 +218,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           id?: string
+          language?: string | null
           name?: string | null
           organization?: string | null
           phone?: string | null

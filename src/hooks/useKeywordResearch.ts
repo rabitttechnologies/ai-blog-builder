@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface KeywordSuggestions {
   topInSERP: string[];
@@ -10,8 +11,22 @@ export interface KeywordSuggestions {
   topSuggestions: string[];
 }
 
+export interface KeywordResearchFormData {
+  keyword: string;
+  language: string;
+  country: string;
+  depth: number;
+  limit: number;
+}
+
 export const useKeywordResearch = () => {
-  const [keyword, setKeyword] = useState('');
+  const [formData, setFormData] = useState<KeywordResearchFormData>({
+    keyword: '',
+    language: 'English',
+    country: 'US',
+    depth: 12,
+    limit: 20
+  });
   const [suggestions, setSuggestions] = useState<KeywordSuggestions>({
     topInSERP: [],
     hotKeywordIdeas: [],
@@ -23,6 +38,46 @@ export const useKeywordResearch = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch user preferences on mount
+  useEffect(() => {
+    const fetchUserPreferences = async () => {
+      if (user) {
+        try {
+          // Fetch language and country from user profile
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('language, country')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError) throw profileError;
+
+          // Fetch depth and limit from Primary Research Table
+          const { data: researchData, error: researchError } = await supabase
+            .from('Primary Research Table')
+            .select('Depth, Limit')
+            .eq('uuid', user.id)
+            .maybeSingle();
+
+          if (researchError) throw researchError;
+
+          // Update form data with fetched values
+          setFormData(prev => ({
+            ...prev,
+            language: profileData?.language || prev.language,
+            country: profileData?.country || prev.country,
+            depth: researchData?.Depth || prev.depth,
+            limit: researchData?.Limit || prev.limit
+          }));
+        } catch (error) {
+          console.error('Error fetching user preferences:', error);
+        }
+      }
+    };
+
+    fetchUserPreferences();
+  }, [user]);
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -48,8 +103,63 @@ export const useKeywordResearch = () => {
     }
   }, [isLoading, loadingProgress]);
 
+  const updateFormField = (field: keyof KeywordResearchFormData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const saveUserPreferences = async () => {
+    if (!user) return;
+
+    try {
+      // Update profile with language and country
+      await supabase
+        .from('profiles')
+        .update({
+          language: formData.language,
+          country: formData.country
+        })
+        .eq('id', user.id);
+
+      // Check if the user has an entry in Primary Research Table
+      const { data: existingEntry } = await supabase
+        .from('Primary Research Table')
+        .select('id')
+        .eq('uuid', user.id)
+        .maybeSingle();
+
+      // Update or insert research preferences
+      if (existingEntry) {
+        await supabase
+          .from('Primary Research Table')
+          .update({
+            Depth: formData.depth,
+            Limit: formData.limit
+          })
+          .eq('uuid', user.id);
+      } else {
+        await supabase
+          .from('Primary Research Table')
+          .insert({
+            uuid: user.id,
+            Depth: formData.depth,
+            Limit: formData.limit,
+            Primary_Keyword: formData.keyword,
+            Location: formData.country,
+            Laungage: formData.language
+          });
+      }
+    } catch (error) {
+      console.error('Error saving user preferences:', error);
+      toast({
+        title: 'Error Saving Preferences',
+        description: 'Unable to save your preferences. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const submitKeyword = async () => {
-    if (!keyword.trim()) {
+    if (!formData.keyword.trim()) {
       toast({
         title: 'Invalid Keyword',
         description: 'Please enter a keyword before submitting.',
@@ -62,6 +172,9 @@ export const useKeywordResearch = () => {
     setLoadingProgress(0);
     
     try {
+      // Save user preferences
+      await saveUserPreferences();
+      
       // Generate a unique execution ID for tracking
       const executionId = crypto.randomUUID();
       
@@ -75,17 +188,17 @@ export const useKeywordResearch = () => {
       });
       
       // Call webhook with explicit POST method
-      const fetchPromise = fetch('https://www.n8n.agiagentworld.com/googlesearchresponse', {
+      const fetchPromise = fetch('https://n8n.agiagentworld.com/webhook/googlesearchresponse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          keyword,
-          language: 'English',
-          location: user?.profile.country || 'US',
-          depth: 12,
-          limit: 20,
+          keyword: formData.keyword,
+          language: formData.language,
+          location: formData.country,
+          depth: formData.depth,
+          limit: formData.limit,
           userId: user?.id || 'anonymous',
           executionId: executionId
         })
@@ -136,8 +249,8 @@ export const useKeywordResearch = () => {
   };
 
   return {
-    keyword,
-    setKeyword,
+    formData,
+    updateFormField,
     suggestions,
     isLoading,
     loadingProgress,

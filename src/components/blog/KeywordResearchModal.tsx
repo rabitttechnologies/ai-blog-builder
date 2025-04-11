@@ -1,22 +1,84 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
-import { Loader2, Search, RefreshCcw } from 'lucide-react';
+import { Loader2, Search, RefreshCcw, Globe, Hash, Languages } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel 
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 interface KeywordResearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// List of common languages
+const languageOptions = [
+  { value: 'English', label: 'English' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'French', label: 'French' },
+  { value: 'German', label: 'German' },
+  { value: 'Chinese', label: 'Chinese' },
+  { value: 'Japanese', label: 'Japanese' },
+  { value: 'Russian', label: 'Russian' },
+  { value: 'Arabic', label: 'Arabic' },
+  { value: 'Portuguese', label: 'Portuguese' },
+  { value: 'Italian', label: 'Italian' },
+  { value: 'Hindi', label: 'Hindi' }
+];
+
+// List of countries (abbreviated for brevity)
+const countryOptions = [
+  { value: 'US', label: 'United States' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'CA', label: 'Canada' },
+  { value: 'AU', label: 'Australia' },
+  { value: 'IN', label: 'India' },
+  { value: 'DE', label: 'Germany' },
+  { value: 'FR', label: 'France' },
+  { value: 'JP', label: 'Japan' },
+  { value: 'BR', label: 'Brazil' },
+  { value: 'MX', label: 'Mexico' },
+  { value: 'ES', label: 'Spain' },
+  { value: 'IT', label: 'Italy' },
+  { value: 'CN', label: 'China' },
+  { value: 'RU', label: 'Russia' },
+  { value: 'NL', label: 'Netherlands' },
+  { value: 'SE', label: 'Sweden' },
+  { value: 'KR', label: 'South Korea' },
+  { value: 'ZA', label: 'South Africa' },
+  { value: 'SG', label: 'Singapore' },
+  { value: 'AE', label: 'United Arab Emirates' }
+  // Note: In a real implementation, we would include all ~200 countries
+];
+
+// Generate number options for depth and limit
+const generateNumberOptions = (min: number, max: number) => 
+  Array.from({ length: max - min + 1 }, (_, i) => ({ value: i + min, label: `${i + min}` }));
+
+const depthOptions = generateNumberOptions(1, 30);
+const limitOptions = generateNumberOptions(1, 30);
+
 export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOpen, onClose }) => {
   const { 
-    keyword, 
-    setKeyword, 
+    formData,
+    updateFormField,
     suggestions, 
     isLoading, 
     loadingProgress,
@@ -53,7 +115,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
     !suggestions.hotKeywordIdeas.length && 
     !suggestions.popularRightNow.length && 
     !suggestions.topSuggestions.length && 
-    keyword.trim().length > 0;
+    formData.keyword.trim().length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -61,25 +123,123 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
         <DialogHeader>
           <DialogTitle>Keyword Research</DialogTitle>
           <DialogDescription>
-            Enter a keyword to research SEO opportunities and get content ideas
+            Enter a keyword and customize your research parameters to get targeted SEO suggestions
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <form onSubmit={handleSubmit} className="flex space-x-2">
-            <Input 
-              placeholder="Enter your keyword" 
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              disabled={isLoading}
-            />
-            <Button 
-              type="submit"
-              disabled={isLoading}
-              leftIcon={<Search className="w-4 h-4" />}
-            >
-              {isLoading ? 'Researching...' : 'Research'}
-            </Button>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Keyword Field */}
+              <div className="md:col-span-2">
+                <FormLabel>Keyword</FormLabel>
+                <div className="flex space-x-2">
+                  <Input 
+                    placeholder="Enter your keyword" 
+                    value={formData.keyword}
+                    onChange={(e) => updateFormField('keyword', e.target.value)}
+                    disabled={isLoading}
+                    className="flex-grow"
+                  />
+                </div>
+              </div>
+              
+              {/* Language Field */}
+              <div>
+                <FormLabel>Language</FormLabel>
+                <Select 
+                  disabled={isLoading}
+                  value={formData.language}
+                  onValueChange={(value) => updateFormField('language', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Country/Location Field */}
+              <div>
+                <FormLabel>Country/Location</FormLabel>
+                <Select 
+                  disabled={isLoading}
+                  value={formData.country}
+                  onValueChange={(value) => updateFormField('country', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Depth Field */}
+              <div>
+                <FormLabel>Search Depth</FormLabel>
+                <Select 
+                  disabled={isLoading}
+                  value={formData.depth.toString()}
+                  onValueChange={(value) => updateFormField('depth', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select depth" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {depthOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Limit Field */}
+              <div>
+                <FormLabel>Result Limit</FormLabel>
+                <Select 
+                  disabled={isLoading}
+                  value={formData.limit.toString()}
+                  onValueChange={(value) => updateFormField('limit', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select limit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {limitOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Submit Button */}
+              <div className="md:col-span-2">
+                <Button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full"
+                  leftIcon={<Search className="w-4 h-4" />}
+                >
+                  {isLoading ? 'Researching...' : 'Research Keyword'}
+                </Button>
+              </div>
+            </div>
           </form>
 
           {isLoading && (
@@ -109,7 +269,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => setKeyword('')}
+                    onClick={() => updateFormField('keyword', '')}
                   >
                     Try Another Keyword
                   </Button>
@@ -137,7 +297,7 @@ export const KeywordResearchModal: React.FC<KeywordResearchModalProps> = ({ isOp
                !suggestions.hotKeywordIdeas.length && 
                !suggestions.popularRightNow.length && 
                !suggestions.topSuggestions.length && 
-               !keyword && (
+               !formData.keyword && (
                 <div className="text-center py-4 text-muted-foreground">
                   Enter a keyword above to start your research.
                 </div>
