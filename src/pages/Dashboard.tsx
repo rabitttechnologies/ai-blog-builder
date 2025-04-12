@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -40,19 +41,19 @@ const Dashboard = () => {
   };
   
   const handleCloseKeywordResearch = () => {
+    console.log("Dashboard - Closing keyword research modal");
     setIsKeywordResearchOpen(false);
-    // No need to clear pending navigation - the hook handles this internally
   };
   
   const handleKeywordResearchComplete = (selectedKeyword: string) => {
-    console.log("Keyword research complete, selected keyword:", selectedKeyword);
+    console.log("Dashboard - Keyword research complete, selected keyword:", selectedKeyword);
     
     // First close the modal
     setIsKeywordResearchOpen(false);
     
     // Set pending keyword in our custom hook if we have one
     if (selectedKeyword) {
-      console.log("Setting pending keyword:", selectedKeyword);
+      console.log("Dashboard - Setting pending keyword:", selectedKeyword);
       setPendingKeyword(selectedKeyword);
     }
   };
