@@ -1,15 +1,24 @@
 
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   
   console.log("Login page render - Auth state:", { isAuthenticated, isLoading });
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log("Login page - Already authenticated, redirecting to dashboard");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   // Show loading indicator if the auth state is still loading
   if (isLoading) {
@@ -25,10 +34,10 @@ const Login = () => {
     );
   }
 
-  // If already authenticated, use Navigate component for immediate redirect
+  // If user is authenticated, the useEffect will handle redirection
+  // This prevents the component from rendering anything while waiting for navigation
   if (isAuthenticated) {
-    console.log("Login page - Already authenticated, redirecting to dashboard immediately");
-    return <Navigate to="/dashboard" replace />;
+    return null;
   }
 
   return (
