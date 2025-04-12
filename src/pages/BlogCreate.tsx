@@ -24,16 +24,27 @@ const BlogCreate = () => {
   // Mock generated titles
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
 
-  // Extract keyword from URL if present
+  // Extract keyword from URL if present with robust error handling
   useEffect(() => {
-    const keywordParam = searchParams.get('keyword');
-    
-    if (keywordParam) {
-      // Initialize with the keyword from URL parameter
-      setKeywords([keywordParam]);
-      console.log("Initialized with keyword from URL:", keywordParam);
-    } else {
-      console.log("No keyword in URL");
+    try {
+      const keywordParam = searchParams.get('keyword');
+      
+      if (keywordParam) {
+        // Sanitize and validate the keyword
+        const sanitizedKeyword = keywordParam.trim();
+        
+        if (sanitizedKeyword) {
+          console.log("BlogCreate - Initialized with keyword from URL:", sanitizedKeyword);
+          setKeywords([sanitizedKeyword]);
+        } else {
+          console.log("BlogCreate - Empty keyword in URL after sanitization");
+        }
+      } else {
+        console.log("BlogCreate - No keyword in URL");
+      }
+    } catch (error) {
+      console.error("Error processing URL parameters:", error);
+      // Don't break the experience if parameter parsing fails
     }
   }, [searchParams]);
 

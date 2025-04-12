@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
@@ -14,6 +13,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isKeywordResearchOpen, setIsKeywordResearchOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -38,26 +38,41 @@ const Dashboard = () => {
   
   const handleCloseKeywordResearch = () => {
     setIsKeywordResearchOpen(false);
+    // Clear any pending navigation when modal is manually closed
+    setPendingNavigation(null);
   };
   
   const handleKeywordResearchComplete = (selectedKeyword: string) => {
     console.log("Keyword research complete, selected keyword:", selectedKeyword);
     
-    // Close the modal first
+    // First close the modal
     setIsKeywordResearchOpen(false);
     
-    // Use setTimeout to ensure the modal is fully closed before navigation
-    setTimeout(() => {
-      // Then navigate to the blog creation page with the selected keyword
-      if (selectedKeyword) {
-        console.log("Navigating to blog create with keyword:", selectedKeyword);
-        navigate(`/blog/create?keyword=${encodeURIComponent(selectedKeyword)}`);
-      } else {
-        console.log("Navigating to blog create without keyword");
-        navigate('/blog/create');
-      }
-    }, 100); // Small delay to ensure modal closes properly
+    // Set pending navigation to be handled by effect
+    if (selectedKeyword) {
+      console.log("Setting pending navigation with keyword:", selectedKeyword);
+      setPendingNavigation(selectedKeyword);
+    }
   };
+  
+  // Handle navigation after modal is closed
+  useEffect(() => {
+    let isMounted = true;
+    
+    if (!isKeywordResearchOpen && pendingNavigation && isMounted) {
+      console.log("Modal closed, navigating with keyword:", pendingNavigation);
+      
+      // Use navigate function directly
+      navigate(`/blog/create?keyword=${encodeURIComponent(pendingNavigation)}`);
+      
+      // Reset pending navigation to prevent repeated navigation
+      setPendingNavigation(null);
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isKeywordResearchOpen, pendingNavigation, navigate]);
 
   return (
     <DashboardLayout>
