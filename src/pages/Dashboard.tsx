@@ -1,16 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
 import { PlusCircle, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import KeywordResearchModal from "@/components/blog/KeywordResearchModal";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isKeywordResearchOpen, setIsKeywordResearchOpen] = useState(false);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -18,9 +21,12 @@ const Dashboard = () => {
 
   const daysRemaining = user ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
   
-  const handleCreateBlog = () => {
+  const handleCreateBlog = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default navigation
+    
     if (user?.trialBlogsRemaining && user.trialBlogsRemaining > 0) {
-      window.location.href = "/blog/create";
+      // Open the keyword research modal directly instead of navigating
+      setIsKeywordResearchOpen(true);
     } else {
       toast({
         title: "Trial limit reached",
@@ -28,6 +34,29 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  const handleCloseKeywordResearch = () => {
+    setIsKeywordResearchOpen(false);
+  };
+  
+  const handleKeywordResearchComplete = (selectedKeyword: string) => {
+    console.log("Keyword research complete, selected keyword:", selectedKeyword);
+    
+    // Close the modal first
+    setIsKeywordResearchOpen(false);
+    
+    // Use setTimeout to ensure the modal is fully closed before navigation
+    setTimeout(() => {
+      // Then navigate to the blog creation page with the selected keyword
+      if (selectedKeyword) {
+        console.log("Navigating to blog create with keyword:", selectedKeyword);
+        navigate(`/blog/create?keyword=${encodeURIComponent(selectedKeyword)}`);
+      } else {
+        console.log("Navigating to blog create without keyword");
+        navigate('/blog/create');
+      }
+    }, 100); // Small delay to ensure modal closes properly
   };
 
   return (
@@ -64,7 +93,7 @@ const Dashboard = () => {
             </div>
             <Button 
               variant="outline"
-              onClick={() => window.location.href = "/pricing"}
+              onClick={() => navigate("/pricing")}
             >
               Upgrade
             </Button>
@@ -83,7 +112,7 @@ const Dashboard = () => {
                 <Button 
                   className="mt-3"
                   size="sm"
-                  onClick={() => window.location.href = "/pricing"}
+                  onClick={() => navigate("/pricing")}
                 >
                   See Pricing Plans
                 </Button>
@@ -112,6 +141,13 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      
+      {/* Keyword research modal */}
+      <KeywordResearchModal 
+        isOpen={isKeywordResearchOpen}
+        onClose={handleCloseKeywordResearch}
+        onKeywordSelected={handleKeywordResearchComplete}
+      />
     </DashboardLayout>
   );
 };

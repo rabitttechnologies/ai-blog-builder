@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import KeywordInput from "@/components/blog/KeywordInput";
@@ -14,6 +14,8 @@ type Step = "keywords" | "titles" | "content" | "review" | "complete";
 const BlogCreate = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>("keywords");
   const [keywords, setKeywords] = useState<string[]>([]);
   const [niche, setNiche] = useState("");
@@ -22,11 +24,26 @@ const BlogCreate = () => {
   // Mock generated titles
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
 
+  // Extract keyword from URL if present
+  useEffect(() => {
+    const keywordParam = searchParams.get('keyword');
+    
+    if (keywordParam) {
+      // Initialize with the keyword from URL parameter
+      setKeywords([keywordParam]);
+      console.log("Initialized with keyword from URL:", keywordParam);
+    } else {
+      console.log("No keyword in URL");
+    }
+  }, [searchParams]);
+
   if (!isAuthenticated) {
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" />;
   }
 
   if (user?.trialBlogsRemaining === 0) {
+    console.log("Trial limit reached, redirecting to pricing");
     toast({
       title: "Trial limit reached",
       description: "Please upgrade to continue creating blogs.",
@@ -36,10 +53,13 @@ const BlogCreate = () => {
   }
 
   const handleKeywordsSubmit = (keywords: string[], niche: string) => {
+    console.log("Keywords submitted:", keywords, "niche:", niche);
     setKeywords(keywords);
     setNiche(niche);
     
     // In a real app, this would call an API to generate titles based on keywords
+    console.log("Generating titles for keywords:", keywords, "niche:", niche);
+    
     // For now, we'll mock this with some sample titles
     setGeneratedTitles([
       `10 Ways to Optimize Your ${niche} Strategy Using ${keywords[0]}`,
@@ -54,6 +74,7 @@ const BlogCreate = () => {
 
   const handleTitleSelect = (title: string) => {
     setSelectedTitle(title);
+    console.log("Selected title:", title);
     // In a real app, we would now generate the content
     // But for this demo, we'll just simulate completion
     
@@ -104,7 +125,7 @@ const BlogCreate = () => {
         
         <div className="glass p-6 rounded-xl">
           {currentStep === "keywords" && (
-            <KeywordInput onSubmit={handleKeywordsSubmit} />
+            <KeywordInput onSubmit={handleKeywordsSubmit} initialKeywords={keywords} />
           )}
           
           {currentStep === "titles" && (
@@ -128,7 +149,7 @@ const BlogCreate = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <Button 
-                  onClick={() => window.location.href = "/dashboard"} 
+                  onClick={() => navigate("/dashboard")} 
                   variant="outline"
                 >
                   Back to Dashboard

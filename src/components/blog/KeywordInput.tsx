@@ -1,17 +1,26 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface KeywordInputProps {
   onSubmit: (keywords: string[], niche: string) => void;
+  initialKeywords?: string[];
 }
 
-const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
+const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit, initialKeywords = [] }) => {
   const [niche, setNiche] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>(initialKeywords);
   const [error, setError] = useState("");
+
+  // Initialize from props if provided
+  useEffect(() => {
+    if (initialKeywords && initialKeywords.length > 0) {
+      setKeywords(initialKeywords);
+      console.log("KeywordInput initialized with keywords:", initialKeywords);
+    }
+  }, [initialKeywords]);
 
   const handleAddKeyword = () => {
     if (!keyword.trim()) return;
@@ -43,8 +52,8 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
       return;
     }
     
-    if (keywords.length < 3) {
-      setError("Please add at least 3 keywords");
+    if (keywords.length < 1) {
+      setError("Please add at least 1 keyword");
       return;
     }
     
@@ -62,7 +71,7 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
     <div>
       <h3 className="text-xl font-semibold mb-4">Start with your topic</h3>
       <p className="text-sm text-foreground/70 mb-6">
-        Enter your blog niche and 3-5 keywords to help our AI understand your content needs.
+        Enter your blog niche and 1-5 keywords to help our AI understand your content needs.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -83,7 +92,7 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
         
         <div>
           <label htmlFor="keywords" className="block text-sm font-medium mb-1">
-            Keywords (3-5)
+            Keywords (1-5)
           </label>
           <div className="flex">
             <input
@@ -134,7 +143,7 @@ const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
         <Button
           type="submit"
           fullWidth
-          disabled={!niche.trim() || keywords.length < 3}
+          disabled={!niche.trim() || keywords.length < 1}
         >
           Generate Blog Ideas
         </Button>
