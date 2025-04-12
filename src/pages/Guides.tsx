@@ -1,11 +1,12 @@
 
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Bookmark, FileText, Search, Clock, BookOpen, BookMarkIcon } from "lucide-react";
+import { ArrowRight, Bookmark, FileText, Search, Clock, BookOpen } from "lucide-react";
 
 const guides = [
   {
@@ -65,9 +66,7 @@ const guides = [
     image: "/placeholder.svg",
   },
   {
-    id: {
-      8: "Technical SEO for Content Creators"
-    },
+    id: 8,
     title: "Technical SEO for Content Creators",
     description: "Essential technical SEO knowledge every content creator should understand.",
     category: "Advanced",
@@ -89,6 +88,7 @@ const categories = ["All", "Beginner", "Intermediate", "Advanced"];
 const Guides = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const navigate = useNavigate();
   
   const filteredGuides = guides.filter(guide => {
     const matchesSearch = guide.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -167,10 +167,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     Your comprehensive guide to creating high-quality content that ranks and converts.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/handbook">
-                      Download PDF <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/guides/handbook")}>
+                    Download PDF <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -184,10 +182,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     The ultimate checklist to ensure your content meets the latest SEO requirements.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/seo-checklist">
-                      Download PDF <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/guides/seo-checklist")}>
+                    Download PDF <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -201,10 +197,8 @@ const Guides = () => {
                   <p className="text-foreground/70 mb-4">
                     A collection of ready-to-use templates for different types of content.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href="/guides/templates">
-                      Browse Templates <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/guides/templates")}>
+                    Browse Templates <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -327,10 +321,8 @@ const Guides = () => {
             </div>
             
             <div className="text-center mt-10">
-              <Button variant="outline" asChild>
-                <a href="/tutorials/videos">
-                  View All Video Tutorials <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Button variant="outline" onClick={() => navigate("/tutorials/videos")}>
+                View All Video Tutorials <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -381,8 +373,8 @@ const Guides = () => {
                     </div>
                   </div>
                   <p className="text-foreground/70 mb-4">{webinar.description}</p>
-                  <Button size="sm" asChild>
-                    <a href={`/webinars/${webinar.id}`}>Register Now</a>
+                  <Button size="sm" onClick={() => navigate(`/webinars/${webinar.id}`)}>
+                    Register Now
                   </Button>
                 </div>
               ))}
@@ -397,8 +389,8 @@ const Guides = () => {
             <p className="text-xl max-w-2xl mx-auto mb-8">
               Visit our help center for frequently asked questions, troubleshooting tips, and direct support.
             </p>
-            <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" asChild>
-              <a href="/help-center">Visit Help Center</a>
+            <Button className="bg-white text-blue-600 hover:bg-white/90" size="lg" onClick={() => navigate("/help-center")}>
+              Visit Help Center
             </Button>
           </div>
         </section>

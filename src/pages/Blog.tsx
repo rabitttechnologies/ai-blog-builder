@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -95,6 +96,7 @@ const categories = [
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const navigate = useNavigate();
   
   const featuredPost = blogPosts.find(post => post.featured);
   const regularPosts = blogPosts.filter(post => !post.featured);
@@ -188,10 +190,8 @@ const Blog = () => {
                       <span>{featuredPost.category}</span>
                     </div>
                   </div>
-                  <Button asChild>
-                    <a href={`/blog/${featuredPost.id}`}>
-                      Read Article <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
+                  <Button onClick={() => navigate(`/blog/${featuredPost.id}`)}>
+                    Read Article <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
                 <div className="lg:col-span-2 order-1 lg:order-2">
