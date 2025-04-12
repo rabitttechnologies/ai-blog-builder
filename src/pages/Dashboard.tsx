@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/Button";
 import { PlusCircle, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import KeywordResearchModal from "@/components/blog/KeywordResearchModal";
+import { useKeywordNavigation } from "@/hooks/useKeywordNavigation";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isKeywordResearchOpen, setIsKeywordResearchOpen] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  
+  // Use our custom hook for handling keyword navigation
+  const { setPendingKeyword } = useKeywordNavigation(isKeywordResearchOpen);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -38,8 +41,7 @@ const Dashboard = () => {
   
   const handleCloseKeywordResearch = () => {
     setIsKeywordResearchOpen(false);
-    // Clear any pending navigation when modal is manually closed
-    setPendingNavigation(null);
+    // No need to clear pending navigation - the hook handles this internally
   };
   
   const handleKeywordResearchComplete = (selectedKeyword: string) => {
@@ -48,31 +50,12 @@ const Dashboard = () => {
     // First close the modal
     setIsKeywordResearchOpen(false);
     
-    // Set pending navigation to be handled by effect
+    // Set pending keyword in our custom hook if we have one
     if (selectedKeyword) {
-      console.log("Setting pending navigation with keyword:", selectedKeyword);
-      setPendingNavigation(selectedKeyword);
+      console.log("Setting pending keyword:", selectedKeyword);
+      setPendingKeyword(selectedKeyword);
     }
   };
-  
-  // Handle navigation after modal is closed
-  useEffect(() => {
-    let isMounted = true;
-    
-    if (!isKeywordResearchOpen && pendingNavigation && isMounted) {
-      console.log("Modal closed, navigating with keyword:", pendingNavigation);
-      
-      // Use navigate function directly
-      navigate(`/blog/create?keyword=${encodeURIComponent(pendingNavigation)}`);
-      
-      // Reset pending navigation to prevent repeated navigation
-      setPendingNavigation(null);
-    }
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [isKeywordResearchOpen, pendingNavigation, navigate]);
 
   return (
     <DashboardLayout>
