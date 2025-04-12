@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/auth";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import Index from "./pages/Index";
@@ -67,44 +67,42 @@ const App = () => (
           </Helmet>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/pricing" element={<Pricing />} />
-              
-              {/* New public routes */}
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/guides" element={<Guides />} />
-              <Route path="/security" element={<Security />} />
-              
-              {/* Protected routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/blog/create" element={<BlogCreate />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/subscription/checkout" element={<Checkout />} />
-              
-              {/* Admin routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              
-              {/* Error routes */}
-              <Route path="/error" element={<NotFound />} />
-              <Route path="/server-error" element={<ServerError />} />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/pricing" element={<Pricing />} />
+            
+            {/* New public routes */}
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/guides" element={<Guides />} />
+            <Route path="/security" element={<Security />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/blog/create" element={<BlogCreate />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/subscription/checkout" element={<Checkout />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            
+            {/* Error routes */}
+            <Route path="/error" element={<NotFound />} />
+            <Route path="/server-error" element={<ServerError />} />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </ErrorBoundary>
       </AuthProvider>
     </TooltipProvider>
