@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -32,11 +31,6 @@ const BlogCreate = () => {
     navigate: blogNavigate
   } = useBlogCreation();
 
-  // Better trial check with safeguard for undefined values
-  const isTrialExhausted = () => {
-    return user && (user.trialBlogsRemaining === 0 || user.trialBlogsRemaining === undefined);
-  };
-
   // Add this effect to handle auth changes
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -60,12 +54,15 @@ const BlogCreate = () => {
     );
   }
 
-  // If not authenticated, redirect to login page using Navigate component
-  // This is the key change that fixes the error by avoiding null return
+  // If not authenticated, show nothing while redirecting
   if (!isAuthenticated) {
-    console.log("BlogCreate - User not authenticated (render check), redirecting to login");
-    return <Navigate to="/login" />;
+    return null;
   }
+
+  // Better trial check with safeguard for undefined values
+  const isTrialExhausted = () => {
+    return user && (user.trialBlogsRemaining === 0 || user.trialBlogsRemaining === undefined);
+  };
 
   // Check for trial exhaustion only after confirming user is authenticated
   if (isTrialExhausted()) {
@@ -78,6 +75,7 @@ const BlogCreate = () => {
     return <Navigate to="/pricing" />;
   }
 
+  // Only render the main content when authenticated and trial is valid
   return (
     <DashboardLayout>
       <Helmet>
