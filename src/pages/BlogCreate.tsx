@@ -20,14 +20,35 @@ const ContentGeneration = ({ onBack, onNext, selectedTitle }: {
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [content, setContent] = useState("");
+  const { toast } = useToast();
   
   const handleGenerateContent = () => {
+    if (!selectedTitle) {
+      toast({
+        title: "Missing title",
+        description: "Please select or create a title first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsGenerating(true);
-    // Simulate content generation
+    
+    // Simulate content generation - in a real app, this would be an API call
     setTimeout(() => {
-      const mockContent = `# ${selectedTitle}\n\n## Introduction\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam ultricies.\n\n## Main Points\n1. First important point about the topic.\n2. Second critical concept to understand.\n3. Practical applications and examples.\n\n## Conclusion\nIn conclusion, this article has covered the key aspects of ${selectedTitle.toLowerCase()}. By implementing these strategies, you can improve your results significantly.`;
-      setContent(mockContent);
-      setIsGenerating(false);
+      try {
+        const mockContent = `# ${selectedTitle}\n\n## Introduction\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam ultricies.\n\n## Main Points\n1. First important point about the topic.\n2. Second critical concept to understand.\n3. Practical applications and examples.\n\n## Conclusion\nIn conclusion, this article has covered the key aspects of ${selectedTitle.toLowerCase()}. By implementing these strategies, you can improve your results significantly.`;
+        setContent(mockContent);
+        setIsGenerating(false);
+      } catch (error) {
+        console.error("Error generating content:", error);
+        toast({
+          title: "Generation failed",
+          description: "There was an error generating your content. Please try again.",
+          variant: "destructive",
+        });
+        setIsGenerating(false);
+      }
     }, 2000);
   };
   
@@ -183,12 +204,17 @@ const BlogCreate = () => {
     }
   }, [searchParams]);
 
+  // Better trial check with safeguard for undefined values
+  const isTrialExhausted = () => {
+    return user && (user.trialBlogsRemaining === 0 || user.trialBlogsRemaining === undefined);
+  }
+
   if (!isAuthenticated) {
     console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" />;
   }
 
-  if (user?.trialBlogsRemaining === 0) {
+  if (isTrialExhausted()) {
     console.log("Trial limit reached, redirecting to pricing");
     toast({
       title: "Trial limit reached",
@@ -199,6 +225,15 @@ const BlogCreate = () => {
   }
 
   const handleKeywordsSubmit = (keywords: string[], niche: string) => {
+    if (!keywords.length) {
+      toast({
+        title: "Keywords required",
+        description: "Please enter at least one keyword.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     console.log("Keywords submitted:", keywords, "niche:", niche);
     setKeywords(keywords);
     setNiche(niche);
@@ -206,22 +241,34 @@ const BlogCreate = () => {
     // In a real app, this would call an API to generate titles based on keywords
     console.log("Generating titles for keywords:", keywords, "niche:", niche);
     
+    // Make templates more robust by using the available keywords
+    const primaryKeyword = keywords[0] || "SEO";
+    const secondaryKeyword = keywords[1] || (keywords[0] || "Content Marketing");
+    
     // For now, we'll mock this with some sample titles
     setGeneratedTitles([
-      `10 Ways to Optimize Your ${niche} Strategy Using ${keywords[0]}`,
-      `The Ultimate Guide to ${niche}: Leveraging ${keywords[0]} and ${keywords[1] || "SEO"}`,
-      `How ${keywords[0]} is Transforming the ${niche} Industry in 2023`,
-      `${keywords[0]} vs ${keywords[1] || "Traditional Methods"}: Which is Better for ${niche}?`,
-      `Why Every ${niche} Professional Should Know About ${keywords[0]}`
+      `10 Ways to Optimize Your ${niche} Strategy Using ${primaryKeyword}`,
+      `The Ultimate Guide to ${niche}: Leveraging ${primaryKeyword} and ${secondaryKeyword}`,
+      `How ${primaryKeyword} is Transforming the ${niche} Industry in 2023`,
+      `${primaryKeyword} vs ${secondaryKeyword}: Which is Better for ${niche}?`,
+      `Why Every ${niche} Professional Should Know About ${primaryKeyword}`
     ]);
     
     setCurrentStep("titles");
   };
 
   const handleTitleSelect = (title: string) => {
+    if (!title.trim()) {
+      toast({
+        title: "Invalid title",
+        description: "Please select or enter a valid title.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedTitle(title);
     console.log("Selected title:", title);
-    // Move to content step instead of completion
     setCurrentStep("content");
   };
   
@@ -230,11 +277,16 @@ const BlogCreate = () => {
   };
   
   const handleReviewComplete = () => {
+    // In a real app, this would call an API to save the blog post
+    
     // Simulate a successful blog creation
     toast({
       title: "Blog published successfully",
       description: "Your blog has been published and is now live.",
     });
+    
+    // Update the user's trial count - this would normally happen on the backend
+    // For now we just display the success message and complete the flow
     
     setCurrentStep("complete");
   };

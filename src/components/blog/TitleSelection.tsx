@@ -25,10 +25,10 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
   };
 
   const handleConfirm = () => {
-    if (!selectedTitle && !customTitle) return;
-    
-    if (isEditing && customTitle) {
-      onSelectTitle(customTitle);
+    if (isEditing) {
+      if (customTitle.trim()) {
+        onSelectTitle(customTitle.trim());
+      }
     } else if (selectedTitle) {
       onSelectTitle(selectedTitle);
     }
@@ -40,6 +40,11 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
       setCustomTitle(selectedTitle);
     }
   };
+
+  // Determine if the continue button should be disabled
+  const isContinueDisabled = isEditing 
+    ? !customTitle.trim() // In edit mode, require non-empty custom title
+    : !selectedTitle;     // In selection mode, require selection
 
   return (
     <div>
@@ -122,7 +127,7 @@ const TitleSelection: React.FC<TitleSelectionProps> = ({
         </Button>
         <Button
           onClick={handleConfirm}
-          disabled={!selectedTitle && !customTitle}
+          disabled={isContinueDisabled}
           rightIcon={<ArrowRight className="h-4 w-4" />}
         >
           Continue with this title
