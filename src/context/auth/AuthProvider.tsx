@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AuthContextType, AuthUser } from "./types";
+import { AuthContextType, AuthUser, UserProfile } from "./types";
 import { 
   loginUser, 
   signupUser, 
