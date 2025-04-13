@@ -60,9 +60,11 @@ const BlogCreate = () => {
     );
   }
 
-  // If not authenticated, return null as the useEffect will handle redirection
+  // If not authenticated, redirect to login page using Navigate component
+  // This is the key change that fixes the error by avoiding null return
   if (!isAuthenticated) {
-    return null;
+    console.log("BlogCreate - User not authenticated (render check), redirecting to login");
+    return <Navigate to="/login" />;
   }
 
   // Check for trial exhaustion only after confirming user is authenticated
