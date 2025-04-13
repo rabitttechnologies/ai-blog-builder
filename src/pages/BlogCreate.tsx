@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
@@ -17,6 +18,7 @@ const BlogCreate = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   const {
     currentStep,
@@ -31,13 +33,19 @@ const BlogCreate = () => {
     navigate: blogNavigate
   } = useBlogCreation();
 
-  // Add this effect to handle auth changes
+  // Handle authentication and redirection
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       console.log("BlogCreate - User not authenticated, redirecting to login");
-      navigate("/login");
+      setIsRedirecting(true);
+      navigate("/login", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // Trial exhaustion check function
+  const isTrialExhausted = () => {
+    return user && (user.trialBlogsRemaining === 0 || user.trialBlogsRemaining === undefined);
+  };
 
   // Show loading while auth state is being determined
   if (isLoading) {
@@ -54,15 +62,11 @@ const BlogCreate = () => {
     );
   }
 
-  // If not authenticated, show nothing while redirecting
-  if (!isAuthenticated) {
-    return null;
+  // If not authenticated or redirecting, don't render any form components
+  if (!isAuthenticated || isRedirecting) {
+    // Return an empty div instead of null to avoid any React issues
+    return <div className="hidden"></div>;
   }
-
-  // Better trial check with safeguard for undefined values
-  const isTrialExhausted = () => {
-    return user && (user.trialBlogsRemaining === 0 || user.trialBlogsRemaining === undefined);
-  };
 
   // Check for trial exhaustion only after confirming user is authenticated
   if (isTrialExhausted()) {

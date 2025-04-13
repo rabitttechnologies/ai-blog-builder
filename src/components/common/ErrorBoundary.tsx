@@ -14,18 +14,26 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  isAuthError: boolean;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null,
-    errorInfo: null
+    errorInfo: null,
+    isAuthError: false
   };
 
   public static getDerivedStateFromError(error: Error): Partial<State> {
     console.error("ErrorBoundary - Caught error:", error.message);
-    return { hasError: true, error };
+    
+    // Check if this is an authentication-related error
+    const isAuthError = error.message.includes("getFieldState") || 
+                         error.message.includes("useFormContext") ||
+                         error.message.includes("Context");
+    
+    return { hasError: true, error, isAuthError };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -35,11 +43,17 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public reset = (): void => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false, error: null, errorInfo: null, isAuthError: false });
   }
 
   public render(): ReactNode {
     if (this.state.hasError) {
+      // For authentication-related errors, redirect to login
+      if (this.state.isAuthError) {
+        console.log("ErrorBoundary - Auth-related error detected, redirecting to login");
+        return <Navigate to="/login" />;
+      }
+      
       // If redirectTo is provided, redirect to that path
       if (this.props.redirectTo) {
         console.log(`ErrorBoundary - Redirecting to ${this.props.redirectTo}`);
