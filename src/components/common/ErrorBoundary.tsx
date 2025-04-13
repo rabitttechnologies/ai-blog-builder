@@ -13,26 +13,36 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: null,
+    errorInfo: null
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): Partial<State> {
+    console.error("ErrorBoundary - Caught error:", error.message);
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    console.error("Error caught by ErrorBoundary:", error);
+    console.error("Component stack:", errorInfo.componentStack);
+    this.setState({ errorInfo });
+  }
+
+  public reset = (): void => {
+    this.setState({ hasError: false, error: null, errorInfo: null });
   }
 
   public render(): ReactNode {
     if (this.state.hasError) {
       // If redirectTo is provided, redirect to that path
       if (this.props.redirectTo) {
+        console.log(`ErrorBoundary - Redirecting to ${this.props.redirectTo}`);
         return <Navigate to={this.props.redirectTo} />;
       }
 
@@ -52,9 +62,16 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
             
             <h1 className="text-4xl font-bold mb-2">Something went wrong</h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground mb-4">
               We've encountered an unexpected error
             </p>
+            
+            {this.state.error && (
+              <div className="mb-6 p-4 bg-red-50 rounded-lg text-left">
+                <p className="font-medium text-red-800 mb-2">Error details:</p>
+                <p className="text-sm text-red-700 break-words">{this.state.error.message}</p>
+              </div>
+            )}
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -65,7 +82,7 @@ class ErrorBoundary extends Component<Props, State> {
               </Button>
               <Button
                 variant="primary"
-                onClick={() => this.setState({ hasError: false, error: null })}
+                onClick={this.reset}
               >
                 Try Again
               </Button>
