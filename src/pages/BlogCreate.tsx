@@ -8,8 +8,143 @@ import KeywordInput from "@/components/blog/KeywordInput";
 import TitleSelection from "@/components/blog/TitleSelection";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/Button";
+import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 
 type Step = "keywords" | "titles" | "content" | "review" | "complete";
+
+// New component for content generation step
+const ContentGeneration = ({ onBack, onNext, selectedTitle }: { 
+  onBack: () => void, 
+  onNext: () => void,
+  selectedTitle: string
+}) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [content, setContent] = useState("");
+  
+  const handleGenerateContent = () => {
+    setIsGenerating(true);
+    // Simulate content generation
+    setTimeout(() => {
+      const mockContent = `# ${selectedTitle}\n\n## Introduction\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam ultricies.\n\n## Main Points\n1. First important point about the topic.\n2. Second critical concept to understand.\n3. Practical applications and examples.\n\n## Conclusion\nIn conclusion, this article has covered the key aspects of ${selectedTitle.toLowerCase()}. By implementing these strategies, you can improve your results significantly.`;
+      setContent(mockContent);
+      setIsGenerating(false);
+    }, 2000);
+  };
+  
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Generate Content</h3>
+      <p className="text-sm text-foreground/70 mb-6">
+        Our AI will generate SEO-optimized content based on your selected title.
+      </p>
+      
+      {!content ? (
+        <div className="text-center py-8">
+          <Button 
+            onClick={handleGenerateContent}
+            disabled={isGenerating}
+            className="mb-4"
+          >
+            {isGenerating ? "Generating..." : "Generate Content"}
+          </Button>
+          {isGenerating && (
+            <div className="mt-4">
+              <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto"></div>
+              <p className="text-sm mt-2 text-foreground/70">This may take a few moments...</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="mb-6">
+          <div className="bg-background border rounded-md p-4 h-60 overflow-y-auto mb-4 whitespace-pre-line">
+            {content}
+          </div>
+          <div className="flex justify-between mt-6">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              leftIcon={<ArrowLeft className="h-4 w-4" />}
+            >
+              Back to Titles
+            </Button>
+            <Button
+              onClick={onNext}
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+            >
+              Review & Publish
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// New component for review step
+const ReviewBlog = ({ onBack, onPublish, selectedTitle, keywords }: {
+  onBack: () => void,
+  onPublish: () => void,
+  selectedTitle: string,
+  keywords: string[]
+}) => {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Review Your Blog</h3>
+      <p className="text-sm text-foreground/70 mb-6">
+        Review your blog details before publishing.
+      </p>
+      
+      <div className="space-y-4 mb-6">
+        <div className="p-4 bg-secondary/50 rounded-lg">
+          <h4 className="font-medium text-sm text-foreground/70 mb-1">Title</h4>
+          <p className="font-medium">{selectedTitle}</p>
+        </div>
+        
+        <div className="p-4 bg-secondary/50 rounded-lg">
+          <h4 className="font-medium text-sm text-foreground/70 mb-1">Keywords</h4>
+          <div className="flex flex-wrap gap-2">
+            {keywords.map((keyword, index) => (
+              <span key={index} className="px-2 py-1 bg-background rounded-md text-sm">
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        <div className="p-4 bg-secondary/50 rounded-lg">
+          <h4 className="font-medium text-sm text-foreground/70 mb-1">Content Preview</h4>
+          <p className="text-foreground/70 text-sm">Full content generated (approx. 800 words)</p>
+        </div>
+        
+        <div className="p-4 bg-secondary/50 rounded-lg">
+          <h4 className="font-medium text-sm text-foreground/70 mb-1">SEO Score</h4>
+          <div className="flex items-center">
+            <div className="w-24 h-2 bg-background rounded-full overflow-hidden mr-2">
+              <div className="h-full bg-green-500 w-4/5"></div>
+            </div>
+            <span className="text-green-500 font-medium">85/100</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-between">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          leftIcon={<ArrowLeft className="h-4 w-4" />}
+        >
+          Back to Content
+        </Button>
+        <Button
+          onClick={onPublish}
+          rightIcon={<Check className="h-4 w-4" />}
+        >
+          Publish Blog
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const BlogCreate = () => {
   const { user, isAuthenticated } = useAuth();
@@ -86,13 +221,19 @@ const BlogCreate = () => {
   const handleTitleSelect = (title: string) => {
     setSelectedTitle(title);
     console.log("Selected title:", title);
-    // In a real app, we would now generate the content
-    // But for this demo, we'll just simulate completion
-    
+    // Move to content step instead of completion
+    setCurrentStep("content");
+  };
+  
+  const handleContentNext = () => {
+    setCurrentStep("review");
+  };
+  
+  const handleReviewComplete = () => {
     // Simulate a successful blog creation
     toast({
-      title: "Blog created successfully",
-      description: "Your blog has been saved to your account.",
+      title: "Blog published successfully",
+      description: "Your blog has been published and is now live.",
     });
     
     setCurrentStep("complete");
@@ -147,6 +288,23 @@ const BlogCreate = () => {
             />
           )}
           
+          {currentStep === "content" && (
+            <ContentGeneration
+              selectedTitle={selectedTitle}
+              onBack={() => setCurrentStep("titles")}
+              onNext={handleContentNext}
+            />
+          )}
+          
+          {currentStep === "review" && (
+            <ReviewBlog
+              selectedTitle={selectedTitle}
+              keywords={keywords}
+              onBack={() => setCurrentStep("content")}
+              onPublish={handleReviewComplete}
+            />
+          )}
+          
           {currentStep === "complete" && (
             <div className="text-center py-8 space-y-4">
               <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
@@ -154,9 +312,9 @@ const BlogCreate = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold">Blog Created Successfully!</h3>
+              <h3 className="text-xl font-semibold">Blog Published Successfully!</h3>
               <p className="text-foreground/70 max-w-sm mx-auto">
-                Your blog "{selectedTitle}" has been created and saved to your account.
+                Your blog "{selectedTitle}" has been published and is now available to your audience.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <Button 

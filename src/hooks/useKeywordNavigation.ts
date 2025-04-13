@@ -27,13 +27,13 @@ export const useKeywordNavigation = (isModalOpen: boolean) => {
       const keyword = pendingKeywordRef.current;
       console.log("useKeywordNavigation - Modal closed with pending keyword:", keyword);
       
-      // Small delay to ensure any other state updates complete first
+      // IMPROVED: Increased timeout for more reliability
       timeoutId = window.setTimeout(() => {
         console.log("useKeywordNavigation - Executing navigation to:", `/blog/create?keyword=${keyword}`);
         navigate(`/blog/create?keyword=${encodeURIComponent(keyword)}`);
         pendingKeywordRef.current = null;
         console.log("useKeywordNavigation - Navigation completed and ref cleared");
-      }, 50); // Slightly longer delay to ensure auth processes complete
+      }, 150); // Increased from 50ms to 150ms for better reliability
     }
     
     return () => {
@@ -42,7 +42,7 @@ export const useKeywordNavigation = (isModalOpen: boolean) => {
         console.log("useKeywordNavigation - Navigation cancelled by cleanup");
       }
     };
-  }, [isModalOpen]); // Removed navigate from dependencies
+  }, [isModalOpen, navigate]); // Added navigate back to dependencies with the improved implementation
   
   return { setPendingKeyword };
 };

@@ -21,17 +21,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // First set up the auth state listener to catch any authentication changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
+          (event, session) => {
             console.log("AuthContext - Auth state changed:", event);
             
             if (session) {
+              // Handle basic auth state change synchronously
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 console.log("AuthContext - User authenticated or token refreshed");
-                const userData = await handleSessionFound(session);
-                if (userData) {
-                  setUser(userData);
-                }
-                setIsLoading(false);
+                
+                // IMPORTANT FIX: Don't make Supabase calls directly in the listener
+                // Instead, use setTimeout to defer execution and prevent deadlocks
+                setTimeout(async () => {
+                  try {
+                    const userData = await handleSessionFound(session);
+                    if (userData) {
+                      setUser(userData);
+                    }
+                    setIsLoading(false);
+                  } catch (error) {
+                    console.error("Error processing session:", error);
+                    setIsLoading(false);
+                  }
+                }, 0);
               }
             } else if (event === 'SIGNED_OUT') {
               console.log("AuthContext - User signed out");
@@ -46,11 +57,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session) {
           console.log("AuthContext - Existing session found");
-          const userData = await handleSessionFound(session);
-          if (userData) {
-            setUser(userData);
-          }
-          setIsLoading(false);
+          // Use the same deferred execution pattern for consistency
+          setTimeout(async () => {
+            try {
+              const userData = await handleSessionFound(session);
+              if (userData) {
+                setUser(userData);
+              }
+              setIsLoading(false);
+            } catch (error) {
+              console.error("Error processing existing session:", error);
+              setIsLoading(false);
+            }
+          }, 0);
         } else {
           console.log("AuthContext - No existing session found");
           setIsLoading(false);
