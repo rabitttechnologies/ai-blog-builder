@@ -14,7 +14,6 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
-import BlogCreate from "./pages/BlogCreate";
 import Account from "./pages/Account";
 import Subscription from "./pages/Subscription";
 import Pricing from "./pages/Pricing";
@@ -88,7 +87,7 @@ const App = () => (
             
             {/* Protected routes */}
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/blog/create" element={<BlogCreate />} />
+            {/* Removed blog creation route */}
             <Route path="/account" element={<Account />} />
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/subscription/checkout" element={<Checkout />} />
