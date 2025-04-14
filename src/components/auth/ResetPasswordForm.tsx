@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -7,7 +8,11 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
 import FormAuthWrapper from "./FormAuthWrapper";
 
-const ResetPasswordForm: React.FC = () => {
+interface ResetPasswordFormProps {
+  token: string;
+}
+
+const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,10 +22,6 @@ const ResetPasswordForm: React.FC = () => {
   const { resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Extract token from URL
-  const searchParams = new URLSearchParams(window.location.search);
-  const token = searchParams.get("token");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
