@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
-import { Clock, AlertTriangle } from "lucide-react";
+import { Clock, AlertTriangle, PlusCircle } from "lucide-react";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -29,6 +29,14 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
             <p className="text-foreground/70">Manage your account</p>
           </div>
+          
+          <Button 
+            onClick={() => navigate("/blogs")}
+            className="mt-4 md:mt-0"
+            leftIcon={<PlusCircle className="h-4 w-4" />}
+          >
+            Create New Blog
+          </Button>
         </div>
         
         {user && user.trialBlogsRemaining >= 0 && (

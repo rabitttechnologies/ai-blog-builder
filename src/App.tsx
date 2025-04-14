@@ -30,6 +30,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Guides from "./pages/Guides";
 import Security from "./pages/Security";
+import BlogCreation from "./pages/BlogCreation";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,7 +88,7 @@ const App = () => (
             
             {/* Protected routes */}
             <Route path="/dashboard" element={<Dashboard />} />
-            {/* Removed blog creation route */}
+            <Route path="/blogs" element={<BlogCreation />} />
             <Route path="/account" element={<Account />} />
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/subscription/checkout" element={<Checkout />} />
