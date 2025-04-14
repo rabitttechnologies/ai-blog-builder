@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,6 +33,7 @@ import Guides from "./pages/Guides";
 import Security from "./pages/Security";
 import BlogCreation from "./pages/BlogCreation";
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -52,61 +54,63 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <ErrorBoundary redirectTo="/error">
-          <Helmet
-            titleTemplate="%s | Insight Writer AI"
-            defaultTitle="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger"
-          >
-            <meta 
-              name="description" 
-              content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" 
-            />
-          </Helmet>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/pricing" element={<Pricing />} />
-            
-            {/* New public routes */}
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/guides" element={<Guides />} />
-            <Route path="/security" element={<Security />} />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/blogs" element={<BlogCreation />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/subscription/checkout" element={<Checkout />} />
-            
-            {/* Admin routes */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            
-            {/* Error routes */}
-            <Route path="/error" element={<NotFound />} />
-            <Route path="/server-error" element={<ServerError />} />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ErrorBoundary>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <ErrorBoundary redirectTo="/error">
+            <Helmet
+              titleTemplate="%s | Insight Writer AI"
+              defaultTitle="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger"
+            >
+              <meta 
+                name="description" 
+                content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" 
+              />
+            </Helmet>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/pricing" element={<Pricing />} />
+              
+              {/* New public routes */}
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/security" element={<Security />} />
+              
+              {/* Protected routes */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/blogs" element={<BlogCreation />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/subscription/checkout" element={<Checkout />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              
+              {/* Error routes */}
+              <Route path="/error" element={<NotFound />} />
+              <Route path="/server-error" element={<ServerError />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;

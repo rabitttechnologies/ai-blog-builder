@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -115,10 +114,10 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({ onComplete, onCan
           }
         }
 
-        // Fetch research settings
+        // Fetch research settings - using the correct table name
         const { data: research, error: researchError } = await supabase
-          .from('Primary research Table')
-          .select('depth, limit')
+          .from('Primary Research Table')
+          .select('Depth, Limit')
           .eq('uuid', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -127,14 +126,18 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({ onComplete, onCan
         if (researchError && researchError.code !== 'PGRST116') {
           console.error('Error fetching research settings:', researchError);
         } else if (research) {
-          setResearchSettings(research);
+          // Set research settings with the correct column names
+          setResearchSettings({
+            depth: research.Depth?.toString() || '',
+            limit: research.Limit?.toString() || ''
+          });
           
           // Set form defaults if available
-          if (research.depth) {
-            form.setValue('depth', research.depth.toString());
+          if (research.Depth) {
+            form.setValue('depth', research.Depth.toString());
           }
-          if (research.limit) {
-            form.setValue('limit', research.limit.toString());
+          if (research.Limit) {
+            form.setValue('limit', research.Limit.toString());
           }
         }
       } catch (error) {
