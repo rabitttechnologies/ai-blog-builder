@@ -10,6 +10,7 @@ import CountryDropdown, { COUNTRIES } from "./CountryDropdown";
 import CountryCodeDropdown from "./CountryCodeDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import FormAuthWrapper from "./FormAuthWrapper";
 
 const SignupForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -111,165 +112,167 @@ const SignupForm: React.FC = () => {
   }
 
   return (
-    <div className="glass p-6 rounded-xl">
-      <h3 className="text-xl font-semibold mb-2 text-center">Start Your Free Trial</h3>
-      <p className="text-sm text-foreground/70 mb-6 text-center">
-        No credit card required. Get 2 free blogs for 14 days.
-      </p>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-start">
-          <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-          <span className="text-sm">{error}</span>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="email" className="text-sm font-medium mb-1">
-            Email Address <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="name" className="text-sm font-medium mb-1">
-            Full Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Your full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="phone" className="text-sm font-medium mb-1">
-            Phone Number <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex space-x-2">
-            <div className="w-1/3">
-              <CountryCodeDropdown
-                value={countryCode}
-                onChange={setCountryCode}
-                required
-              />
-            </div>
-            <div className="w-2/3">
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="Phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <p className="mt-1 text-xs text-foreground/60">
-            Enter numbers only, no spaces or special characters
-          </p>
-        </div>
-        
-        <div>
-          <Label htmlFor="organization" className="text-sm font-medium mb-1">
-            Organization Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="organization"
-            type="text"
-            placeholder="Your company or organization"
-            value={organization}
-            onChange={(e) => setOrganization(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="country" className="text-sm font-medium mb-1">
-            Country <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex items-center">
-            <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
-            <div className="w-full">
-              <CountryDropdown 
-                value={countryValue} 
-                onChange={(code) => {
-                  setCountryValue(code);
-                  // Reset city when country changes
-                  setCity("");
-                }} 
-                required 
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="city" className="text-sm font-medium mb-1">
-            City <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex items-center">
-            <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
-            <div className="w-full">
-              <CityDropdown 
-                value={city} 
-                onChange={setCity}
-                countryCode={countryValue}
-                required 
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="password" className="text-sm font-medium mb-1">
-            Password <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Create a password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-          />
-          <p className="mt-1 text-xs text-foreground/60">
-            Must be at least 8 characters
-          </p>
-        </div>
-        
-        <Button
-          type="submit"
-          fullWidth
-          isLoading={isSubmitting}
-        >
-          Create Account
-        </Button>
-        
-        <p className="text-xs text-center text-foreground/60 pt-2">
-          By signing up, you agree to our{" "}
-          <a href="/terms" className="text-primary hover:underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-primary hover:underline">
-            Privacy Policy
-          </a>
+    <FormAuthWrapper>
+      <div className="glass p-6 rounded-xl">
+        <h3 className="text-xl font-semibold mb-2 text-center">Start Your Free Trial</h3>
+        <p className="text-sm text-foreground/70 mb-6 text-center">
+          No credit card required. Get 2 free blogs for 14 days.
         </p>
-      </form>
-    </div>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-start">
+            <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="email" className="text-sm font-medium mb-1">
+              Email Address <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="name" className="text-sm font-medium mb-1">
+              Full Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="phone" className="text-sm font-medium mb-1">
+              Phone Number <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex space-x-2">
+              <div className="w-1/3">
+                <CountryCodeDropdown
+                  value={countryCode}
+                  onChange={setCountryCode}
+                  required
+                />
+              </div>
+              <div className="w-2/3">
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-foreground/60">
+              Enter numbers only, no spaces or special characters
+            </p>
+          </div>
+          
+          <div>
+            <Label htmlFor="organization" className="text-sm font-medium mb-1">
+              Organization Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="organization"
+              type="text"
+              placeholder="Your company or organization"
+              value={organization}
+              onChange={(e) => setOrganization(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="country" className="text-sm font-medium mb-1">
+              Country <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex items-center">
+              <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+              <div className="w-full">
+                <CountryDropdown 
+                  value={countryValue} 
+                  onChange={(code) => {
+                    setCountryValue(code);
+                    // Reset city when country changes
+                    setCity("");
+                  }} 
+                  required 
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="city" className="text-sm font-medium mb-1">
+              City <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex items-center">
+              <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
+              <div className="w-full">
+                <CityDropdown 
+                  value={city} 
+                  onChange={setCity}
+                  countryCode={countryValue}
+                  required 
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="password" className="text-sm font-medium mb-1">
+              Password <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Create a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+            />
+            <p className="mt-1 text-xs text-foreground/60">
+              Must be at least 8 characters
+            </p>
+          </div>
+          
+          <Button
+            type="submit"
+            fullWidth
+            isLoading={isSubmitting}
+          >
+            Create Account
+          </Button>
+          
+          <p className="text-xs text-center text-foreground/60 pt-2">
+            By signing up, you agree to our{" "}
+            <a href="/terms" className="text-primary hover:underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </a>
+          </p>
+        </form>
+      </div>
+    </FormAuthWrapper>
   );
 };
 

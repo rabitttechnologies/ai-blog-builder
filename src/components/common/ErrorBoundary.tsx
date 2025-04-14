@@ -15,6 +15,7 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   isAuthError: boolean;
+  isFormContextError: boolean;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -22,7 +23,8 @@ class ErrorBoundary extends Component<Props, State> {
     hasError: false,
     error: null,
     errorInfo: null,
-    isAuthError: false
+    isAuthError: false,
+    isFormContextError: false
   };
 
   public static getDerivedStateFromError(error: Error): Partial<State> {
@@ -33,7 +35,16 @@ class ErrorBoundary extends Component<Props, State> {
                          error.message.includes("useFormContext") ||
                          error.message.includes("Context");
     
-    return { hasError: true, error, isAuthError };
+    // Check specifically for form context errors
+    const isFormContextError = error.message.includes('getFieldState of') || 
+                              error.message.includes('Cannot destructure property');
+    
+    return { 
+      hasError: true, 
+      error, 
+      isAuthError,
+      isFormContextError
+    };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -43,11 +54,45 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public reset = (): void => {
-    this.setState({ hasError: false, error: null, errorInfo: null, isAuthError: false });
+    this.setState({ 
+      hasError: false, 
+      error: null, 
+      errorInfo: null, 
+      isAuthError: false,
+      isFormContextError: false
+    });
   }
 
   public render(): ReactNode {
     if (this.state.hasError) {
+      // For form context errors, only retry
+      if (this.state.isFormContextError) {
+        console.log("ErrorBoundary - Form context error detected, retrying page render");
+        return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background/50 to-background p-4">
+            <div className="text-center max-w-md">
+              <div className="flex justify-center mb-6">
+                <div className="h-20 w-20 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-10 w-10 text-yellow-500" />
+                </div>
+              </div>
+              
+              <h1 className="text-2xl font-bold mb-2">Loading Components</h1>
+              <p className="text-lg text-muted-foreground mb-6">
+                Please wait while we initialize the application
+              </p>
+              
+              <Button
+                variant="primary"
+                onClick={this.reset}
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        );
+      }
+      
       // For authentication-related errors, redirect to login
       if (this.state.isAuthError) {
         console.log("ErrorBoundary - Auth-related error detected, redirecting to login");
