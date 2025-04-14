@@ -23,6 +23,7 @@ export interface AuthUser {
 
 export interface AuthContextType {
   user: AuthUser | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string, profile?: Partial<UserProfile>) => Promise<void>;

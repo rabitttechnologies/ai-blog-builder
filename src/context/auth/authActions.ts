@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "./types";
 import { handleSessionFound } from "./authUtils";
-import { Session } from "@supabase/supabase-js";
+import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 
 export const loginUser = async (email: string, password: string, profile?: Partial<UserProfile>): Promise<void> => {
   try {
@@ -54,8 +54,21 @@ export const signupUser = async (email: string, password: string, profile?: Part
 };
 
 export const logoutUser = async (): Promise<void> => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
+    // Clear any lingering cookies to ensure complete logout
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.split('=');
+      if (name.trim().startsWith('sb-')) {
+        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; samesite=strict`;
+      }
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
 };
 
 export const requestPasswordResetForUser = async (email: string): Promise<void> => {
@@ -121,27 +134,23 @@ export const makeUserAdminAction = async (userId: string, currentUserIsAdmin: bo
 };
 
 export const initializeAuthListener = (
-  callback: (session: Session | null) => void
+  callback: (event: AuthChangeEvent, session: Session | null) => void
 ) => {
   return supabase.auth.onAuthStateChange((event, session) => {
-    console.log("AuthContext - Auth state changed:", event);
-    
-    if (session) {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        console.log("AuthContext - User authenticated or token refreshed");
-        // Defer execution to prevent deadlocks
-        setTimeout(() => {
-          callback(session);
-        }, 0);
-      }
-    } else if (event === 'SIGNED_OUT') {
-      console.log("AuthContext - User signed out");
-      callback(null);
-    }
+    callback(event, session);
   });
 };
 
 export const getCurrentSession = async (): Promise<Session | null> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("Error getting session:", error);
+      return null;
+    }
+    return session;
+  } catch (error) {
+    console.error("Unexpected error getting session:", error);
+    return null;
+  }
 };
