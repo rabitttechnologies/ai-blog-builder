@@ -196,10 +196,10 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({ onComplete, onCan
       const response = await fetch('https://n8n.agiagentworld.com/webhook/06dd6c16-b6a6-4503-9d8b-fc3a10548a28', {
         
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
+        // headers: {
+        //   'Content-Type': 'application/json'
+        // },
+        // body: JSON.stringify(payload),
         signal: controller.signal
       });
 
