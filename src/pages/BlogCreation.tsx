@@ -19,7 +19,11 @@ const BlogCreation = () => {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Create Blog - BlogCraft</title>
+        <title>Create Blog - Insight Writer AI</title>
+        <meta 
+          name="description" 
+          content="Research keywords and create optimized blog content with AI assistance." 
+        />
       </Helmet>
       
       <div className="container max-w-6xl py-8">

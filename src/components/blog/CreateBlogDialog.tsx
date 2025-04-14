@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import KeywordSearchForm from './KeywordSearchForm';
-import SearchResultsDisplay from './SearchResultsDisplay';
+import SelectableSearchResults from './SelectableSearchResults';
 
 interface CreateBlogDialogProps {
   isOpen: boolean;
@@ -11,19 +11,25 @@ interface CreateBlogDialogProps {
 
 const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ isOpen, onClose }) => {
   const [searchResults, setSearchResults] = useState<any>(null);
+  const [keyword, setKeyword] = useState<string>('');
+  const [workflowId, setWorkflowId] = useState<string>('');
   
   const handleSearchComplete = (data: any) => {
     setSearchResults(data);
+    setKeyword(data.keyword || '');
+    setWorkflowId(data.workflowId || crypto.randomUUID());
   };
   
   const handleClose = () => {
     setSearchResults(null);
+    setKeyword('');
+    setWorkflowId('');
     onClose();
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         {!searchResults ? (
           <>
             <DialogHeader>
@@ -35,8 +41,10 @@ const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ isOpen, onClose }) 
             />
           </>
         ) : (
-          <SearchResultsDisplay 
+          <SelectableSearchResults 
             data={searchResults} 
+            keyword={keyword}
+            workflowId={workflowId}
             onClose={handleClose} 
           />
         )}
