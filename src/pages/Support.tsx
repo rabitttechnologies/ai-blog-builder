@@ -18,4 +18,4 @@ const Support = () => {
   );
 };
 
-export default API;
+export default Support;
