@@ -217,7 +217,7 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({ onComplete, onCan
         const filteredData = Object.fromEntries(
           Object.entries(responseData[0]).filter(([_, value]) => value !== null)
         );
-        console.log(filteredData)
+        console.log(filteredData);
         onComplete({
           ...filteredData,
           keyword: formData.keyword,
