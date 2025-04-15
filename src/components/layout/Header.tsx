@@ -83,6 +83,17 @@ const Header: React.FC = () => {
           >
             Pricing
           </NavLink>
+          <NavLink
+            to="/contact"
+            className={({ isActive }) =>
+              cn(
+                "text-sm font-medium transition-colors",
+                isActive ? "text-primary" : "text-foreground/80 hover:text-foreground"
+              )
+            }
+          >
+            Contact
+          </NavLink>
           <div className="relative group">
             <button className="flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
               Resources
@@ -224,6 +235,13 @@ const Header: React.FC = () => {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Pricing
+          </Link>
+          <Link
+            to="/contact"
+            className="text-lg font-medium"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Contact
           </Link>
           <details className="group">
             <summary className="text-lg font-medium list-none flex justify-between cursor-pointer">

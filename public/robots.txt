@@ -1,0 +1,17 @@
+
+# robots.txt for agiagentworld.com
+User-agent: *
+Allow: /
+
+# Disallow admin and authenticated pages
+Disallow: /admin/
+Disallow: /account/
+Disallow: /dashboard/
+Disallow: /subscription/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /reset-password/
+Disallow: /forgot-password/
+
+# Sitemap location
+Sitemap: https://agiagentworld.com/sitemap.xml
