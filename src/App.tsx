@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -32,6 +31,10 @@ import Terms from "./pages/Terms";
 import Guides from "./pages/Guides";
 import Security from "./pages/Security";
 import BlogCreation from "./pages/BlogCreation";
+import API from "./pages/API";
+import Support from "./pages/Support";
+import Enterprise from "./pages/Enterprise";
+import Careers from "./pages/Careers";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -103,6 +106,12 @@ const App = () => (
               <Route path="/error" element={<NotFound />} />
               <Route path="/server-error" element={<ServerError />} />
               
+              {/* New routes */}
+              <Route path="/api" element={<API />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/enterprise" element={<Enterprise />} />
+              <Route path="/careers" element={<Careers />} />
+
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
