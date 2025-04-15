@@ -212,12 +212,12 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({ onComplete, onCan
       const responseData = await response.json();
 
       // Process successful response - filtering out null values
-      if (responseData && responseData.data) {
+      if (responseData) {
         // Only include fields that have non-null values
         const filteredData = Object.fromEntries(
-          Object.entries(responseData.data).filter(([_, value]) => value !== null)
+          Object.entries(responseData[0]).filter(([_, value]) => value !== null)
         );
-
+        console.log(filteredData)
         onComplete({
           ...filteredData,
           keyword: formData.keyword,
