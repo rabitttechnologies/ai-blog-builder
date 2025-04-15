@@ -36,17 +36,23 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
             <ul className="space-y-4">
               {data.organicResults.map((result: any, index: number) => (
                 <li key={index} className="p-3 bg-gray-50 rounded-md">
-                  <p className="font-semibold">{result.title}</p>
-                  <a 
-                    href={result.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 text-sm flex items-center hover:underline"
-                  >
-                    {result.url.substring(0, 50)}...
-                    <ExternalLink className="ml-1 h-3 w-3" />
-                  </a>
-                  <p className="text-sm text-gray-600 mt-1">{result.snippet}</p>
+                  {typeof result === 'string' ? (
+                    <p>{result}</p>
+                  ) : (
+                    <>
+                      <p className="font-semibold">{result.title}</p>
+                      <a 
+                        href={result.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 text-sm flex items-center hover:underline"
+                      >
+                        {result.url.substring(0, 50)}...
+                        <ExternalLink className="ml-1 h-3 w-3" />
+                      </a>
+                      <p className="text-sm text-gray-600 mt-1">{result.snippet}</p>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
@@ -90,7 +96,43 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         </Card>
       )}
       
-      {/* Keyword Clusters */}
+      {/* Paid Results */}
+      {hasData(data.paidResults) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Paid Results</CardTitle>
+            <CardDescription>Sponsored content related to your search</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {data.paidResults.map((result: string, index: number) => (
+                <li key={index} className="p-2 bg-gray-50 rounded-md">{result}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Suggested Results */}
+      {hasData(data.suggestedResults) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Suggested Results</CardTitle>
+            <CardDescription>Additional suggestions for your search</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {data.suggestedResults.map((suggestion: string, index: number) => (
+                <span key={index} className="px-3 py-1 bg-gray-100 rounded-md text-sm">
+                  {suggestion}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Keyword Clusters - for backward compatibility */}
       {hasData(data.keywordClusters) && (
         <Card>
           <CardHeader>
@@ -116,7 +158,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         </Card>
       )}
       
-      {/* Historical Data */}
+      {/* Historical Data - for backward compatibility */}
       {hasData(data.historicalData) && (
         <Card>
           <CardHeader>
@@ -136,7 +178,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         </Card>
       )}
       
-      {/* Pillar Content */}
+      {/* Pillar Content - for backward compatibility */}
       {hasData(data.pillarContent) && (
         <Card>
           <CardHeader>
@@ -166,7 +208,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         </Card>
       )}
       
-      {/* Category Keywords */}
+      {/* Category Keywords - for backward compatibility */}
       {hasData(data.categoryKeyword) && (
         <Card>
           <CardHeader>

@@ -48,7 +48,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
     'Top in SERP': { key: 'organicResults', type: 'array' },
     'Hot Keyword Ideas': { key: 'relatedQueries', type: 'array' },
     'Popular Right Now': { key: 'peopleAlsoAsk', type: 'array' },
-    'Other Keyword Ideas': { keys: ['keywordClusters', 'categoryKeyword'], type: 'array' }
+    'Other Keyword Ideas': { keys: ['paidResults', 'suggestedResults'], type: 'array' }
   };
 
   // Toggle selection for an item
@@ -112,11 +112,12 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
           let content;
           
           if (typeof item === 'string') {
+            // Simple string item (most common in the new format)
             content = (
               <div className="ml-2">{item}</div>
             );
           } else if (item.title && item.url) {
-            // Organic results
+            // Organic results (object format for backward compatibility)
             content = (
               <div className="ml-2">
                 <p className="font-semibold">{item.title}</p>
@@ -172,7 +173,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
                 )}
               </div>
             );
-          } else {
+          } else if (typeof item === 'object') {
             // Generic object
             content = (
               <div className="ml-2">
