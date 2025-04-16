@@ -2,8 +2,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/separator';
-import ResultsSection from './ResultsSection';
-import KeywordsDisplay from './KeywordsDisplay';
+import { isValidData } from '@/utils/dataValidation';
+import SearchResultSection from './SearchResultSection';
+import KeywordListSection from './KeywordListSection';
 
 interface SearchResultsDisplayProps {
   data: any;
@@ -12,9 +13,6 @@ interface SearchResultsDisplayProps {
 
 const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClose }) => {
   if (!data) return null;
-  
-  // Helper to check if a section has data before rendering
-  const hasData = (section: any) => section && Array.isArray(section) && section.length > 0;
   
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -28,8 +26,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       <Separator />
       
       {/* Organic Results */}
-      {hasData(data.organicResults) && (
-        <ResultsSection
+      {isValidData(data.organicResults, 'array') && (
+        <SearchResultSection
           title="Organic Results"
           description="Top search results for your keyword"
           items={data.organicResults}
@@ -38,8 +36,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* People Also Ask */}
-      {hasData(data.peopleAlsoAsk) && (
-        <ResultsSection
+      {isValidData(data.peopleAlsoAsk, 'array') && (
+        <SearchResultSection
           title="People Also Ask"
           description="Related questions from users"
           items={data.peopleAlsoAsk}
@@ -47,8 +45,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Related Queries */}
-      {hasData(data.relatedQueries) && (
-        <KeywordsDisplay
+      {isValidData(data.relatedQueries, 'array') && (
+        <KeywordListSection
           title="Related Queries"
           description="Similar searches users perform"
           keywords={data.relatedQueries}
@@ -56,8 +54,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Paid Results */}
-      {hasData(data.paidResults) && (
-        <ResultsSection
+      {isValidData(data.paidResults, 'array') && (
+        <SearchResultSection
           title="Paid Results"
           description="Sponsored content related to your search"
           items={data.paidResults}
@@ -65,8 +63,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Suggested Results */}
-      {hasData(data.suggestedResults) && (
-        <KeywordsDisplay
+      {isValidData(data.suggestedResults, 'array') && (
+        <KeywordListSection
           title="Suggested Results"
           description="Additional suggestions for your search"
           keywords={data.suggestedResults}
@@ -74,8 +72,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Keyword Clusters */}
-      {hasData(data.keywordClusters) && (
-        <ResultsSection
+      {isValidData(data.keywordClusters, 'array') && (
+        <SearchResultSection
           title="Keyword Clusters"
           description="Groups of related keywords"
           items={data.keywordClusters}
@@ -83,8 +81,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Historical Data */}
-      {hasData(data.historicalData) && (
-        <ResultsSection
+      {isValidData(data.historicalData, 'array') && (
+        <SearchResultSection
           title="Historical Data"
           description="Search volume trends over time"
           items={data.historicalData}
@@ -92,8 +90,8 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
       )}
       
       {/* Category Keywords */}
-      {hasData(data.categoryKeyword) && (
-        <KeywordsDisplay
+      {isValidData(data.categoryKeyword, 'array') && (
+        <KeywordListSection
           title="Category Keywords"
           description="Keywords categorized by theme"
           keywords={data.categoryKeyword}

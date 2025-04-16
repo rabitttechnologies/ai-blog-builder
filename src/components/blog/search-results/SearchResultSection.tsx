@@ -1,16 +1,17 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ExternalLink } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
-interface ResultsSectionProps {
+interface SearchResultSectionProps {
   title: string;
   description: string;
   items: any[];
   type?: 'link' | 'text';
 }
 
-const ResultsSection: React.FC<ResultsSectionProps> = ({ 
+const SearchResultSection: React.FC<SearchResultSectionProps> = ({ 
   title, 
   description, 
   items,
@@ -20,10 +21,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
+      <SectionHeader title={title} description={description} />
       <CardContent>
         <ul className="space-y-4">
           {items.map((item, index) => (
@@ -53,4 +51,4 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
   );
 };
 
-export default ResultsSection;
+export default SearchResultSection;

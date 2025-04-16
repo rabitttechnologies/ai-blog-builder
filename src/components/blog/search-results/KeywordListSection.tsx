@@ -1,14 +1,15 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import SectionHeader from './SectionHeader';
 
-interface KeywordsDisplayProps {
+interface KeywordListSectionProps {
   title: string;
   description: string;
   keywords: string[];
 }
 
-const KeywordsDisplay: React.FC<KeywordsDisplayProps> = ({
+const KeywordListSection: React.FC<KeywordListSectionProps> = ({
   title,
   description,
   keywords
@@ -17,10 +18,7 @@ const KeywordsDisplay: React.FC<KeywordsDisplayProps> = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
+      <SectionHeader title={title} description={description} />
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {keywords.map((keyword, index) => (
@@ -34,4 +32,4 @@ const KeywordsDisplay: React.FC<KeywordsDisplayProps> = ({
   );
 };
 
-export default KeywordsDisplay;
+export default KeywordListSection;
