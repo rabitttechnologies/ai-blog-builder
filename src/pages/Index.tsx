@@ -15,12 +15,12 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Helmet>
         <meta name="description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" />
-        <link rel="canonical" href="https://insightwriter.ai" />
+        <link rel="canonical" href="https://agiagentworld.com" />
         <meta name="keywords" content="AI blog writer, article generator, content creation, SEO writing, blogging tools" />
         <meta property="og:title" content="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger" />
         <meta property="og:description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://insightwriter.ai" />
+        <meta property="og:url" content="https://agiagentworld.com" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger" />
         <meta name="twitter:description" content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence." />
