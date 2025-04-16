@@ -1,0 +1,319 @@
+
+import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/context/auth';
+import LoadingOverlay from './LoadingOverlay';
+
+type VolumeData = {
+  keyword: string;
+  monthlySearches: number | null;
+  competitionIndex: number | null;
+  competition: string | null;
+  lowTopOfPageBid: number | null;
+  highTopOfPageBid: number | null;
+};
+
+type ClusteringOption = 'Select for Clustering' | 'Reject for Clustering' | 'Keep for Future';
+
+interface KeywordSelectionRow extends VolumeData {
+  clusteringOption: ClusteringOption;
+  isSelected: boolean;
+}
+
+interface PastSearchVolumeResultsProps {
+  volumeData: VolumeData[];
+  workflowId: string;
+  originalKeyword: string;
+  onComplete: () => void;
+  onCancel: () => void;
+}
+
+const formatBidValue = (bid: any): string => {
+  // Check if the value is valid for calculation
+  if (bid === null || bid === undefined || isNaN(Number(bid))) {
+    return "N/A";
+  }
+  
+  // Convert to number, divide, and format with 2 decimal places
+  const numericBid = Number(bid);
+  const formattedBid = (numericBid / 1000000000).toFixed(2);
+  
+  // Return formatted string with dollar sign
+  return `$${formattedBid}`;
+};
+
+const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
+  volumeData,
+  workflowId,
+  originalKeyword,
+  onComplete,
+  onCancel
+}) => {
+  const { toast } = useToast();
+  const { user, session } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [keywordRows, setKeywordRows] = useState<KeywordSelectionRow[]>(() => 
+    volumeData.map(item => ({
+      ...item,
+      clusteringOption: 'Select for Clustering',
+      isSelected: true
+    }))
+  );
+
+  // Get session ID for request tracking
+  const getSessionId = () => session?.access_token?.substring(0, 16) || 'anonymous-session';
+
+  // Toggle selection for a keyword
+  const toggleSelection = (index: number) => {
+    setKeywordRows(prev => {
+      const updated = [...prev];
+      updated[index].isSelected = !updated[index].isSelected;
+      return updated;
+    });
+  };
+
+  // Update clustering option for a keyword
+  const updateClusteringOption = (index: number, option: ClusteringOption) => {
+    setKeywordRows(prev => {
+      const updated = [...prev];
+      updated[index].clusteringOption = option;
+      return updated;
+    });
+  };
+
+  // Select or deselect all keywords
+  const toggleSelectAll = (select: boolean) => {
+    setKeywordRows(prev => 
+      prev.map(row => ({
+        ...row,
+        isSelected: select
+      }))
+    );
+  };
+
+  // Get selected count
+  const selectedCount = keywordRows.filter(row => row.isSelected).length;
+
+  // Handle sending selected keywords to clustering
+  const handleSendToClustering = async () => {
+    // Validate authentication
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to proceed with clustering.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate selections
+    const selectedKeywords = keywordRows.filter(row => row.isSelected);
+    if (selectedKeywords.length === 0) {
+      toast({
+        title: "No keywords selected",
+        description: "Please select at least one keyword to proceed.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const payload = {
+        selectedKeywords: selectedKeywords.map(row => ({
+          keyword: row.keyword,
+          clusteringOption: row.clusteringOption,
+          monthlySearches: row.monthlySearches,
+          competitionIndex: row.competitionIndex,
+          competition: row.competition,
+          lowTopOfPageBid: row.lowTopOfPageBid,
+          highTopOfPageBid: row.highTopOfPageBid
+        })),
+        workflowId,
+        userId: user.id,
+        sessionId: getSessionId(),
+        originalKeyword
+      };
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout for clustering
+      
+      const response = await fetch('https://n8n.agiagentworld.com/webhook/clustering', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Clustering request failed (${response.status}): ${errorText}`);
+      }
+      
+      const responseData = await response.json();
+      
+      toast({
+        title: "Clustering Complete",
+        description: "Keywords have been successfully clustered.",
+      });
+      
+      console.log("Clustering response:", responseData);
+      onComplete();
+      
+    } catch (error: any) {
+      const errorMessage = error.name === 'AbortError' 
+        ? 'Request timed out. Clustering operation may take longer than expected.'
+        : error.message || 'Failed to perform clustering operation';
+        
+      toast({
+        title: "Clustering Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      
+      console.error('Clustering error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-semibold">Keyword Volume Analysis: <span className="text-primary">{originalKeyword}</span></h3>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendToClustering}
+            disabled={isLoading || selectedCount === 0}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              `Send to Clustering (${selectedCount})`
+            )}
+          </Button>
+        </div>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Search Volume Results</CardTitle>
+          <CardDescription>
+            Review monthly search volume and competition metrics for your selected keywords
+          </CardDescription>
+          <div className="flex items-center justify-between mt-2">
+            <div className="text-sm text-muted-foreground">
+              {selectedCount} keywords selected
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => toggleSelectAll(true)}
+                disabled={keywordRows.every(row => row.isSelected)}
+              >
+                Select All
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => toggleSelectAll(false)}
+                disabled={keywordRows.every(row => !row.isSelected)}
+              >
+                Deselect All
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">Select</TableHead>
+                  <TableHead>Keyword</TableHead>
+                  <TableHead className="text-right">Monthly Searches</TableHead>
+                  <TableHead className="text-right">Competition Index</TableHead>
+                  <TableHead className="text-right">Competition</TableHead>
+                  <TableHead className="text-right">Top of Page Bid (Low)</TableHead>
+                  <TableHead className="text-right">Top of Page Bid (High)</TableHead>
+                  <TableHead className="w-[180px]">Clustering Option</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {keywordRows.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={row.isSelected}
+                        onChange={() => toggleSelection(index)}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{row.keyword}</TableCell>
+                    <TableCell className="text-right">
+                      {row.monthlySearches !== null ? row.monthlySearches.toLocaleString() : 'N/A'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.competitionIndex !== null ? row.competitionIndex : 'N/A'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.competition || 'N/A'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatBidValue(row.lowTopOfPageBid)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatBidValue(row.highTopOfPageBid)}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={row.clusteringOption}
+                        onValueChange={(value: ClusteringOption) => 
+                          updateClusteringOption(index, value as ClusteringOption)
+                        }
+                        disabled={!row.isSelected}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Select for Clustering">Select for Clustering</SelectItem>
+                          <SelectItem value="Reject for Clustering">Reject for Clustering</SelectItem>
+                          <SelectItem value="Keep for Future">Keep for Future</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {isLoading && <LoadingOverlay />}
+    </div>
+  );
+};
+
+export default PastSearchVolumeResults;

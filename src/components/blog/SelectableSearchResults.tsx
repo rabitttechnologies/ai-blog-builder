@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/separator';
@@ -10,6 +10,11 @@ import { isItemSelected, toggleItemSelection } from '@/utils/selectionUtils';
 import SelectableItem from './SelectableItem';
 import SearchSectionHeader from './SearchSectionHeader';
 import LoadingOverlay from './LoadingOverlay';
+import PastSearchVolumeResults from './PastSearchVolumeResults';
+import { supabase } from '@/integrations/supabase/client';
+
+// Maximum number of items that can be selected
+const MAX_SELECTIONS = 30;
 
 interface SelectableSearchResultsProps {
   data: any;
@@ -28,6 +33,36 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
   const { user, session } = useAuth();
   const [selections, setSelections] = useState<Record<string, any[]>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [volumeData, setVolumeData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<{ country?: string; language?: string } | null>(null);
+  
+  // Calculate total selections across all categories
+  const totalSelections = Object.values(selections).reduce(
+    (total, items) => total + items.length, 0
+  );
+
+  // Fetch user profile data on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('country, language')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        setProfileData(data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        // No toast here to avoid annoying the user
+      }
+    };
+    
+    fetchProfileData();
+  }, [user]);
 
   if (!data) return null;
   
@@ -49,6 +84,27 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
   };
 
   const getSessionId = () => session?.access_token?.substring(0, 16) || 'anonymous-session';
+
+  const handleToggleSelection = (heading: string, item: any) => {
+    // Check if item is already selected (always allow deselection)
+    if (isItemSelected(selections, heading, item)) {
+      toggleItemSelection(selections, heading, item, setSelections);
+      return;
+    }
+    
+    // Check if adding would exceed max selections
+    if (totalSelections >= MAX_SELECTIONS) {
+      toast({
+        title: "Selection limit reached",
+        description: `You can select a maximum of ${MAX_SELECTIONS} keywords.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If we're under the limit, allow the selection
+    toggleItemSelection(selections, heading, item, setSelections);
+  };
 
   const handleAnalyzeSelected = async () => {
     const hasSelections = Object.values(selections).some(items => items.length > 0);
@@ -79,7 +135,9 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
         workflowId,
         userId: user.id, 
         sessionId: getSessionId(),
-        keyword
+        keyword,
+        country: profileData?.country || null,
+        language: profileData?.language || null
       };
       
       const controller = new AbortController();
@@ -101,12 +159,19 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
       
       const responseData = await response.json();
       
+      // Check if response has the expected format
+      if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
+        throw new Error('Received empty or invalid response from the server');
+      }
+      
+      setVolumeData(responseData);
+      
       toast({
         title: "Analysis Complete",
-        description: "Selected items have been successfully analyzed.",
+        description: "Volume data retrieved successfully.",
       });
       
-      console.log("Analysis response:", responseData);
+      console.log("Volume analysis response:", responseData);
       
     } catch (error: any) {
       const errorMessage = error.name === 'AbortError' 
@@ -125,14 +190,28 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
     }
   };
 
-  const totalSelections = Object.values(selections).reduce(
-    (total, items) => total + items.length, 0
-  );
+  // If we have volume data, show the volume results component
+  if (volumeData) {
+    return (
+      <PastSearchVolumeResults
+        volumeData={volumeData}
+        workflowId={workflowId}
+        originalKeyword={keyword}
+        onComplete={onClose}
+        onCancel={() => setVolumeData(null)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-semibold">Search Results: <span className="text-primary">{keyword}</span></h3>
+        <div>
+          <h3 className="text-2xl font-semibold">Search Results: <span className="text-primary">{keyword}</span></h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select up to {MAX_SELECTIONS} keywords to analyze ({totalSelections}/{MAX_SELECTIONS} selected)
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -191,9 +270,10 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
                     key={index}
                     item={item}
                     isSelected={isItemSelected(selections, heading, item)}
-                    onToggle={() => toggleItemSelection(selections, heading, item, setSelections)}
+                    onToggle={() => handleToggleSelection(heading, item)}
                     index={index}
                     heading={heading}
+                    disabled={!isItemSelected(selections, heading, item) && totalSelections >= MAX_SELECTIONS}
                   />
                 ))}
               </div>
