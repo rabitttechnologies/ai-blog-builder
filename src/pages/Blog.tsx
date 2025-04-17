@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -7,14 +7,23 @@ import BlogHero from "@/components/blog/page/BlogHero";
 import FeaturedPost from "@/components/blog/page/FeaturedPost";
 import BlogGrid from "@/components/blog/page/BlogGrid";
 import NewsletterSection from "@/components/blog/page/NewsletterSection";
-import { blogPosts } from "@/data/blogPosts";
+import { blogPosts, getTranslatedBlogPosts } from "@/data/blogPosts";
+import { useLanguage } from "@/context/language/LanguageContext";
+import { formatLocalizedDate } from "@/utils/languageUtils";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const { currentLanguage } = useLanguage();
+  const [translatedPosts, setTranslatedPosts] = useState(blogPosts);
   
-  const featuredPost = blogPosts.find(post => post.featured);
-  const regularPosts = blogPosts.filter(post => !post.featured);
+  // Update posts when language changes
+  useEffect(() => {
+    setTranslatedPosts(getTranslatedBlogPosts(currentLanguage));
+  }, [currentLanguage]);
+  
+  const featuredPost = translatedPosts.find(post => post.featured);
+  const regularPosts = translatedPosts.filter(post => !post.featured);
   
   const filteredPosts = regularPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -36,6 +45,14 @@ const Blog = () => {
           name="description" 
           content="Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success." 
         />
+        <meta name="language" content={currentLanguage} />
+        {/* Add hreflang tags for SEO */}
+        <link rel="alternate" hreflang="en" href="https://insightwriter.ai/blog" />
+        <link rel="alternate" hreflang="es" href="https://insightwriter.ai/es/blog" />
+        <link rel="alternate" hreflang="fr" href="https://insightwriter.ai/fr/blog" />
+        <link rel="alternate" hreflang="de" href="https://insightwriter.ai/de/blog" />
+        <link rel="alternate" hreflang="zh" href="https://insightwriter.ai/zh/blog" />
+        <link rel="alternate" hreflang="x-default" href="https://insightwriter.ai/blog" />
       </Helmet>
       
       <Header />
@@ -46,6 +63,7 @@ const Blog = () => {
           onSearchChange={setSearchQuery}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
+          language={currentLanguage}
         />
         
         {featuredPost && searchQuery === "" && selectedCategory === "All Categories" && (
@@ -63,4 +81,3 @@ const Blog = () => {
 };
 
 export default Blog;
-

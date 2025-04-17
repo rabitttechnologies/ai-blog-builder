@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FormValues } from '@/hooks/useSearchFormData';
+import { useLanguage } from '@/context/language/LanguageContext';
 
 interface UseKeywordSearchProps {
   getSessionId: () => string;
@@ -12,6 +13,7 @@ interface UseKeywordSearchProps {
 
 export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onComplete }: UseKeywordSearchProps) => {
   const { toast } = useToast();
+  const { currentLanguage } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
 
@@ -22,15 +24,19 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
     const workflowId = generateWorkflowId();
     const sessionId = getSessionId();
 
+    // Use the form's language or fall back to the current UI language
+    const searchLanguage = formData.language || currentLanguage;
+
     const payload = {
       keyword: formData.keyword,
-      language: formData.language,
+      language: searchLanguage,
       country: formData.country,
       depth: Number(formData.depth),
       limit: Number(formData.limit),
       uuid: userId,
       workflowId,
-      sessionId
+      sessionId,
+      uiLanguage: currentLanguage // Add UI language as separate parameter
     };
 
     try {
@@ -66,7 +72,8 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
         onComplete({
           ...filteredData,
           keyword: formData.keyword,
-          workflowId
+          workflowId,
+          language: searchLanguage // Include language in the results
         });
       } else {
         toast({

@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth';
+import { useLanguage } from '@/context/language/LanguageContext';
 
 export const useVolumeAnalysis = (keyword: string, workflowId: string) => {
   const { toast } = useToast();
   const { user, session } = useAuth();
+  const { currentLanguage } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [volumeData, setVolumeData] = useState<any>(null);
 
@@ -36,6 +38,9 @@ export const useVolumeAnalysis = (keyword: string, workflowId: string) => {
     setIsLoading(true);
 
     try {
+      // Use the profile's language or fall back to the current UI language
+      const searchLanguage = profileData?.language || currentLanguage;
+      
       const payload = {
         selectedData: selections,
         workflowId,
@@ -43,7 +48,8 @@ export const useVolumeAnalysis = (keyword: string, workflowId: string) => {
         sessionId: getSessionId(),
         keyword,
         country: profileData?.country || null,
-        language: profileData?.language || null
+        language: searchLanguage,
+        uiLanguage: currentLanguage // Add UI language as separate parameter
       };
       
       const controller = new AbortController();
