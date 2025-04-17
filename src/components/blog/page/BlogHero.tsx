@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LanguageSelector } from '@/components/common/LanguageSelector';
+import LanguageSelector from '@/components/common/LanguageSelector';
 
 interface BlogHeroProps {
   searchQuery: string;
