@@ -9,19 +9,28 @@ interface SearchResultSectionProps {
   description: string;
   items: any[];
   type?: 'link' | 'text';
+  language?: string; // Add language support
+  onLanguageChange?: (language: string) => void; // Optional language change handler
 }
 
 const SearchResultSection: React.FC<SearchResultSectionProps> = ({ 
   title, 
   description, 
   items,
-  type = 'text'
+  type = 'text',
+  language = 'en', // Default to English
+  onLanguageChange
 }) => {
   if (!items || items.length === 0) return null;
 
   return (
     <Card>
-      <SectionHeader title={title} description={description} />
+      <SectionHeader 
+        title={title} 
+        description={description} 
+        language={language}
+        onLanguageChange={onLanguageChange}
+      />
       <CardContent>
         <ul className="space-y-4">
           {items.map((item, index) => (
