@@ -1,14 +1,15 @@
-
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/input";
-import { Search, ArrowRight, Tag, Calendar, Clock } from "lucide-react";
+import BlogHero from "@/components/blog/page/BlogHero";
+import FeaturedPost from "@/components/blog/page/FeaturedPost";
+import BlogGrid from "@/components/blog/page/BlogGrid";
+import NewsletterSection from "@/components/blog/page/NewsletterSection";
+import { BlogPost } from "@/types/blog";
 
-const blogPosts = [
+// Mock data - keep the same structure as before
+const blogPosts: BlogPost[] = [
   {
     id: 1,
     title: "How AI is Revolutionizing Content Creation in 2025",
@@ -83,20 +84,9 @@ const blogPosts = [
   }
 ];
 
-const categories = [
-  "All Categories",
-  "AI Technology",
-  "SEO",
-  "Content Strategy",
-  "Case Studies",
-  "Content Ethics",
-  "Tutorials"
-];
-
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const navigate = useNavigate();
   
   const featuredPost = blogPosts.find(post => post.featured);
   const regularPosts = blogPosts.filter(post => !post.featured);
@@ -109,195 +99,37 @@ const Blog = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const handleLoadMore = () => {
+    // Load more posts logic would go here
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
         <title>Blog | Insight Writer AI</title>
-        <meta name="description" content="Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success." />
+        <meta 
+          name="description" 
+          content="Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success." 
+        />
       </Helmet>
       
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
-          <div className="container-wide">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">
-              Insights & Resources
-            </h1>
-            <p className="text-xl text-foreground/70 max-w-3xl mx-auto text-center mb-10">
-              The latest strategies, guides, and insights on AI content creation and SEO optimization.
-            </p>
-            
-            {/* Search and filter */}
-            <div className="max-w-3xl mx-auto">
-              <div className="relative mb-8">
-                <Search className="absolute left-3 top-3 text-foreground/40" />
-                <Input
-                  type="text"
-                  placeholder="Search articles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12"
-                />
-              </div>
-              
-              <div className="flex flex-wrap gap-2 justify-center">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === category
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-foreground/70 hover:bg-gray-200"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <BlogHero
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
         
-        {/* Featured Post */}
         {featuredPost && searchQuery === "" && selectedCategory === "All Categories" && (
-          <section className="py-12">
-            <div className="container-wide">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 glass p-6 rounded-xl">
-                <div className="lg:col-span-3 order-2 lg:order-1">
-                  <div className="badge badge-primary mb-4">Featured</div>
-                  <h2 className="text-3xl font-bold mb-4">
-                    <a href={`/blog/${featuredPost.id}`} className="hover:text-primary transition-colors">
-                      {featuredPost.title}
-                    </a>
-                  </h2>
-                  <p className="text-foreground/70 text-lg mb-6">
-                    {featuredPost.excerpt}
-                  </p>
-                  <div className="flex flex-wrap gap-4 items-center mb-6">
-                    <div className="flex items-center gap-2 text-sm text-foreground/60">
-                      <Calendar className="h-4 w-4" />
-                      <span>{featuredPost.date}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-foreground/60">
-                      <Clock className="h-4 w-4" />
-                      <span>{featuredPost.readTime}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-foreground/60">
-                      <Tag className="h-4 w-4" />
-                      <span>{featuredPost.category}</span>
-                    </div>
-                  </div>
-                  <Button onClick={() => navigate(`/blog/${featuredPost.id}`)}>
-                    Read Article <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="lg:col-span-2 order-1 lg:order-2">
-                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={featuredPost.image}
-                      alt={featuredPost.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <FeaturedPost post={featuredPost} />
         )}
         
-        {/* Articles Grid */}
-        <section className="py-12">
-          <div className="container-wide">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPosts.map((post) => (
-                <article key={post.id} className="glass rounded-xl overflow-hidden transition-all hover:shadow-md">
-                  <div className="aspect-video bg-gray-100">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-primary rounded-full">
-                        {post.category}
-                      </span>
-                      <span className="text-sm text-foreground/60 flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {post.readTime}
-                      </span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 line-clamp-2">
-                      <a href={`/blog/${post.id}`} className="hover:text-primary transition-colors">
-                        {post.title}
-                      </a>
-                    </h3>
-                    <p className="text-foreground/70 mb-4 line-clamp-3">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-foreground/60">
-                        {post.date} • {post.author}
-                      </span>
-                      <a 
-                        href={`/blog/${post.id}`} 
-                        className="text-primary font-medium text-sm flex items-center hover:text-primary/80 transition-colors"
-                      >
-                        Read more <ArrowRight className="ml-1 h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-            
-            {filteredPosts.length === 0 && (
-              <div className="text-center py-16">
-                <h3 className="text-xl font-semibold mb-4">No articles found</h3>
-                <p className="text-foreground/70 mb-6">Try adjusting your search or filter criteria</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("All Categories");
-                  }}
-                >
-                  Reset Filters
-                </Button>
-              </div>
-            )}
-            
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg">
-                Load More Articles
-              </Button>
-            </div>
-          </div>
-        </section>
+        <BlogGrid posts={filteredPosts} onLoadMore={handleLoadMore} />
         
-        {/* Newsletter */}
-        <section className="py-16 bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-          <div className="container-wide text-center">
-            <h2 className="text-3xl font-bold mb-4">Get the Latest Content Tips</h2>
-            <p className="text-lg max-w-2xl mx-auto mb-8">
-              Subscribe to our newsletter for weekly insights on AI content creation, SEO, and more.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <Input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="bg-white/20 text-white placeholder:text-white/60 border-white/30 focus-visible:ring-white"
-              />
-              <Button className="bg-white text-blue-600 hover:bg-white/90">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </section>
+        <NewsletterSection />
       </main>
       
       <Footer />
