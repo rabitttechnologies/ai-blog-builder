@@ -1,7 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { BlogPost, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
+import type { BlogPost, BlogPostInsert, BlogPostUpdate, BlogTranslation } from '@/types/blog';
 import { useLanguage } from '@/context/language/LanguageContext';
 import { blogPosts } from '@/data/blogPosts';
 
@@ -9,7 +8,7 @@ export const useBlogPosts = () => {
   const queryClient = useQueryClient();
   const { currentLanguage } = useLanguage();
 
-  const getBlogPosts = async (language: string) => {
+  const getBlogPosts = async (language: string): Promise<BlogPost[]> => {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
@@ -24,32 +23,31 @@ export const useBlogPosts = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Cast data to BlogPost type with necessary transformations for backward compatibility
         return data.map(post => {
-          // Handle translations properly - check if it exists and is an array
+          // Handle translations properly - ensure it's an array
           const translationsArray = Array.isArray(post.translations) ? post.translations : [];
           
-          return {
+          const transformedPost: BlogPost = {
             ...post,
-            // Add backward compatibility fields
             date: post.published_at || post.created_at,
-            readTime: '5 min', // Default read time
+            readTime: '5 min',
             category: post.categories?.[0] || 'Uncategorized',
             image: post.featured_image,
-            // Transform translations to expected format if needed
             translations: translationsArray.length > 0 ? 
               Object.fromEntries(
                 translationsArray.map((t: any) => [
-                  t.language_code, 
-                  { 
-                    title: t.title, 
-                    excerpt: t.excerpt || '', 
-                    category: t.categories?.[0] || 'Uncategorized' 
-                  }
+                  t.language_code,
+                  {
+                    title: t.title,
+                    excerpt: t.excerpt || '',
+                    category: t.categories?.[0] || 'Uncategorized'
+                  } as BlogTranslation
                 ])
               ) : undefined
           };
-        }) as BlogPost[];
+
+          return transformedPost;
+        });
       }
       
       return blogPosts;

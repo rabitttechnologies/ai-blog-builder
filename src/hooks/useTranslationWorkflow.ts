@@ -1,47 +1,42 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { TranslationWorkflow, TranslationWorkflowInsert } from '@/types/blog';
+import { TranslationWorkflow, TranslationWorkflowInsert } from '@/types/blog';
+import { useToast } from '@/hooks/use-toast';
 
-export const useTranslationWorkflow = (blogId?: string) => {
+export const useTranslationWorkflow = (blogId: string) => {
   const queryClient = useQueryClient();
-
-  const getTranslationWorkflow = async (id: string) => {
-    const { data, error } = await supabase
-      .from('translation_workflows')
-      .select('*')
-      .eq('blog_id', id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
-  };
-
-  const { data: workflow, isLoading } = useQuery({
-    queryKey: ['translation_workflow', blogId],
-    queryFn: () => blogId ? getTranslationWorkflow(blogId) : null,
-    enabled: !!blogId,
-  });
+  const { toast } = useToast();
 
   const requestTranslation = useMutation({
-    mutationFn: async (newWorkflow: TranslationWorkflowInsert) => {
-      const { data, error } = await supabase
+    mutationFn: async (data: TranslationWorkflowInsert) => {
+      const { data: result, error } = await supabase
         .from('translation_workflows')
-        .insert(newWorkflow)
+        .insert(data)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['translation_workflow'] });
+      queryClient.invalidateQueries({ queryKey: ['blog_posts'] });
+      toast({
+        title: "Translation requested",
+        description: "The translation process has been initiated.",
+      });
+    },
+    onError: (error) => {
+      console.error('Translation request failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to request translation. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
   return {
-    workflow,
-    isLoading,
     requestTranslation,
   };
 };
