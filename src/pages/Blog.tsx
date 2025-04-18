@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
@@ -10,6 +11,7 @@ import { useLanguage } from "@/context/language/LanguageContext";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
 import { TranslationRequestDialog } from "@/components/blog/translation/TranslationRequestDialog";
 import { TranslationStatusBadge } from "@/components/blog/translation/TranslationStatus";
+import { Toaster } from "@/components/ui/toaster";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,6 +94,7 @@ const Blog = () => {
       </main>
       
       <Footer />
+      <Toaster />
     </div>
   );
 };

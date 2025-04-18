@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { BlogPost, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
@@ -23,7 +24,27 @@ export const useBlogPosts = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        return data as BlogPost[];
+        // Cast data to BlogPost type with necessary transformations for backward compatibility
+        return data.map(post => ({
+          ...post,
+          // Add backward compatibility fields
+          date: post.published_at || post.created_at,
+          readTime: '5 min', // Default read time
+          category: post.categories?.[0] || 'Uncategorized',
+          image: post.featured_image,
+          // Transform translations to expected format if needed
+          translations: post.translations ? 
+            Object.fromEntries(
+              (post.translations as any[]).map(t => [
+                t.language_code, 
+                { 
+                  title: t.title, 
+                  excerpt: t.excerpt || '', 
+                  category: t.categories?.[0] || 'Uncategorized' 
+                }
+              ])
+            ) : undefined
+        })) as BlogPost[];
       }
       
       return blogPosts;

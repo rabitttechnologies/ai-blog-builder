@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { SUPPORTED_LANGUAGES } from '@/context/language/LanguageContext';
 import { useTranslationWorkflow } from '@/hooks/useTranslationWorkflow';
+import { useToast } from '@/hooks/use-toast';
 
 interface TranslationRequestDialogProps {
   blogId: string;
@@ -23,6 +24,7 @@ export function TranslationRequestDialog({ blogId, currentLanguage }: Translatio
   const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
   const { requestTranslation } = useTranslationWorkflow(blogId);
+  const { toast } = useToast();
 
   const availableLanguages = SUPPORTED_LANGUAGES.filter(
     lang => lang.code !== currentLanguage
