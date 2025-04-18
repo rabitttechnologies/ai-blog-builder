@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useLocalizedUrl } from "@/hooks/useLocalizedUrl";
 import { supabase } from "@/integrations/supabase/client";
 import { TranslationWorkflow } from "@/types/blog";
+import { TranslationManager } from '@/components/blog/translation/TranslationManager';
 
 const seoMetadata = {
   en: {
@@ -137,7 +138,7 @@ const Blog = () => {
         {showTranslationControls && (
           <div className="container-wide py-4">
             <div className="flex justify-end space-x-4">
-              <TranslationRequestDialog 
+              <TranslationManager 
                 blogId={featuredPost?.id || ''} 
                 currentLanguage={currentLanguage}
                 onProgressUpdate={(progress) => 
