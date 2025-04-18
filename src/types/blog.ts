@@ -25,3 +25,17 @@ export type TranslationWorkflowUpdate = Database["public"]["Tables"]["translatio
 
 export type BlogPostStatus = Database["public"]["Enums"]["blog_post_status"];
 export type TranslationStatus = Database["public"]["Enums"]["translation_status"];
+
+// New types for translation management
+export type TranslationRequest = {
+  blogId: string;
+  targetLanguages: string[];
+  sourceLanguage: string;
+};
+
+export type TranslationMetadata = {
+  requestedAt: string;
+  completedAt?: string;
+  status: TranslationStatus;
+  errors?: string[];
+};

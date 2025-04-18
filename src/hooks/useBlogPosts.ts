@@ -27,23 +27,21 @@ export const useBlogPosts = () => {
           // Handle translations properly - ensure it's an array
           const translationsArray = Array.isArray(post.translations) ? post.translations : [];
           
+          // Transform the data into our BlogPost type
           const transformedPost: BlogPost = {
             ...post,
             date: post.published_at || post.created_at,
             readTime: '5 min',
             category: post.categories?.[0] || 'Uncategorized',
             image: post.featured_image,
-            translations: translationsArray.length > 0 ? 
-              Object.fromEntries(
-                translationsArray.map((t: any) => [
-                  t.language_code,
-                  {
-                    title: t.title,
-                    excerpt: t.excerpt || '',
-                    category: t.categories?.[0] || 'Uncategorized'
-                  } as BlogTranslation
-                ])
-              ) : undefined
+            translations: translationsArray.reduce((acc, t: any) => ({
+              ...acc,
+              [t.language_code]: {
+                title: t.title,
+                excerpt: t.excerpt || '',
+                category: t.categories?.[0] || 'Uncategorized'
+              }
+            }), {})
           };
 
           return transformedPost;

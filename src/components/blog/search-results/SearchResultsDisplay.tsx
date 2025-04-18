@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/separator';
@@ -6,6 +5,8 @@ import { isValidData } from '@/utils/dataValidation';
 import SearchResultSection from './SearchResultSection';
 import KeywordListSection from './KeywordListSection';
 import { useLanguage } from '@/context/language/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
+import { AlertTriangle } from 'lucide-react';
 
 const searchResultsTranslations = {
   en: {
@@ -118,15 +119,34 @@ const searchResultsTranslations = {
 interface SearchResultsDisplayProps {
   data: any;
   onClose: () => void;
+  onLanguageChange?: (language: string) => void;
 }
 
-const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClose }) => {
+const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ 
+  data, 
+  onClose,
+  onLanguageChange 
+}) => {
   const { currentLanguage } = useLanguage();
+  const { toast } = useToast();
+  
   if (!data) return null;
   
   // Get translations for current language, fallback to English
   const translations = searchResultsTranslations[currentLanguage as keyof typeof searchResultsTranslations] || 
                       searchResultsTranslations.en;
+
+  const handleLanguageSwitch = (newLang: string) => {
+    if (onLanguageChange) {
+      onLanguageChange(newLang);
+    } else {
+      toast({
+        title: "Language Change Not Available",
+        description: "This content is not available in the selected language yet.",
+        variant: "destructive"
+      });
+    }
+  };
   
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -134,12 +154,19 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         <h3 className="text-2xl font-semibold">
           {translations.resultsTitle}: <span className="text-primary">{data.keyword}</span>
         </h3>
-        <Button variant="ghost" onClick={onClose}>{translations.closeButton}</Button>
+        <div className="flex items-center gap-4">
+          {!onLanguageChange && (
+            <div className="flex items-center text-yellow-600 text-sm">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Translation not available
+            </div>
+          )}
+          <Button variant="ghost" onClick={onClose}>{translations.closeButton}</Button>
+        </div>
       </div>
       
       <Separator />
       
-      {/* Organic Results */}
       {isValidData(data.organicResults, 'array') && (
         <SearchResultSection
           title={translations.organicResultsTitle}
@@ -147,10 +174,10 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
           items={data.organicResults}
           type="link"
           language={currentLanguage}
+          onLanguageChange={handleLanguageSwitch}
         />
       )}
       
-      {/* People Also Ask */}
       {isValidData(data.peopleAlsoAsk, 'array') && (
         <SearchResultSection
           title={translations.peopleAlsoAskTitle}
@@ -160,7 +187,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Related Queries */}
       {isValidData(data.relatedQueries, 'array') && (
         <KeywordListSection
           title={translations.relatedQueriesTitle}
@@ -170,7 +196,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Paid Results */}
       {isValidData(data.paidResults, 'array') && (
         <SearchResultSection
           title={translations.paidResultsTitle}
@@ -180,7 +205,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Suggested Results */}
       {isValidData(data.suggestedResults, 'array') && (
         <KeywordListSection
           title={translations.suggestedResultsTitle}
@@ -190,7 +214,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Keyword Clusters */}
       {isValidData(data.keywordClusters, 'array') && (
         <SearchResultSection
           title={translations.keywordClustersTitle}
@@ -200,7 +223,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Historical Data */}
       {isValidData(data.historicalData, 'array') && (
         <SearchResultSection
           title={translations.historicalDataTitle}
@@ -210,7 +232,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({ data, onClo
         />
       )}
       
-      {/* Category Keywords */}
       {isValidData(data.categoryKeyword, 'array') && (
         <KeywordListSection
           title={translations.categoryKeywordTitle}
