@@ -1,3 +1,4 @@
+
 import { Database } from "@/integrations/supabase/types";
 
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"] & {
@@ -6,11 +7,13 @@ export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"] & {
   readTime?: string;
   category?: string;
   image?: string;
-  translations?: Record<string, {
-    title: string;
-    excerpt: string;
-    category: string;
-  }>;
+  translations?: Record<string, BlogTranslation>;
+};
+
+export type BlogTranslation = {
+  title: string;
+  excerpt: string;
+  category: string;
 };
 
 export type BlogPostInsert = Database["public"]["Tables"]["blog_posts"]["Insert"];
@@ -22,4 +25,3 @@ export type TranslationWorkflowUpdate = Database["public"]["Tables"]["translatio
 
 export type BlogPostStatus = Database["public"]["Enums"]["blog_post_status"];
 export type TranslationStatus = Database["public"]["Enums"]["translation_status"];
-
