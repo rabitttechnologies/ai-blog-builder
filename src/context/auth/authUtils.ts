@@ -19,17 +19,26 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
       console.error("Error fetching user profile:", profileError);
     }
     
-    // Get user roles - using a raw query to workaround type issues
+    // Get user roles with improved error handling and logging
     const { data: rolesData, error: rolesError } = await supabase
       .rpc('get_user_roles', { user_id_param: supabaseUser.id });
     
     if (rolesError) {
       console.error("Error fetching user roles:", rolesError);
+      throw new Error("Failed to fetch user roles");
+    }
+
+    console.log("Roles data received:", rolesData); // Debug log
+    
+    // Improved role extraction with null checking
+    let roles: UserRole[] = ['user']; // Default role
+    if (rolesData && Array.isArray(rolesData) && rolesData.length > 0) {
+      roles = rolesData.map((r: {role: string}) => r.role as UserRole);
+      console.log("Extracted roles:", roles); // Debug log
     }
     
-    // Extract roles from the result
-    const roles = rolesData?.map((r: {role: string}) => r.role as UserRole) || ['user'];
     const isAdmin = roles.includes('admin');
+    console.log("Is admin:", isAdmin); // Debug log
     
     // Default profile values
     const defaultProfile: UserProfile = {
@@ -43,11 +52,11 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     // Use profile from DB if it exists, otherwise use metadata
     const profile = profileData || defaultProfile;
     
-    // Return formatted user data
+    // Return formatted user data with proper role handling
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
-      trialBlogsRemaining: profileData?.trial_blogs_remaining ?? 2, // Use DB value or default
+      trialBlogsRemaining: profileData?.trial_blogs_remaining ?? 2,
       trialEndsAt: profileData?.trial_ends_at ? new Date(profileData.trial_ends_at) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       profile: {
         name: profile.name,
@@ -61,6 +70,6 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     };
   } catch (error) {
     console.error("Error processing authenticated user:", error);
-    return null;
+    throw error; // Propagate error for proper handling
   }
 }
