@@ -58,7 +58,7 @@ export function TranslationManager({
               {SUPPORTED_LANGUAGES.map(lang => (
                 <Button 
                   key={lang.code}
-                  variant={lang.code === currentLanguage ? "default" : "outline"}
+                  variant={lang.code === currentLanguage ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setLanguage(lang.code)}
                 >
