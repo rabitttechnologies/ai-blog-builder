@@ -1,87 +1,62 @@
-
 import React from 'react';
-import { isValidData } from '@/utils/dataValidation';
-import { useLanguage } from '@/context/language/LanguageContext';
-import { searchResultsTranslations } from '@/translations/searchResults';
-import SearchResultSection from './SearchResultSection';
-import KeywordListSection from './KeywordListSection';
+import { Card, CardContent } from '@/components/ui/card';
+import { ExternalLink } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
-interface SearchResultsContentProps {
-  data: any;
-  language: string;
-  onLanguageChange: (language: string) => void;
+interface SearchResultSectionProps {
+  title: string;
+  description: string;
+  items: any[];
+  type?: 'link' | 'text';
+  language?: string;
+  onLanguageChange?: (language: string) => void;
 }
 
-const SearchResultsContent: React.FC<SearchResultsContentProps> = ({
-  data,
-  language,
+const SearchResultSection: React.FC<SearchResultSectionProps> = ({ 
+  title, 
+  description, 
+  items,
+  type = 'text',
+  language = 'en',
   onLanguageChange
 }) => {
-  const { currentLanguage } = useLanguage();
-  const translations = searchResultsTranslations[currentLanguage as keyof typeof searchResultsTranslations] || 
-                      searchResultsTranslations.en;
-
-  const sections = [
-    {
-      key: 'organicResults',
-      type: 'link',
-      title: translations.organicResultsTitle,
-      description: translations.organicResultsDesc
-    },
-    {
-      key: 'peopleAlsoAsk',
-      type: 'content',
-      title: translations.peopleAlsoAskTitle,
-      description: translations.peopleAlsoAskDesc
-    },
-    {
-      key: 'relatedQueries',
-      type: 'keyword',
-      title: translations.relatedQueriesTitle,
-      description: translations.relatedQueriesDesc
-    },
-    {
-      key: 'paidResults',
-      type: 'link',
-      title: translations.paidResultsTitle,
-      description: translations.paidResultsDesc
-    },
-    {
-      key: 'suggestedResults',
-      type: 'keyword',
-      title: translations.suggestedResultsTitle,
-      description: translations.suggestedResultsDesc
-    }
-  ];
+  if (!items || items.length === 0) return null;
 
   return (
-    <>
-      {sections.map(section => {
-        if (!isValidData(data[section.key], 'array')) return null;
-
-        return section.type === 'keyword' ? (
-          <KeywordListSection
-            key={section.key}
-            title={section.title}
-            description={section.description}
-            keywords={data[section.key]}
-            language={language}
-            onLanguageChange={onLanguageChange}
-          />
-        ) : (
-          <SearchResultSection
-            key={section.key}
-            title={section.title}
-            description={section.description}
-            items={data[section.key]}
-            type={section.type}
-            language={language}
-            onLanguageChange={onLanguageChange}
-          />
-        );
-      })}
-    </>
+    <Card>
+      <SectionHeader 
+        title={title} 
+        description={description} 
+        language={language}
+        onLanguageChange={onLanguageChange}
+      />
+      <CardContent>
+        <ul className="space-y-4">
+          {items.map((item, index) => (
+            <li key={index} className="p-3 bg-gray-50 rounded-md">
+              {type === 'link' && item && typeof item === 'object' ? (
+                <>
+                  <p className="font-semibold">{item.title}</p>
+                  <a 
+                    href={item.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 text-sm flex items-center hover:underline"
+                  >
+                    {item.url.substring(0, 50)}...
+                    <ExternalLink className="ml-1 h-3 w-3" />
+                  </a>
+                  {item.snippet && <p className="text-sm text-gray-600 mt-1">{item.snippet}</p>}
+                </>
+              ) : (
+                <p>{typeof item === 'string' ? item : JSON.stringify(item)}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 };
 
-export default SearchResultsContent;
+export default SearchResultSection;

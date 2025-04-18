@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
@@ -12,12 +11,37 @@ import { useBlogPosts } from "@/hooks/useBlogPosts";
 import { TranslationRequestDialog } from "@/components/blog/translation/TranslationRequestDialog";
 import { TranslationStatusBadge } from "@/components/blog/translation/TranslationStatus";
 import { Toaster } from "@/components/ui/toaster";
+import { useLocalizedUrl } from "@/hooks/useLocalizedUrl";
+
+const seoMetadata = {
+  en: {
+    title: "Blog | Insight Writer AI",
+    description: "Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success.",
+  },
+  es: {
+    title: "Blog | Insight Writer AI",
+    description: "Explora las últimas ideas, consejos y estrategias para la creación de contenido con IA, optimización SEO y éxito en blogging.",
+  },
+  fr: {
+    title: "Blog | Insight Writer AI",
+    description: "Découvrez les dernières perspectives, conseils et stratégies pour la création de contenu IA, l'optimisation SEO et le succès en blogging.",
+  },
+  de: {
+    title: "Blog | Insight Writer AI",
+    description: "Entdecken Sie die neuesten Einblicke, Tipps und Strategien für KI-gestützte Content-Erstellung, SEO-Optimierung und Blogging-Erfolg.",
+  },
+  zh: {
+    title: "博客 | Insight Writer AI",
+    description: "探索AI驱动的内容创作、SEO优化和博客成功的最新见解、技巧和策略。",
+  }
+};
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const { currentLanguage } = useLanguage();
   const { posts, isLoading } = useBlogPosts();
+  const { updateUrlLanguage } = useLocalizedUrl();
   
   const featuredPost = posts?.find(post => 
     post.is_original && 
@@ -45,20 +69,22 @@ const Blog = () => {
 
   const showTranslationControls = currentLanguage === 'en' && posts?.some(post => post.is_original);
 
+  const currentMetadata = seoMetadata[currentLanguage as keyof typeof seoMetadata] || seoMetadata.en;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Blog | Insight Writer AI</title>
-        <meta 
-          name="description" 
-          content="Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success." 
-        />
+        <title>{currentMetadata.title}</title>
+        <meta name="description" content={currentMetadata.description} />
         <meta name="language" content={currentLanguage} />
-        <link rel="alternate" hrefLang="en" href="https://insightwriter.ai/blog" />
-        <link rel="alternate" hrefLang="es" href="https://insightwriter.ai/es/blog" />
-        <link rel="alternate" hrefLang="fr" href="https://insightwriter.ai/fr/blog" />
-        <link rel="alternate" hrefLang="de" href="https://insightwriter.ai/de/blog" />
-        <link rel="alternate" hrefLang="zh" href="https://insightwriter.ai/zh/blog" />
+        {Object.keys(seoMetadata).map(lang => (
+          <link 
+            key={lang}
+            rel="alternate" 
+            hrefLang={lang} 
+            href={`https://insightwriter.ai${lang === 'en' ? '' : `/${lang}`}/blog`} 
+          />
+        ))}
         <link rel="alternate" hrefLang="x-default" href="https://insightwriter.ai/blog" />
       </Helmet>
       
