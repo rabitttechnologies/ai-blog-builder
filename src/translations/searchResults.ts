@@ -18,7 +18,9 @@ export const searchResultsTranslations = {
     historicalDataDesc: "Search volume trends over time",
     categoryKeywordTitle: "Category Keywords",
     categoryKeywordDesc: "Keywords categorized by theme",
-    closeResultsButton: "Close Results"
+    closeResultsButton: "Close Results",
+    languageChangeNotAvailable: "Language Change Not Available",
+    contentNotAvailable: "This content is not available in the selected language yet"
   },
   es: {
     resultsTitle: "Resultados de Búsqueda",
@@ -39,7 +41,9 @@ export const searchResultsTranslations = {
     historicalDataDesc: "Tendencias de volumen de búsqueda a lo largo del tiempo",
     categoryKeywordTitle: "Palabras Clave por Categoría",
     categoryKeywordDesc: "Palabras clave clasificadas por tema",
-    closeResultsButton: "Cerrar Resultados"
+    closeResultsButton: "Cerrar Resultados",
+    languageChangeNotAvailable: "Language Change Not Available",
+    contentNotAvailable: "This content is not available in the selected language yet"
   },
   fr: {
     resultsTitle: "Résultats de Recherche",
@@ -60,7 +64,9 @@ export const searchResultsTranslations = {
     historicalDataDesc: "Tendances du volume de recherche au fil du temps",
     categoryKeywordTitle: "Mots-Clés par Catégorie",
     categoryKeywordDesc: "Mots-clés classés par thème",
-    closeResultsButton: "Fermer les Résultats"
+    closeResultsButton: "Fermer les Résultats",
+    languageChangeNotAvailable: "Language Change Not Available",
+    contentNotAvailable: "This content is not available in the selected language yet"
   },
   de: {
     resultsTitle: "Suchergebnisse",
@@ -81,7 +87,9 @@ export const searchResultsTranslations = {
     historicalDataDesc: "Suchvolumen-Trends im Zeitverlauf",
     categoryKeywordTitle: "Kategorie-Keywords",
     categoryKeywordDesc: "Nach Thema kategorisierte Keywords",
-    closeResultsButton: "Ergebnisse Schließen"
+    closeResultsButton: "Ergebnisse Schließen",
+    languageChangeNotAvailable: "Language Change Not Available",
+    contentNotAvailable: "This content is not available in the selected language yet"
   },
   zh: {
     resultsTitle: "搜索结果",
@@ -102,6 +110,8 @@ export const searchResultsTranslations = {
     historicalDataDesc: "随时间推移的搜索量趋势",
     categoryKeywordTitle: "分类关键词",
     categoryKeywordDesc: "按主题分类的关键词",
-    closeResultsButton: "关闭结果"
+    closeResultsButton: "关闭结果",
+    languageChangeNotAvailable: "Language Change Not Available",
+    contentNotAvailable: "This content is not available in the selected language yet"
   }
 };

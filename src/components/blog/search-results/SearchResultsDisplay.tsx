@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/context/language/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { useLocalizedUrl } from '@/hooks/useLocalizedUrl';
 import TranslationControl from './TranslationControl';
 import SearchResultsContent from './SearchResultsContent';
 import { searchResultsTranslations } from '@/translations/searchResults';
@@ -20,6 +21,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   onLanguageChange 
 }) => {
   const { currentLanguage } = useLanguage();
+  const { updateUrlLanguage } = useLocalizedUrl();
   const { toast } = useToast();
   
   if (!data) return null;
@@ -30,10 +32,11 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   const handleLanguageSwitch = (newLang: string) => {
     if (onLanguageChange) {
       onLanguageChange(newLang);
+      updateUrlLanguage(newLang);
     } else {
       toast({
-        title: "Language Change Not Available",
-        description: "This content is not available in the selected language yet.",
+        title: translations.languageChangeNotAvailable,
+        description: translations.contentNotAvailable,
         variant: "destructive"
       });
     }
