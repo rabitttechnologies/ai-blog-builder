@@ -18,9 +18,10 @@ import { useToast } from '@/hooks/use-toast';
 interface TranslationRequestDialogProps {
   blogId: string;
   currentLanguage: string;
+  onProgressUpdate?: (progress: number) => void;
 }
 
-export function TranslationRequestDialog({ blogId, currentLanguage }: TranslationRequestDialogProps) {
+export function TranslationRequestDialog({ blogId, currentLanguage, onProgressUpdate }: TranslationRequestDialogProps) {
   const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
   const { requestTranslation } = useTranslationWorkflow(blogId);
@@ -54,6 +55,11 @@ export function TranslationRequestDialog({ blogId, currentLanguage }: Translatio
         title: "Translation requested",
         description: "The translation process has been initiated.",
       });
+      
+      // Calculate initial progress (0%)
+      if (onProgressUpdate) {
+        onProgressUpdate(0);
+      }
     } catch (error) {
       console.error('Translation request failed:', error);
       toast({

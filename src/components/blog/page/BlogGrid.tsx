@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/Button';
 import type { BlogPost } from '@/types/blog';
 import { useLanguage } from '@/context/language/LanguageContext';
 import { formatLocalizedDate } from '@/utils/languageUtils';
+import { Progress } from '@/components/ui/progress';
 
 interface BlogGridProps {
   posts: BlogPost[];
   onLoadMore: () => void;
+  translationProgress?: Record<string, number>;
 }
 
-const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore }) => {
+const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore, translationProgress }) => {
   const { currentLanguage } = useLanguage();
 
   if (!posts?.length) {
@@ -61,6 +63,15 @@ const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore }) => {
                   <p className="text-foreground/70 mb-4 line-clamp-3">
                     {post.excerpt}
                   </p>
+                )}
+                {translationProgress && translationProgress[post.id] !== undefined && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground">Translation</span>
+                      <span className="text-xs font-medium">{Math.round(translationProgress[post.id])}%</span>
+                    </div>
+                    <Progress value={translationProgress[post.id]} className="h-1.5" />
+                  </div>
                 )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-foreground/60">

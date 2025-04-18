@@ -6,12 +6,14 @@ import { ArrowRight, Calendar, Clock, Tag } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 import { formatLocalizedDate } from '@/utils/languageUtils';
 import { useLanguage } from '@/context/language/LanguageContext';
+import { Progress } from '@/components/ui/progress';
 
 interface FeaturedPostProps {
   post: BlogPost;
+  translationProgress?: number;
 }
 
-const FeaturedPost: React.FC<FeaturedPostProps> = ({ post }) => {
+const FeaturedPost: React.FC<FeaturedPostProps> = ({ post, translationProgress }) => {
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
   
@@ -50,6 +52,15 @@ const FeaturedPost: React.FC<FeaturedPostProps> = ({ post }) => {
                 </div>
               )}
             </div>
+            {translationProgress !== undefined && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Translation Progress</span>
+                  <span className="text-sm font-medium">{Math.round(translationProgress)}%</span>
+                </div>
+                <Progress value={translationProgress} className="h-2" />
+              </div>
+            )}
             <Button onClick={() => navigate(`/blog/${post.slug || post.id}`)}>
               Read Article <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
