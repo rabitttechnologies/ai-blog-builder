@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
@@ -9,6 +8,8 @@ import BlogGrid from "@/components/blog/page/BlogGrid";
 import NewsletterSection from "@/components/blog/page/NewsletterSection";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { TranslationRequestDialog } from "@/components/blog/translation/TranslationRequestDialog";
+import { TranslationStatusBadge } from "@/components/blog/translation/TranslationStatus";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,6 +41,8 @@ const Blog = () => {
     console.log("Load more clicked");
   };
 
+  const showTranslationControls = currentLanguage === 'en' && posts?.some(post => post.is_original);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -67,6 +70,17 @@ const Blog = () => {
           onCategoryChange={setSelectedCategory}
           language={currentLanguage}
         />
+        
+        {showTranslationControls && (
+          <div className="container-wide py-4">
+            <div className="flex justify-end space-x-4">
+              <TranslationRequestDialog 
+                blogId={featuredPost?.id || ''} 
+                currentLanguage={currentLanguage}
+              />
+            </div>
+          </div>
+        )}
         
         {featuredPost && searchQuery === "" && selectedCategory === "All Categories" && (
           <FeaturedPost post={featuredPost} />
