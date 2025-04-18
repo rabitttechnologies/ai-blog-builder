@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -7,34 +7,29 @@ import BlogHero from "@/components/blog/page/BlogHero";
 import FeaturedPost from "@/components/blog/page/FeaturedPost";
 import BlogGrid from "@/components/blog/page/BlogGrid";
 import NewsletterSection from "@/components/blog/page/NewsletterSection";
-import { blogPosts, getTranslatedBlogPosts } from "@/data/blogPosts";
 import { useLanguage } from "@/context/language/LanguageContext";
-import { formatLocalizedDate } from "@/utils/languageUtils";
+import { useBlogPosts } from "@/hooks/useBlogPosts";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const { currentLanguage } = useLanguage();
-  const [translatedPosts, setTranslatedPosts] = useState(blogPosts);
+  const { posts, isLoading } = useBlogPosts();
   
-  // Update posts when language changes
-  useEffect(() => {
-    setTranslatedPosts(getTranslatedBlogPosts(currentLanguage));
-  }, [currentLanguage]);
+  const featuredPost = posts?.find(post => post.is_original && post.categories?.includes('featured'));
+  const regularPosts = posts?.filter(post => !post.categories?.includes('featured'));
   
-  const featuredPost = translatedPosts.find(post => post.featured);
-  const regularPosts = translatedPosts.filter(post => !post.featured);
-  
-  const filteredPosts = regularPosts.filter(post => {
+  const filteredPosts = regularPosts?.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All Categories" || post.category === selectedCategory;
+                         post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "All Categories" || 
+                          post.categories?.includes(selectedCategory);
     
     return matchesSearch && matchesCategory;
-  });
+  }) || [];
 
   const handleLoadMore = () => {
-    // Load more posts logic would go here
+    // Implement load more logic here
   };
 
   return (
@@ -46,7 +41,6 @@ const Blog = () => {
           content="Explore the latest insights, tips, and strategies for AI-powered content creation, SEO optimization, and blogging success." 
         />
         <meta name="language" content={currentLanguage} />
-        {/* Add hrefLang tags for SEO */}
         <link rel="alternate" hrefLang="en" href="https://insightwriter.ai/blog" />
         <link rel="alternate" hrefLang="es" href="https://insightwriter.ai/es/blog" />
         <link rel="alternate" hrefLang="fr" href="https://insightwriter.ai/fr/blog" />

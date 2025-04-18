@@ -84,6 +84,83 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          categories: string[] | null
+          content: Json
+          created_at: string
+          editor_id: string | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_original: boolean
+          language_code: string
+          meta_description: string | null
+          original_id: string | null
+          parent_version: number | null
+          published_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["blog_post_status"]
+          tags: string[] | null
+          title: string
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          author_id?: string | null
+          categories?: string[] | null
+          content?: Json
+          created_at?: string
+          editor_id?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id: string
+          is_original?: boolean
+          language_code: string
+          meta_description?: string | null
+          original_id?: string | null
+          parent_version?: number | null
+          published_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["blog_post_status"]
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          version_number?: number
+        }
+        Update: {
+          author_id?: string | null
+          categories?: string[] | null
+          content?: Json
+          created_at?: string
+          editor_id?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_original?: boolean
+          language_code?: string
+          meta_description?: string | null
+          original_id?: string | null
+          parent_version?: number | null
+          published_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["blog_post_status"]
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_original_id_fkey"
+            columns: ["original_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       "Google Custom Search Data": {
         Row: {
           "AI suggested data:title, description and other": Json[] | null
@@ -270,6 +347,63 @@ export type Database = {
         }
         Relationships: []
       }
+      translation_workflows: {
+        Row: {
+          blog_id: string
+          completed_languages: string[]
+          created_at: string
+          id: string
+          initiated_by: string | null
+          request_payload: Json | null
+          requested_languages: string[]
+          response_payload: Json | null
+          status: Database["public"]["Enums"]["translation_status"]
+          updated_at: string
+          webhook_execution_id: string | null
+        }
+        Insert: {
+          blog_id: string
+          completed_languages?: string[]
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          request_payload?: Json | null
+          requested_languages?: string[]
+          response_payload?: Json | null
+          status?: Database["public"]["Enums"]["translation_status"]
+          updated_at?: string
+          webhook_execution_id?: string | null
+        }
+        Update: {
+          blog_id?: string
+          completed_languages?: string[]
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          request_payload?: Json | null
+          requested_languages?: string[]
+          response_payload?: Json | null
+          status?: Database["public"]["Enums"]["translation_status"]
+          updated_at?: string
+          webhook_execution_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translation_workflows_blog_id_fkey"
+            columns: ["blog_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valid_blog_reference"
+            columns: ["blog_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -318,6 +452,13 @@ export type Database = {
         | "Create Blog Now"
         | "Create Blog Later"
         | "No Action"
+      blog_post_status: "draft" | "pending_review" | "published" | "archived"
+      translation_status:
+        | "pending"
+        | "in_progress"
+        | "review_needed"
+        | "approved"
+        | "rejected"
       "Trigger for Primary Keyword":
         | "Not Started"
         | "Get the Past Search Data"
@@ -441,6 +582,14 @@ export const Constants = {
         "Create Blog Now",
         "Create Blog Later",
         "No Action",
+      ],
+      blog_post_status: ["draft", "pending_review", "published", "archived"],
+      translation_status: [
+        "pending",
+        "in_progress",
+        "review_needed",
+        "approved",
+        "rejected",
       ],
       "Trigger for Primary Keyword": [
         "Not Started",

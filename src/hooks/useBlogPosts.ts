@@ -1,0 +1,68 @@
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { BlogPost, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
+import { useLanguage } from '@/context/language/LanguageContext';
+
+export const useBlogPosts = () => {
+  const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguage();
+
+  const getBlogPosts = async (language: string) => {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('language_code', language)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  };
+
+  const { data: posts, isLoading, error } = useQuery({
+    queryKey: ['blog_posts', currentLanguage],
+    queryFn: () => getBlogPosts(currentLanguage),
+  });
+
+  const createPost = useMutation({
+    mutationFn: async (newPost: BlogPostInsert) => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .insert(newPost)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blog_posts'] });
+    },
+  });
+
+  const updatePost = useMutation({
+    mutationFn: async ({ id, post }: { id: string; post: BlogPostUpdate }) => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update(post)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blog_posts'] });
+    },
+  });
+
+  return {
+    posts,
+    isLoading,
+    error,
+    createPost,
+    updatePost,
+  };
+};
