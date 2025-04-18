@@ -23,6 +23,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Strategy", "SEO"],
+    meta_description: "Learn how AI is transforming content creation in 2025 with advanced tools for bloggers and marketers.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-05-15T12:00:00Z",
     translations: {
       es: {
         title: "Cómo la IA está Revolucionando la Creación de Contenido en 2025",
@@ -67,6 +71,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["SEO", "Content Strategy"],
+    meta_description: "Discover 10 effective SEO tactics that work specifically with AI-generated content to improve your search rankings.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-05-10T12:00:00Z",
     translations: {
       es: {
         title: "10 Tácticas SEO que Realmente Funcionan con Contenido Generado por IA",
@@ -111,6 +119,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["Ethics", "AI Writing"],
+    meta_description: "Explore the ethical considerations surrounding AI use in content marketing and learn responsible practices.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-05-05T12:00:00Z",
     translations: {
       es: {
         title: "Las Consideraciones Éticas de la IA en el Marketing de Contenidos",
@@ -155,6 +167,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["Case Study", "Content Strategy", "Success Story"],
+    meta_description: "Learn how Company X used AI content to increase their website traffic by 300% in this detailed case study.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-04-28T12:00:00Z",
     translations: {
       es: {
         title: "Caso de Estudio: Cómo la Empresa X Aumentó el Tráfico en un 300% con Contenido de IA",
@@ -199,6 +215,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Quality"],
+    meta_description: "Compare human and AI-written content in 2025 with metrics on quality, SEO performance, and reader engagement.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-04-20T12:00:00Z",
     translations: {
       es: {
         title: "Comparando Contenido Escrito por Humanos vs. IA: El Análisis de 2025",
@@ -243,6 +263,10 @@ export const blogPosts: BlogPost[] = [
     image: "/placeholder.svg",
     featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Strategy", "Optimization"],
+    meta_description: "Master the art of optimizing AI-generated content with our comprehensive guide to editing and enhancement techniques.",
+    original_id: null,
+    parent_version: null,
+    published_at: "2025-04-15T12:00:00Z",
     translations: {
       es: {
         title: "La Guía Definitiva para Optimizar Contenido Generado por IA",
