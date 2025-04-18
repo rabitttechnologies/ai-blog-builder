@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -12,6 +12,8 @@ import { TranslationRequestDialog } from "@/components/blog/translation/Translat
 import { TranslationStatusBadge } from "@/components/blog/translation/TranslationStatus";
 import { Toaster } from "@/components/ui/toaster";
 import { useLocalizedUrl } from "@/hooks/useLocalizedUrl";
+import { supabase } from "@/integrations/supabase/client";
+import { TranslationWorkflow } from "@/types/blog";
 
 const seoMetadata = {
   en: {
@@ -71,6 +73,39 @@ const Blog = () => {
 
   const currentMetadata = seoMetadata[currentLanguage as keyof typeof seoMetadata] || seoMetadata.en;
 
+  // Add translation progress tracking
+  const [translationProgress, setTranslationProgress] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (posts?.some(post => post.is_original)) {
+      const channel = supabase
+        .channel('translation-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'translation_workflows'
+          },
+          (payload) => {
+            if (payload.new) {
+              const workflow = payload.new as TranslationWorkflow;
+              const progress = (workflow.completed_languages.length / workflow.requested_languages.length) * 100;
+              setTranslationProgress(prev => ({
+                ...prev,
+                [workflow.blog_id]: progress
+              }));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [posts]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -105,16 +140,29 @@ const Blog = () => {
               <TranslationRequestDialog 
                 blogId={featuredPost?.id || ''} 
                 currentLanguage={currentLanguage}
+                onProgressUpdate={(progress) => 
+                  setTranslationProgress(prev => ({
+                    ...prev,
+                    [featuredPost?.id || '']: progress
+                  }))
+                }
               />
             </div>
           </div>
         )}
         
         {featuredPost && searchQuery === "" && selectedCategory === "All Categories" && (
-          <FeaturedPost post={featuredPost} />
+          <FeaturedPost 
+            post={featuredPost} 
+            translationProgress={translationProgress[featuredPost.id]}
+          />
         )}
         
-        <BlogGrid posts={filteredPosts} onLoadMore={handleLoadMore} />
+        <BlogGrid 
+          posts={filteredPosts} 
+          onLoadMore={handleLoadMore} 
+          translationProgress={translationProgress}
+        />
         
         <NewsletterSection />
       </main>

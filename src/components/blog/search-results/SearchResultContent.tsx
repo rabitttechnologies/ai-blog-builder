@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExternalLink } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import SectionHeader from './SectionHeader';
 
 interface SearchResultSectionProps {
@@ -10,6 +12,7 @@ interface SearchResultSectionProps {
   type?: 'link' | 'text';
   language?: string;
   onLanguageChange?: (language: string) => void;
+  translationProgress?: number;
 }
 
 const SearchResultSection: React.FC<SearchResultSectionProps> = ({ 
@@ -18,7 +21,8 @@ const SearchResultSection: React.FC<SearchResultSectionProps> = ({
   items,
   type = 'text',
   language = 'en',
-  onLanguageChange
+  onLanguageChange,
+  translationProgress
 }) => {
   if (!items || items.length === 0) return null;
 
@@ -30,6 +34,15 @@ const SearchResultSection: React.FC<SearchResultSectionProps> = ({
         language={language}
         onLanguageChange={onLanguageChange}
       />
+      {translationProgress !== undefined && (
+        <div className="px-6 py-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted-foreground">Translation Progress</span>
+            <span className="text-sm font-medium">{Math.round(translationProgress)}%</span>
+          </div>
+          <Progress value={translationProgress} className="h-2" />
+        </div>
+      )}
       <CardContent>
         <ul className="space-y-4">
           {items.map((item, index) => (
