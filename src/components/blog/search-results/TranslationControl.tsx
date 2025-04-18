@@ -20,7 +20,7 @@ const TranslationControl: React.FC<TranslationControlProps> = ({
   return (
     <div className="container-wide py-4">
       <div className="flex justify-end space-x-4">
-        <Alert variant="warning" className="w-auto">
+        <Alert variant="destructive" className="w-auto">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             This content is only available in English
