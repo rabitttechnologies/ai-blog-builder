@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SUPPORTED_LANGUAGES } from '@/context/language/LanguageContext';
 import { formatLocalizedDate } from '@/utils/languageUtils';
+import { Tooltip } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 
 interface TranslationHistoryProps {
   blogId?: string; // Optional - if provided, shows history for specific blog
@@ -61,13 +63,27 @@ export function TranslationHistoryView({ blogId }: TranslationHistoryProps) {
         return 'bg-blue-100 text-blue-800';
       case 'completed':
         return 'bg-green-100 text-green-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const getRemainingLanguages = (completed: string[], requested: string[]) => {
+    return requested.filter(lang => !completed.includes(lang));
+  };
+
   if (isLoading) {
     return <div className="p-4 text-center">Loading translation history...</div>;
+  }
+
+  if (!translations?.length) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">No translation history available.</p>
+      </div>
+    );
   }
 
   return (
@@ -92,7 +108,10 @@ export function TranslationHistoryView({ blogId }: TranslationHistoryProps) {
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {translation.requested_languages.map((lang) => (
-                      <Badge key={lang} variant="outline">
+                      <Badge 
+                        key={lang} 
+                        variant={translation.completed_languages.includes(lang) ? "default" : "outline"}
+                      >
                         {getLanguageLabel(lang)}
                       </Badge>
                     ))}
@@ -107,6 +126,23 @@ export function TranslationHistoryView({ blogId }: TranslationHistoryProps) {
                           translation.requested_languages
                         ))}%
                       </span>
+                      
+                      {translation.completed_languages.length < translation.requested_languages.length && (
+                        <Tooltip content={
+                          <div className="p-2">
+                            <p className="font-medium">Pending translations:</p>
+                            <ul className="text-xs list-disc pl-4 mt-1">
+                              {getRemainingLanguages(translation.completed_languages, translation.requested_languages)
+                                .map(lang => (
+                                  <li key={lang}>{getLanguageLabel(lang)}</li>
+                                ))
+                              }
+                            </ul>
+                          </div>
+                        }>
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </Tooltip>
+                      )}
                     </div>
                     <Progress
                       value={getTranslationProgress(

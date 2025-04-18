@@ -1,5 +1,7 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getLanguageFromPath, createLocalizedUrl, updateLanguageMeta } from '@/utils/languageUtils';
 
 // Define supported languages
 export const SUPPORTED_LANGUAGES = [
@@ -16,6 +18,7 @@ interface LanguageContextType {
   getLocalizedPath: (path: string) => string;
   getOriginalPath: (path: string) => string;
   isLanguageSupported: (content: any) => boolean;
+  detectLanguage: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -25,11 +28,22 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  // Initialize from localStorage or default to browser language or 'en'
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Initialize from URL, localStorage, or browser language
   const [currentLanguage, setCurrentLanguage] = useState<string>(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage) return savedLanguage;
+    // First priority: check URL path for language code
+    const pathLanguage = getLanguageFromPath(location.pathname);
+    if (pathLanguage) return pathLanguage;
     
+    // Second priority: check localStorage
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && SUPPORTED_LANGUAGES.some(lang => lang.code === savedLanguage)) {
+      return savedLanguage;
+    }
+    
+    // Third priority: check browser language
     const browserLang = navigator.language.split('-')[0];
     return SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) ? browserLang : 'en';
   });
@@ -37,45 +51,50 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   // Update localStorage when language changes
   useEffect(() => {
     localStorage.setItem('preferredLanguage', currentLanguage);
+    updateLanguageMeta(currentLanguage);
   }, [currentLanguage]);
 
-  // Change the current language
-  const setLanguage = (language: string) => {
+  // Sync URL with language when path changes
+  useEffect(() => {
+    const pathLanguage = getLanguageFromPath(location.pathname);
+    
+    // If URL has a language code that doesn't match current language, update current language
+    if (pathLanguage && pathLanguage !== currentLanguage) {
+      setCurrentLanguage(pathLanguage);
+    }
+    // If URL has no language code but we're not on English, update URL
+    else if (!pathLanguage && currentLanguage !== 'en') {
+      const newPath = createLocalizedUrl(location.pathname, currentLanguage);
+      navigate(newPath, { replace: true });
+    }
+  }, [location.pathname, currentLanguage, navigate]);
+
+  // Change the current language and update URL
+  const setLanguage = useCallback((language: string) => {
     if (SUPPORTED_LANGUAGES.some(lang => lang.code === language)) {
+      const newPath = createLocalizedUrl(location.pathname, language);
+      navigate(newPath);
       setCurrentLanguage(language);
     }
-  };
+  }, [location.pathname, navigate]);
 
   // Generate a localized path for the current language
-  const getLocalizedPath = (path: string) => {
-    // Don't modify paths that already have a language prefix
-    if (SUPPORTED_LANGUAGES.some(lang => path.startsWith(`/${lang.code}/`))) {
-      return path;
-    }
-
-    // Don't add prefix for default language (optional, based on SEO strategy)
-    if (currentLanguage === 'en') {
-      return path;
-    }
-
-    // Add language prefix for other languages
-    // Remove any leading slash to avoid double slashes
-    const pathWithoutLeadingSlash = path.startsWith('/') ? path.substring(1) : path;
-    return `/${currentLanguage}/${pathWithoutLeadingSlash}`;
-  };
+  const getLocalizedPath = useCallback((path: string) => {
+    return createLocalizedUrl(path, currentLanguage);
+  }, [currentLanguage]);
 
   // Extract the original path without language prefix
-  const getOriginalPath = (path: string) => {
+  const getOriginalPath = useCallback((path: string) => {
     for (const lang of SUPPORTED_LANGUAGES) {
       if (path.startsWith(`/${lang.code}/`)) {
         return '/' + path.substring(`/${lang.code}/`.length);
       }
     }
     return path;
-  };
+  }, []);
 
   // Check if content is available in the current language
-  const isLanguageSupported = (content: any) => {
+  const isLanguageSupported = useCallback((content: any) => {
     if (!content) return false;
     
     // If content is a simple object with language keys
@@ -90,7 +109,19 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     
     // Default to true for content without explicit language support
     return true;
-  };
+  }, [currentLanguage]);
+
+  // Detect and set language based on browser settings
+  const detectLanguage = useCallback(() => {
+    const browserLang = navigator.language.split('-')[0];
+    const detectedLang = SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) 
+      ? browserLang 
+      : 'en';
+    
+    if (detectedLang !== currentLanguage) {
+      setLanguage(detectedLang);
+    }
+  }, [currentLanguage, setLanguage]);
 
   return (
     <LanguageContext.Provider 
@@ -99,7 +130,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
         setLanguage, 
         getLocalizedPath, 
         getOriginalPath,
-        isLanguageSupported
+        isLanguageSupported,
+        detectLanguage
       }}
     >
       {children}

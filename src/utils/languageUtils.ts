@@ -100,3 +100,67 @@ export const formatLocalizedDate = (date: Date, languageCode: string): string =>
     return date.toISOString().split('T')[0];
   }
 };
+
+/**
+ * Generate hreflang tags for SEO
+ * @param baseUrl Base URL without language code
+ * @param currentPath Current path without language code
+ * @returns Array of objects with hreflang and href properties
+ */
+export const generateHrefLangTags = (baseUrl: string, currentPath: string): Array<{hrefLang: string, href: string}> => {
+  // Remove trailing slash from baseUrl if present
+  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  
+  // Ensure currentPath starts with a slash
+  const cleanPath = currentPath.startsWith('/') ? currentPath : `/${currentPath}`;
+  
+  return SUPPORTED_LANGUAGES.map(lang => {
+    const localizedPath = createLocalizedUrl(cleanPath, lang.code);
+    return {
+      hrefLang: lang.code,
+      href: `${cleanBaseUrl}${localizedPath}`
+    };
+  });
+};
+
+/**
+ * Add language meta tags to document head
+ * @param language Current language code
+ */
+export const updateLanguageMeta = (language: string): void => {
+  // Set the lang attribute on the html element
+  document.documentElement.lang = language;
+  
+  // Update meta tags
+  let metaLanguage = document.querySelector('meta[name="language"]');
+  if (!metaLanguage) {
+    metaLanguage = document.createElement('meta');
+    metaLanguage.setAttribute('name', 'language');
+    document.head.appendChild(metaLanguage);
+  }
+  metaLanguage.setAttribute('content', language);
+  
+  // Set the content-language HTTP header as a meta tag
+  let metaContentLanguage = document.querySelector('meta[http-equiv="content-language"]');
+  if (!metaContentLanguage) {
+    metaContentLanguage = document.createElement('meta');
+    metaContentLanguage.setAttribute('http-equiv', 'content-language');
+    document.head.appendChild(metaContentLanguage);
+  }
+  metaContentLanguage.setAttribute('content', language);
+};
+
+/**
+ * Calculate translation progress for multiple items
+ * @param translationProgressMap Record mapping IDs to progress values
+ * @returns Average progress (0-100)
+ */
+export const calculateOverallTranslationProgress = (
+  translationProgressMap: Record<string, number>
+): number => {
+  const values = Object.values(translationProgressMap);
+  if (values.length === 0) return 0;
+  
+  const sum = values.reduce((acc, val) => acc + val, 0);
+  return sum / values.length;
+};

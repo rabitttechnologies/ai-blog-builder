@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Header from "@/components/layout/Header";
@@ -8,13 +9,12 @@ import BlogGrid from "@/components/blog/page/BlogGrid";
 import NewsletterSection from "@/components/blog/page/NewsletterSection";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
-import { TranslationRequestDialog } from "@/components/blog/translation/TranslationRequestDialog";
-import { TranslationStatusBadge } from "@/components/blog/translation/TranslationStatus";
 import { Toaster } from "@/components/ui/toaster";
 import { useLocalizedUrl } from "@/hooks/useLocalizedUrl";
 import { supabase } from "@/integrations/supabase/client";
 import { TranslationWorkflow } from "@/types/blog";
 import { TranslationManager } from '@/components/blog/translation/TranslationManager';
+import { generateHrefLangTags, updateLanguageMeta } from "@/utils/languageUtils";
 
 const seoMetadata = {
   en: {
@@ -77,6 +77,11 @@ const Blog = () => {
   // Add translation progress tracking
   const [translationProgress, setTranslationProgress] = useState<Record<string, number>>({});
 
+  // Update language meta tags when language changes
+  useEffect(() => {
+    updateLanguageMeta(currentLanguage);
+  }, [currentLanguage]);
+
   useEffect(() => {
     if (posts?.some(post => post.is_original)) {
       const channel = supabase
@@ -107,21 +112,71 @@ const Blog = () => {
     }
   }, [posts]);
 
+  // Fetch initial translation progress data
+  useEffect(() => {
+    const fetchTranslationProgress = async () => {
+      if (!posts?.some(post => post.is_original)) return;
+      
+      const blogIds = posts
+        .filter(post => post.is_original)
+        .map(post => post.id);
+        
+      if (blogIds.length === 0) return;
+      
+      const { data, error } = await supabase
+        .from('translation_workflows')
+        .select('*')
+        .in('blog_id', blogIds);
+        
+      if (error) {
+        console.error('Error fetching translation progress:', error);
+        return;
+      }
+      
+      const progressMap: Record<string, number> = {};
+      
+      data.forEach(workflow => {
+        progressMap[workflow.blog_id] = (workflow.completed_languages.length / workflow.requested_languages.length) * 100;
+      });
+      
+      setTranslationProgress(progressMap);
+    };
+    
+    fetchTranslationProgress();
+  }, [posts]);
+
+  // Generate base URL for hreflang tags
+  const baseUrl = 'https://insightwriter.ai';
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
         <title>{currentMetadata.title}</title>
         <meta name="description" content={currentMetadata.description} />
         <meta name="language" content={currentLanguage} />
-        {Object.keys(seoMetadata).map(lang => (
+        
+        {/* Generate hreflang tags for SEO */}
+        {generateHrefLangTags(baseUrl, '/blog').map(({ hrefLang, href }) => (
           <link 
-            key={lang}
+            key={hrefLang}
             rel="alternate" 
-            hrefLang={lang} 
-            href={`https://insightwriter.ai${lang === 'en' ? '' : `/${lang}`}/blog`} 
+            hrefLang={hrefLang} 
+            href={href} 
           />
         ))}
         <link rel="alternate" hrefLang="x-default" href="https://insightwriter.ai/blog" />
+        
+        {/* Open Graph tags for better social sharing */}
+        <meta property="og:title" content={currentMetadata.title} />
+        <meta property="og:description" content={currentMetadata.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content={currentLanguage} />
+        <meta property="og:url" content={`${baseUrl}${currentLanguage === 'en' ? '' : `/${currentLanguage}`}/blog`} />
+        
+        {/* Twitter card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={currentMetadata.title} />
+        <meta name="twitter:description" content={currentMetadata.description} />
       </Helmet>
       
       <Header />
@@ -135,20 +190,19 @@ const Blog = () => {
           language={currentLanguage}
         />
         
-        {showTranslationControls && (
+        {showTranslationControls && featuredPost && (
           <div className="container-wide py-4">
-            <div className="flex justify-end space-x-4">
-              <TranslationManager 
-                blogId={featuredPost?.id || ''} 
-                currentLanguage={currentLanguage}
-                onProgressUpdate={(progress) => 
-                  setTranslationProgress(prev => ({
-                    ...prev,
-                    [featuredPost?.id || '']: progress
-                  }))
-                }
-              />
-            </div>
+            <TranslationManager 
+              blogId={featuredPost.id || ''} 
+              currentLanguage={currentLanguage}
+              onProgressUpdate={(progress) => 
+                setTranslationProgress(prev => ({
+                  ...prev,
+                  [featuredPost.id || '']: progress
+                }))
+              }
+              translationProgress={translationProgress[featuredPost.id]}
+            />
           </div>
         )}
         
