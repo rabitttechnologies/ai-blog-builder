@@ -3,15 +3,25 @@ import { BlogPost } from "@/types/blog";
 
 export const blogPosts: BlogPost[] = [
   {
-    id: 1,
+    id: "1",
     title: "How AI is Revolutionizing Content Creation in 2025",
     excerpt: "Discover the latest AI advancements that are transforming how bloggers create and optimize content for search engines.",
     category: "AI Technology",
-    author: "Alex Morgan",
+    categories: ["AI Technology"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-05-15T12:00:00Z",
+    updated_at: "2025-05-15T12:00:00Z",
+    language_code: "en",
+    slug: "how-ai-is-revolutionizing-content-creation-2025",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "May 15, 2025",
     readTime: "8 min read",
     image: "/placeholder.svg",
-    featured: true,
+    featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Strategy", "SEO"],
     translations: {
       es: {
@@ -37,15 +47,25 @@ export const blogPosts: BlogPost[] = [
     }
   },
   {
-    id: 2,
+    id: "2",
     title: "10 SEO Tactics That Actually Work With AI-Generated Content",
     excerpt: "Learn the proven SEO strategies that work specifically with AI-written content to boost your search rankings.",
     category: "SEO",
-    author: "Jamie Patel",
+    categories: ["SEO"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-05-10T12:00:00Z",
+    updated_at: "2025-05-10T12:00:00Z",
+    language_code: "en",
+    slug: "seo-tactics-work-with-ai-generated-content",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "May 10, 2025",
     readTime: "6 min read",
     image: "/placeholder.svg",
-    featured: false,
+    featured_image: "/placeholder.svg",
     tags: ["SEO", "Content Strategy"],
     translations: {
       es: {
@@ -71,15 +91,25 @@ export const blogPosts: BlogPost[] = [
     }
   },
   {
-    id: 3,
+    id: "3",
     title: "The Ethical Considerations of AI in Content Marketing",
     excerpt: "We explore the important ethical questions around using AI to create content and how to navigate them responsibly.",
     category: "Content Ethics",
-    author: "Jordan Lee",
+    categories: ["Content Ethics"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-05-05T12:00:00Z",
+    updated_at: "2025-05-05T12:00:00Z",
+    language_code: "en",
+    slug: "ethical-considerations-ai-content-marketing",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "May 5, 2025",
     readTime: "10 min read",
     image: "/placeholder.svg",
-    featured: false,
+    featured_image: "/placeholder.svg",
     tags: ["Ethics", "AI Writing"],
     translations: {
       es: {
@@ -105,15 +135,25 @@ export const blogPosts: BlogPost[] = [
     }
   },
   {
-    id: 4,
+    id: "4",
     title: "Case Study: How Company X Increased Traffic by 300% with AI Content",
     excerpt: "A detailed breakdown of how a mid-sized business used AI content tools to dramatically improve their organic search visibility.",
     category: "Case Study",
-    author: "Casey Rivera",
+    categories: ["Case Study"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-04-28T12:00:00Z",
+    updated_at: "2025-04-28T12:00:00Z",
+    language_code: "en",
+    slug: "case-study-company-x-traffic-increase-ai-content",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "April 28, 2025",
     readTime: "12 min read",
     image: "/placeholder.svg",
-    featured: false,
+    featured_image: "/placeholder.svg",
     tags: ["Case Study", "Content Strategy", "Success Story"],
     translations: {
       es: {
@@ -139,15 +179,25 @@ export const blogPosts: BlogPost[] = [
     }
   },
   {
-    id: 5,
+    id: "5",
     title: "Comparing Human vs. AI-Written Content: The 2025 Analysis",
     excerpt: "We put AI-generated content head-to-head with human writers to see how they compare in quality, SEO performance, and reader engagement.",
     category: "Content Analysis",
-    author: "Taylor Kim",
+    categories: ["Content Analysis"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-04-20T12:00:00Z",
+    updated_at: "2025-04-20T12:00:00Z",
+    language_code: "en",
+    slug: "comparing-human-vs-ai-written-content-2025",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "April 20, 2025",
     readTime: "9 min read",
     image: "/placeholder.svg",
-    featured: false,
+    featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Quality"],
     translations: {
       es: {
@@ -173,15 +223,25 @@ export const blogPosts: BlogPost[] = [
     }
   },
   {
-    id: 6,
+    id: "6",
     title: "The Ultimate Guide to Optimizing AI-Generated Content",
     excerpt: "Learn our proven system for taking AI content from good to great with the right editing and optimization techniques.",
     category: "Content Optimization",
-    author: "Sam Chen",
+    categories: ["Content Optimization"],
+    author_id: null,
+    editor_id: null,
+    content: { blocks: [] },
+    created_at: "2025-04-15T12:00:00Z",
+    updated_at: "2025-04-15T12:00:00Z",
+    language_code: "en",
+    slug: "ultimate-guide-optimizing-ai-generated-content",
+    status: "published",
+    is_original: true,
+    version_number: 1,
     date: "April 15, 2025",
     readTime: "11 min read",
     image: "/placeholder.svg",
-    featured: false,
+    featured_image: "/placeholder.svg",
     tags: ["AI Writing", "Content Strategy", "Optimization"],
     translations: {
       es: {
@@ -220,7 +280,8 @@ export function getTranslatedBlogPost(post: BlogPost, language: string = 'en'): 
     ...post,
     title: translation.title,
     excerpt: translation.excerpt,
-    category: translation.category
+    category: translation.category,
+    categories: [translation.category]
   };
 }
 

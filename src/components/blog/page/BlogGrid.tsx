@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { BlogPost } from '@/types/blog';
 import { useLanguage } from '@/context/language/LanguageContext';
@@ -35,10 +35,10 @@ const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => (
             <article key={post.id} className="glass rounded-xl overflow-hidden transition-all hover:shadow-md">
-              {post.featured_image && (
+              {(post.featured_image || post.image) && (
                 <div className="aspect-video bg-gray-100">
                   <img
-                    src={post.featured_image}
+                    src={post.featured_image || post.image || '/placeholder.svg'}
                     alt={post.title}
                     className="w-full h-full object-cover"
                   />
@@ -46,14 +46,14 @@ const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore }) => {
               )}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
-                  {post.categories?.[0] && (
+                  {(post.category || (post.categories && post.categories.length > 0)) && (
                     <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-primary rounded-full">
-                      {post.categories[0]}
+                      {post.category || post.categories[0]}
                     </span>
                   )}
                 </div>
                 <h3 className="text-xl font-bold mb-3 line-clamp-2">
-                  <a href={`/blog/${post.slug}`} className="hover:text-primary transition-colors">
+                  <a href={`/blog/${post.slug || post.id}`} className="hover:text-primary transition-colors">
                     {post.title}
                   </a>
                 </h3>
@@ -64,10 +64,10 @@ const BlogGrid: React.FC<BlogGridProps> = ({ posts, onLoadMore }) => {
                 )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-foreground/60">
-                    {formatLocalizedDate(new Date(post.created_at), currentLanguage)}
+                    {post.date || formatLocalizedDate(new Date(post.created_at), currentLanguage)}
                   </span>
                   <a 
-                    href={`/blog/${post.slug}`} 
+                    href={`/blog/${post.slug || post.id}`} 
                     className="text-primary font-medium text-sm flex items-center hover:text-primary/80 transition-colors"
                   >
                     Read more <ArrowRight className="ml-1 h-3 w-3" />

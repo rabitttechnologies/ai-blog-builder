@@ -16,20 +16,28 @@ const Blog = () => {
   const { currentLanguage } = useLanguage();
   const { posts, isLoading } = useBlogPosts();
   
-  const featuredPost = posts?.find(post => post.is_original && post.categories?.includes('featured'));
-  const regularPosts = posts?.filter(post => !post.categories?.includes('featured'));
+  const featuredPost = posts?.find(post => 
+    post.is_original && 
+    (post.categories?.includes('featured') || post.category === 'featured')
+  );
+  
+  const regularPosts = posts?.filter(post => 
+    !(post.categories?.includes('featured') || post.category === 'featured')
+  );
   
   const filteredPosts = regularPosts?.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
+                         (post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+    
     const matchesCategory = selectedCategory === "All Categories" || 
-                          post.categories?.includes(selectedCategory);
+                          (post.categories?.includes(selectedCategory) || post.category === selectedCategory);
     
     return matchesSearch && matchesCategory;
   }) || [];
 
   const handleLoadMore = () => {
     // Implement load more logic here
+    console.log("Load more clicked");
   };
 
   return (

@@ -1,7 +1,19 @@
 
 import { Database } from "@/integrations/supabase/types";
 
-export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
+export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"] & {
+  // Additional fields for backward compatibility with existing UI
+  date?: string;
+  readTime?: string;
+  category?: string;
+  image?: string;
+  translations?: Record<string, {
+    title: string;
+    excerpt: string;
+    category: string;
+  }>;
+};
+
 export type BlogPostInsert = Database["public"]["Tables"]["blog_posts"]["Insert"];
 export type BlogPostUpdate = Database["public"]["Tables"]["blog_posts"]["Update"];
 
