@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AuthContextType, AuthUser, UserProfile } from "./types";
@@ -80,12 +79,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userData = await handleSessionFound(session);
         if (userData) {
           setUser(userData);
+        } else {
+          // Handle case where user data processing fails
+          console.log("AuthContext - Failed to process user data, but keeping session");
+          // We still consider the user authenticated even if profile loading fails
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            trialBlogsRemaining: 2,
+            trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            profile: {
+              name: session.user.user_metadata.name || '',
+              phone: session.user.user_metadata.phone || '',
+              organization: session.user.user_metadata.organization || '',
+              city: session.user.user_metadata.city || '',
+              country: session.user.user_metadata.country || ''
+            },
+            roles: ['user'],
+            isAdmin: false
+          });
         }
       } else {
         setUser(null);
       }
     } catch (error) {
       console.error("Error processing session:", error);
+      // Provide a fallback user object with minimal permissions
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          trialBlogsRemaining: 2,
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          profile: {
+            name: session.user.user_metadata.name || '',
+            phone: '',
+            organization: '',
+            city: '',
+            country: ''
+          },
+          roles: ['user'],
+          isAdmin: false
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -185,3 +221,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

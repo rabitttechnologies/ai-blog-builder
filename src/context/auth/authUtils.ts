@@ -17,28 +17,31 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     
     if (profileError && profileError.code !== 'PGRST116') {
       console.error("Error fetching user profile:", profileError);
+      // Continue execution even if profile fetch fails
     }
     
-    // Get user roles with improved error handling and logging
-    const { data: rolesData, error: rolesError } = await supabase
-      .rpc('get_user_roles', { user_id_param: supabaseUser.id });
-    
-    if (rolesError) {
-      console.error("Error fetching user roles:", rolesError);
-      throw new Error("Failed to fetch user roles");
-    }
-
-    console.log("Roles data received:", rolesData); // Debug log
-    
-    // Improved role extraction with null checking
+    // Get user roles with graceful error handling
     let roles: UserRole[] = ['user']; // Default role
-    if (rolesData && Array.isArray(rolesData) && rolesData.length > 0) {
-      roles = rolesData.map((r: {role: string}) => r.role as UserRole);
-      console.log("Extracted roles:", roles); // Debug log
+    let isAdmin = false;
+    
+    try {
+      const { data: rolesData, error: rolesError } = await supabase
+        .rpc('get_user_roles', { user_id_param: supabaseUser.id });
+      
+      if (rolesError) {
+        console.error("Error fetching user roles:", rolesError);
+        // Continue with default role
+      } else if (rolesData && Array.isArray(rolesData) && rolesData.length > 0) {
+        roles = rolesData.map((r: {role: string}) => r.role as UserRole);
+        console.log("Extracted roles:", roles);
+        isAdmin = roles.includes('admin');
+      }
+    } catch (roleError) {
+      console.error("Unexpected error fetching roles:", roleError);
+      // Continue with default role
     }
     
-    const isAdmin = roles.includes('admin');
-    console.log("Is admin:", isAdmin); // Debug log
+    console.log("Is admin:", isAdmin);
     
     // Default profile values
     const defaultProfile: UserProfile = {
@@ -70,6 +73,7 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
     };
   } catch (error) {
     console.error("Error processing authenticated user:", error);
-    throw error; // Propagate error for proper handling
+    // Returning null rather than throwing to prevent authentication flow from breaking
+    return null;
   }
 }

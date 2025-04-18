@@ -446,8 +446,13 @@ export type Database = {
           role: string
         }[]
       }
+      has_role: {
+        Args: { user_id_param: string; role_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "user" | "moderator"
       "Blog Creation Status":
         | "Create Blog Now"
         | "Create Blog Later"
@@ -578,6 +583,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user", "moderator"],
       "Blog Creation Status": [
         "Create Blog Now",
         "Create Blog Later",
