@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { TranslationRequestDialog } from './TranslationRequestDialog';
-import { TranslationHistoryView } from './TranslationHistoryView';
+import { PaginatedTranslationHistory } from './PaginatedTranslationHistory';
 import { Button } from '@/components/ui/Button';
 import {
   Drawer,
@@ -90,7 +89,7 @@ export function TranslationManager({
                   </DrawerDescription>
                 </DrawerHeader>
                 <div className="p-4">
-                  <TranslationHistoryView blogId={blogId} />
+                  <PaginatedTranslationHistory blogId={blogId} />
                 </div>
               </DrawerContent>
             </Drawer>

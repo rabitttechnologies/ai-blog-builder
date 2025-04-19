@@ -1,15 +1,37 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getLanguageFromPath, createLocalizedUrl, updateLanguageMeta } from '@/utils/languageUtils';
+import { isRTLLanguage, getTextDirection } from '@/utils/rtlUtils';
 
-// Define supported languages
+// Update SUPPORTED_LANGUAGES with all new languages
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
   { code: 'es', name: 'Spanish' },
   { code: 'fr', name: 'French' },
   { code: 'de', name: 'German' },
-  { code: 'zh', name: 'Chinese' }
+  { code: 'zh', name: 'Chinese' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'ms', name: 'Malaysian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'it', name: 'Italian' },
+  { code: 'fa', name: 'Persian' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'kn', name: 'Kannada' },
+  { code: 'ml', name: 'Malayalam' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'sv', name: 'Swedish' },
+  { code: 'ur', name: 'Urdu' },
+  { code: 'he', name: 'Hebrew' },
+  { code: 'el', name: 'Greek' },
+  { code: 'da', name: 'Danish' }
 ];
 
 interface LanguageContextType {
@@ -122,6 +144,28 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       setLanguage(detectedLang);
     }
   }, [currentLanguage, setLanguage]);
+
+  // Update meta tags and document direction
+  useEffect(() => {
+    document.documentElement.lang = currentLanguage;
+    document.documentElement.dir = getTextDirection(currentLanguage);
+    
+    let metaLanguage = document.querySelector('meta[name="language"]');
+    if (!metaLanguage) {
+      metaLanguage = document.createElement('meta');
+      metaLanguage.setAttribute('name', 'language');
+      document.head.appendChild(metaLanguage);
+    }
+    metaLanguage.setAttribute('content', currentLanguage);
+    
+    let metaContentLanguage = document.querySelector('meta[http-equiv="content-language"]');
+    if (!metaContentLanguage) {
+      metaContentLanguage = document.createElement('meta');
+      metaContentLanguage.setAttribute('http-equiv', 'content-language');
+      document.head.appendChild(metaContentLanguage);
+    }
+    metaContentLanguage.setAttribute('content', currentLanguage);
+  }, [currentLanguage]);
 
   return (
     <LanguageContext.Provider 
