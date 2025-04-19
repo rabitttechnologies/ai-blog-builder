@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
@@ -320,16 +319,14 @@ export function AdminBlogManagement() {
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Button
-                        // Fix button variant
-                        variant={post.status === 'published' ? "destructive" : "primary"}
+                        variant={post.status === 'published' ? "secondary" : "primary"}
                         size="sm"
                         onClick={() => handlePublish(post)}
                       >
                         {post.status === 'published' ? 'Unpublish' : 'Publish'}
                       </Button>
                       <Button
-                        // Fix button variant
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
                         onClick={() => handleDelete(post)}
                       >
