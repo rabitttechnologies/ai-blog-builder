@@ -10,42 +10,18 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { SUPPORTED_LANGUAGES } from '@/context/language/LanguageContext';
 import { formatLocalizedDate } from '@/utils/languageUtils';
 import { Tooltip } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
+import { TranslationWorkflow } from '@/types/blog';
 
-interface TranslationHistoryProps {
-  blogId?: string; // Optional - if provided, shows history for specific blog
+export interface TranslationHistoryProps {
+  translations: TranslationWorkflow[];
+  isLoading: boolean;
 }
 
-export function TranslationHistoryView({ blogId }: TranslationHistoryProps) {
-  const { data: translations, isLoading } = useQuery({
-    queryKey: ['translation-history', blogId],
-    queryFn: async () => {
-      const query = supabase
-        .from('translation_workflows')
-        .select(`
-          *,
-          blog_posts!blog_id (
-            title,
-            language_code
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (blogId) {
-        query.eq('blog_id', blogId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    },
-  });
-
+export function TranslationHistoryView({ translations, isLoading }: TranslationHistoryProps) {
   const getTranslationProgress = (completed: string[], requested: string[]) => {
     if (!requested.length) return 0;
     return (completed.length / requested.length) * 100;
