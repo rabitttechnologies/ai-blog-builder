@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useTranslationData } from '@/hooks/useTranslationData';
 import { TranslationHistoryView } from './TranslationHistoryView';
 import { Pagination } from '@/components/ui/pagination';
 
@@ -16,37 +15,10 @@ export function PaginatedTranslationHistory({
 }: PaginatedTranslationHistoryProps) {
   const [currentPage, setCurrentPage] = React.useState(1);
   
-  const { data, isLoading } = useQuery({
-    queryKey: ['translation-history', blogId, currentPage, itemsPerPage],
-    queryFn: async () => {
-      const startRange = (currentPage - 1) * itemsPerPage;
-      const endRange = startRange + itemsPerPage - 1;
-      
-      const query = supabase
-        .from('translation_workflows')
-        .select(`
-          *,
-          blog_posts!blog_id (
-            title,
-            language_code
-          )
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(startRange, endRange);
-
-      if (blogId) {
-        query.eq('blog_id', blogId);
-      }
-
-      const { data, count, error } = await query;
-      
-      if (error) throw error;
-      
-      return {
-        translations: data,
-        total: count || 0
-      };
-    },
+  const { data, isLoading } = useTranslationData({
+    blogId,
+    page: currentPage,
+    itemsPerPage
   });
 
   const pageCount = Math.ceil((data?.total || 0) / itemsPerPage);

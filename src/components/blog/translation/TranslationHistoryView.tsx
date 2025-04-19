@@ -17,7 +17,12 @@ import { Info } from 'lucide-react';
 import { TranslationWorkflow } from '@/types/blog';
 
 export interface TranslationHistoryProps {
-  translations: TranslationWorkflow[];
+  translations: (TranslationWorkflow & {
+    blog_posts?: {
+      title: string;
+      language_code: string;
+    };
+  })[];
   isLoading: boolean;
 }
 
