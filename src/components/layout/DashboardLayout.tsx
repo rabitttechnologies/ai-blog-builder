@@ -11,7 +11,9 @@ import {
   Menu, 
   X, 
   ChevronDown,
-  User
+  User,
+  Globe,
+  Users
 } from "lucide-react";
 import { useAuth } from "@/context/auth";
 
@@ -117,6 +119,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <span>My Blogs</span>
             </Link>
             <Link 
+              to="/blog" 
+              className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+            >
+              <Globe className="w-5 h-5" />
+              <span>Blog</span>
+            </Link>
+            <Link 
               to="/account" 
               className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
             >
@@ -130,6 +139,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <CreditCard className="w-5 h-5" />
               <span>Subscription</span>
             </Link>
+            
+            {/* Admin-only links */}
+            {user?.isAdmin && (
+              <Link 
+                to="/admin" 
+                className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+              >
+                <Users className="w-5 h-5" />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
+            
             <button 
               className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 w-full text-left"
               onClick={handleLogout}
@@ -165,6 +186,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <span>My Blogs</span>
                 </Link>
                 <Link 
+                  to="/blog" 
+                  className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Globe className="w-5 h-5" />
+                  <span>Blog</span>
+                </Link>
+                <Link 
                   to="/account" 
                   className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -180,6 +209,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <CreditCard className="w-5 h-5" />
                   <span>Subscription</span>
                 </Link>
+                
+                {/* Admin-only links */}
+                {user?.isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Users className="w-5 h-5" />
+                    <span>Admin Dashboard</span>
+                  </Link>
+                )}
+                
                 <button 
                   className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 w-full text-left"
                   onClick={() => {
