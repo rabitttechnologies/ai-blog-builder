@@ -26,10 +26,19 @@ import {
   Eye, 
   FileText 
 } from "lucide-react";
-import { CreateBlogDialog } from "@/components/blog/CreateBlogDialog";
+// Fix import - use default import instead of named import
+import CreateBlogDialog from "@/components/blog/CreateBlogDialog";
 import { AdminTranslationRequest } from "./AdminTranslationRequest";
 import { TranslationManager } from "@/components/blog/translation/TranslationManager";
-import { Select } from "@/components/ui/select";
+import { 
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { BlogPost, BlogPostStatus } from "@/types/blog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -185,28 +194,42 @@ export function AdminBlogManagement() {
           </div>
           
           <div className="flex flex-1 gap-4">
+            {/* Fix Select component usage */}
             <Select
-              defaultValue="all"
+              value={statusFilter}
               onValueChange={setStatusFilter}
-              className="w-full md:w-40"
             >
-              {statusOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {statusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
             </Select>
             
+            {/* Fix Select component usage */}
             <Select
-              defaultValue="all"
+              value={languageFilter}
               onValueChange={setLanguageFilter}
-              className="w-full md:w-40"
             >
-              {languageOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {languageOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
             </Select>
           </div>
         </div>
@@ -297,13 +320,15 @@ export function AdminBlogManagement() {
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant={post.status === 'published' ? 'destructive' : 'default'}
+                        // Fix button variant
+                        variant={post.status === 'published' ? "destructive" : "primary"}
                         size="sm"
                         onClick={() => handlePublish(post)}
                       >
                         {post.status === 'published' ? 'Unpublish' : 'Publish'}
                       </Button>
                       <Button
+                        // Fix button variant
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDelete(post)}
