@@ -42,6 +42,6 @@ export const useTranslationData = ({ blogId, page, itemsPerPage }: UseTranslatio
       };
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    keepPreviousData: true,
+    placeholderData: (prevData) => prevData, // This replaces keepPreviousData
   });
 };
