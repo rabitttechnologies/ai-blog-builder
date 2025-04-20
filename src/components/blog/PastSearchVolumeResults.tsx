@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/auth';
 import LoadingOverlay from './LoadingOverlay';
+import ClusteringWorkflow from '../clustering/ClusteringWorkflow';
 
 type VolumeData = {
   keyword: string;
@@ -64,6 +64,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       isSelected: true
     }))
   );
+  const [clusteringData, setClusteringData] = useState<any>(null);
 
   // Get session ID for request tracking
   const getSessionId = () => session?.access_token?.substring(0, 16) || 'anonymous-session';
@@ -141,32 +142,8 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
         originalKeyword
       };
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout for clustering
-      
-      const response = await fetch('https://n8n.agiagentworld.com/webhook/clustering', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        throw new Error(`Clustering request failed (${response.status}): ${errorText}`);
-      }
-      
-      const responseData = await response.json();
-      
-      toast({
-        title: "Clustering Complete",
-        description: "Keywords have been successfully clustered.",
-      });
-      
-      console.log("Clustering response:", responseData);
-      onComplete();
+      // Store the payload for ClusteringWorkflow component
+      setClusteringData(payload);
       
     } catch (error: any) {
       const errorMessage = error.name === 'AbortError' 
@@ -184,6 +161,16 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       setIsLoading(false);
     }
   };
+
+  // If clustering data is set, show the clustering workflow
+  if (clusteringData) {
+    return (
+      <ClusteringWorkflow
+        initialData={clusteringData}
+        onClose={onComplete}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
