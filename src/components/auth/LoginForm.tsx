@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import FormAuthWrapper from "./FormAuthWrapper";
 
+// Move form schema outside component to prevent recreation on render
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -27,31 +28,84 @@ const formSchema = z.object({
 const LoginForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const renderTimeRef = useRef(performance.now());
   
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Form initialization with memoized resolver
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
     },
+    mode: "onBlur", // Validate on blur for better UX
   });
 
+  // Register form interactions for performance monitoring
+  useEffect(() => {
+    const renderTime = performance.now() - renderTimeRef.current;
+    console.log(`LoginForm component render time: ${Math.round(renderTime)}ms`);
+    
+    // Register interaction observers for form inputs
+    const formElement = formRef.current;
+    if (formElement) {
+      const inputElements = formElement.querySelectorAll('input');
+      
+      const observeInteractions = (elements: NodeListOf<HTMLInputElement>) => {
+        elements.forEach(input => {
+          input.addEventListener('focus', () => {
+            const startTime = performance.now();
+            input.dataset.interactionStart = startTime.toString();
+          });
+          
+          input.addEventListener('blur', () => {
+            if (input.dataset.interactionStart) {
+              const startTime = parseFloat(input.dataset.interactionStart);
+              const endTime = performance.now();
+              console.log(`Input interaction time (${input.name}): ${Math.round(endTime - startTime)}ms`);
+            }
+          });
+        });
+      };
+      
+      observeInteractions(inputElements);
+    }
+  }, []);
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const startTime = performance.now();
     setError("");
     setIsSubmitting(true);
     
     try {
       await login(values.email, values.password);
+      
+      // Log authentication performance
+      const authTime = performance.now() - startTime;
+      console.log(`Authentication process time: ${Math.round(authTime)}ms`);
+      
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
-      navigate("/dashboard");
+      
+      // Use requestIdleCallback to delay navigation slightly for toast to be visible
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          navigate("/dashboard");
+        }, { timeout: 300 });
+      } else {
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 300);
+      }
     } catch (err: any) {
+      const errorTime = performance.now() - startTime;
+      console.log(`Authentication error time: ${Math.round(errorTime)}ms`);
       setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setIsSubmitting(false);
@@ -69,7 +123,7 @@ const LoginForm: React.FC = () => {
         )}
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -80,6 +134,7 @@ const LoginForm: React.FC = () => {
                     <Input
                       placeholder="you@example.com"
                       type="email"
+                      autoComplete="email"
                       {...field}
                     />
                   </FormControl>
@@ -98,6 +153,7 @@ const LoginForm: React.FC = () => {
                     <Input
                       placeholder="Your password"
                       type="password"
+                      autoComplete="current-password"
                       {...field}
                     />
                   </FormControl>

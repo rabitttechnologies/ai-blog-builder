@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import { useAuth } from "@/context/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -17,17 +17,25 @@ const FormAuthWrapper: React.FC<FormAuthWrapperProps> = ({
   fallback 
 }) => {
   const { isLoading } = useAuth();
+  const renderTimeRef = useRef(performance.now());
+  
+  // Log rendering performance
+  useEffect(() => {
+    const renderTime = performance.now() - renderTimeRef.current;
+    console.log(`FormAuthWrapper render time: ${Math.round(renderTime)}ms - isLoading: ${isLoading}`);
+  }, [isLoading]);
   
   // If auth is still loading, show fallback or skeleton
   if (isLoading) {
     if (fallback) return <>{fallback}</>;
     
+    // Return optimized skeleton with explicit dimensions to prevent layout shifts
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-3/4 mx-auto mt-6" />
+      <div className="space-y-4" style={{minHeight: '320px'}}>
+        <Skeleton className="h-10 w-full" style={{height: '40px', width: '100%'}} />
+        <Skeleton className="h-10 w-full" style={{height: '40px', width: '100%'}} />
+        <Skeleton className="h-10 w-full" style={{height: '40px', width: '100%'}} />
+        <Skeleton className="h-10 w-3/4 mx-auto mt-6" style={{height: '40px', width: '75%', marginTop: '24px', marginLeft: 'auto', marginRight: 'auto'}} />
       </div>
     );
   }

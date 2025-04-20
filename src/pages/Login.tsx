@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
@@ -9,8 +9,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const renderTimeRef = useRef(performance.now());
   
-  console.log("Login page render - Auth state:", { isAuthenticated, isLoading });
+  // Log rendering performance
+  useEffect(() => {
+    const renderTime = performance.now() - renderTimeRef.current;
+    console.log(`Login page render time: ${Math.round(renderTime)}ms - Auth state:`, { isAuthenticated, isLoading });
+    
+    // Mark the LCP element for performance monitoring
+    if (document.querySelector('.logo-text')) {
+      (window as any).lcpElementMarked = true;
+      console.log('LCP element marked: Logo text');
+    }
+  }, [isAuthenticated, isLoading]);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -44,11 +55,13 @@ const Login = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/80 px-4">
       <Helmet>
         <title>Log In - Insight Writer AI</title>
+        <meta name="description" content="Log in to your Insight Writer AI account to create SEO-optimized blogs using AI technology." />
+        <link rel="preload" as="image" href="/og-image.png" />
       </Helmet>
       
       <div className="w-full max-w-md mb-8">
         <Link to="/" className="inline-block mb-6">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+          <h1 className="logo-text text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400" style={{width: 'auto', height: 'auto'}}>
             Insight Writer AI
           </h1>
         </Link>
