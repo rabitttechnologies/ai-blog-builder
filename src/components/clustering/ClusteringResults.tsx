@@ -241,7 +241,7 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
                                   className="h-8 mr-2"
                                 />
                                 <Button 
-                                  size="icon" 
+                                  size="sm" 
                                   variant="ghost" 
                                   className="h-8 w-8" 
                                   onClick={() => onUpdateKeyword(cluster.clusterName, item.keyword, { isEditing: false })}

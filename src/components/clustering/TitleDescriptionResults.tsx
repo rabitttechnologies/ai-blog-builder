@@ -251,10 +251,10 @@ const TitleDescriptionResults: React.FC<TitleDescriptionResultsProps> = ({
                                     className="mr-2"
                                   />
                                   <div className="flex">
-                                    <Button size="icon" variant="ghost" onClick={saveEditing}>
+                                    <Button size="sm" variant="ghost" onClick={saveEditing}>
                                       <Check className="h-4 w-4" />
                                     </Button>
-                                    <Button size="icon" variant="ghost" onClick={cancelEditing}>
+                                    <Button size="sm" variant="ghost" onClick={cancelEditing}>
                                       <X className="h-4 w-4" />
                                     </Button>
                                   </div>
@@ -263,7 +263,7 @@ const TitleDescriptionResults: React.FC<TitleDescriptionResultsProps> = ({
                                 <>
                                   <h4 className="font-semibold text-lg">{item.title}</h4>
                                   <Button 
-                                    size="icon" 
+                                    size="sm" 
                                     variant="ghost" 
                                     onClick={() => startEditing(item.keyword, 'title', item.title)}
                                   >
@@ -284,7 +284,7 @@ const TitleDescriptionResults: React.FC<TitleDescriptionResultsProps> = ({
                                   <Button size="sm" variant="ghost" onClick={cancelEditing} className="mr-2">
                                     Cancel
                                   </Button>
-                                  <Button size="sm" variant="default" onClick={saveEditing}>
+                                  <Button size="sm" variant="primary" onClick={saveEditing}>
                                     Save
                                   </Button>
                                 </div>
@@ -293,7 +293,7 @@ const TitleDescriptionResults: React.FC<TitleDescriptionResultsProps> = ({
                               <div className="relative mb-2">
                                 <p className="text-sm text-muted-foreground pr-8">{item.description}</p>
                                 <Button 
-                                  size="icon" 
+                                  size="sm" 
                                   variant="ghost" 
                                   onClick={() => startEditing(item.keyword, 'description', item.description)}
                                   className="absolute top-0 right-0"

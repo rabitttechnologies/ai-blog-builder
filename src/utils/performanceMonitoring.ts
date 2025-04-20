@@ -8,6 +8,10 @@ import { getResourceMetrics } from './performance/resourceTiming';
 import { setupPerformanceObservers } from './performance/observers';
 
 const updatePerformanceMetrics = (newMetrics: Partial<PerformanceMetrics>) => {
+  if (!window.__PERFORMANCE_METRICS) {
+    window.__PERFORMANCE_METRICS = {};
+  }
+  
   window.__PERFORMANCE_METRICS = {
     ...window.__PERFORMANCE_METRICS,
     ...newMetrics
@@ -22,14 +26,14 @@ export const reportWebVitals = () => {
   const navigationMetrics = getNavigationMetrics();
   if (Object.keys(navigationMetrics).length > 0) {
     console.log('Navigation Performance Metrics:', navigationMetrics);
-    updatePerformanceMetrics({ navigation: navigationMetrics });
+    updatePerformanceMetrics({ navigation: navigationMetrics as PerformanceMetrics['navigation'] });
   }
 
   // Get resource timing
   const resourceMetrics = getResourceMetrics();
   if (Object.keys(resourceMetrics).length > 0) {
     console.log('Resource Timing:', resourceMetrics);
-    updatePerformanceMetrics({ resources: resourceMetrics });
+    updatePerformanceMetrics({ resources: resourceMetrics as PerformanceMetrics['resources'] });
   }
 };
 
@@ -63,4 +67,3 @@ export const initPerformanceMonitoring = () => {
     cleanupObservers();
   });
 };
-

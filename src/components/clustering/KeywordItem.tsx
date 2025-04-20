@@ -58,17 +58,17 @@ const KeywordItem: React.FC<KeywordItemProps> = ({ item, clusterName, onUpdateKe
                     onChange={(e) => setEditedKeyword(e.target.value)} 
                     className="mr-2"
                   />
-                  <Button size="icon" variant="ghost" onClick={handleEditSave}>
+                  <Button size="sm" variant="ghost" onClick={handleEditSave}>
                     <Check className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" onClick={handleEditCancel}>
+                  <Button size="sm" variant="ghost" onClick={handleEditCancel}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <>
                   <h4 className="font-medium">{item.keyword}</h4>
-                  <Button size="icon" variant="ghost" onClick={handleEditStart}>
+                  <Button size="sm" variant="ghost" onClick={handleEditStart}>
                     <Edit className="h-4 w-4" />
                   </Button>
                 </>
