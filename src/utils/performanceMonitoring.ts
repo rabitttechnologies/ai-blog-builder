@@ -169,7 +169,7 @@ const getPaintMetrics = () => {
 };
 
 // Send performance data to analytics
-const sendPerformanceDataToAnalytics = (metrics: any) => {
+const sendPerformanceDataToAnalytics = (metrics: PerformanceMetrics) => {
   // This would be implemented to send data to your analytics platform
   // For now, we'll just store it in the window object
   console.log('Performance data ready for analytics:', metrics);
@@ -198,9 +198,4 @@ export const initPerformanceMonitoring = () => {
   });
 };
 
-// Add to window for TypeScript
-declare global {
-  interface Window {
-    __PERFORMANCE_METRICS?: any;
-  }
-}
+// No need to redeclare the Window interface here since it's already in performance.d.ts
