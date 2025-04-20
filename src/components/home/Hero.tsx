@@ -1,10 +1,12 @@
 
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Link } from "react-router-dom";
 import { TRIAL_LENGTH_DAYS } from "@/constants/pricing";
-import BenefitsSlider from "./BenefitsSlider";
+
+// Lazy load non-critical component
+const BenefitsSlider = lazy(() => import('./BenefitsSlider'));
 
 const Hero: React.FC = () => {
   const scrollToHowItWorks = () => {
@@ -14,6 +16,7 @@ const Hero: React.FC = () => {
     }
   };
 
+  // Prioritize loading the main headline (LCP element)
   return (
     <div className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-24">
       {/* Background decoration */}
@@ -29,6 +32,7 @@ const Hero: React.FC = () => {
           <span className="text-sm">Introducing Insight Writer AI</span>
         </div>
 
+        {/* This is the LCP element - prioritize its rendering */}
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">
           Use AI Blogger to Empower Your Blogging with AI & Search Data to Rank #1
         </h1>
@@ -54,13 +58,18 @@ const Hero: React.FC = () => {
           </p>
         </div>
         
-        <BenefitsSlider />
+        {/* Defer the slider loading to improve LCP */}
+        <Suspense fallback={<div className="h-20" />}>
+          <BenefitsSlider />
+        </Suspense>
 
+        {/* Load the image with lazy loading for non-critical content */}
         <div className="relative mx-auto max-w-4xl rounded-xl overflow-hidden shadow-2xl animate-fade-in [animation-delay:600ms] mt-8">
           <img 
             src="https://images.unsplash.com/photo-1498050108023-c5249f4df085" 
             alt="AI-powered content creation on laptop" 
             className="w-full h-auto rounded-t-xl object-cover"
+            loading="lazy"
           />
           
           {/* Mock Browser UI */}

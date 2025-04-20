@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,6 +8,78 @@
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
+
+    <!-- Preconnect to Google Fonts to reduce connection time -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Inline critical CSS -->
+    <style>
+      /* Critical CSS for above-the-fold content */
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: hsl(0 0% 100%);
+        color: hsl(220 14% 10%);
+      }
+      .glass {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      /* Basic header and button styles needed for immediate display */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        transition: all 0.3s;
+        padding: 1rem 0;
+      }
+      .container-wide {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+      /* Login form critical styles */
+      .min-h-screen {
+        min-height: 100vh;
+      }
+      .flex {
+        display: flex;
+      }
+      .flex-col {
+        flex-direction: column;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-center {
+        justify-content: center;
+      }
+      .rounded-xl {
+        border-radius: 0.75rem;
+      }
+      .p-6 {
+        padding: 1.5rem;
+      }
+      .space-y-4 > * + * {
+        margin-top: 1rem;
+      }
+      .w-full {
+        width: 100%;
+      }
+      .max-w-md {
+        max-width: 28rem;
+      }
+    </style>
+
+    <!-- Load the rest of the CSS with preload -->
+    <link rel="preload" href="/src/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/src/index.css"></noscript>
   </head>
 
   <body>
