@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import { Slot } from "@radix-ui/react-slot";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link";
-type ButtonSize = "sm" | "md" | "lg";
+// Define proper types for our button variants and sizes
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link";
+export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -31,7 +32,8 @@ const buttonVariants = cva(
       size: {
         sm: "text-xs h-8 px-3",
         md: "text-sm h-10 px-4",
-        lg: "text-base h-12 px-6"
+        lg: "text-base h-12 px-6",
+        icon: "h-8 w-8 p-0" // Added icon size variant
       },
       fullWidth: {
         true: "w-full",
