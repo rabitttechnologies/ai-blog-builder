@@ -16,6 +16,41 @@ export const isValidData = (data: any, type?: string): boolean => {
 };
 
 /**
+ * Safely access nested properties in an object without causing errors
+ * @param obj The object to access
+ * @param path The path to the property (e.g., 'data.items.0.name')
+ * @param defaultValue The default value to return if the path doesn't exist
+ * @returns The value at the path or the default value
+ */
+export const safeGet = (obj: any, path: string, defaultValue: any = undefined): any => {
+  if (!obj) return defaultValue;
+  
+  const keys = path.split('.');
+  let result = obj;
+  
+  for (const key of keys) {
+    if (result === undefined || result === null) {
+      return defaultValue;
+    }
+    
+    result = result[key];
+  }
+  
+  return result !== undefined ? result : defaultValue;
+};
+
+/**
+ * Safely filter an array, returning an empty array if the input is not valid
+ * @param array The array to filter
+ * @param predicate The filter function
+ * @returns Filtered array or empty array if input is invalid
+ */
+export const safeFilter = <T>(array: T[] | undefined | null, predicate: (item: T) => boolean): T[] => {
+  if (!array || !Array.isArray(array)) return [];
+  return array.filter(predicate);
+};
+
+/**
  * Mapping of search section headings to their data keys
  */
 export const headingMappings = {

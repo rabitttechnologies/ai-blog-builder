@@ -12,21 +12,41 @@ export const useKeywordSelection = (clusteringData: ClusteringResponse | null) =
       return;
     }
 
-    const newSelection = new Map<string, ClusterItem>();
-    
-    clusteringData.clusters.forEach(cluster => {
-      cluster.items.forEach(item => {
-        if (item.status === 'Select for Blog Creation' && (item.priority || 0) > 0) {
-          newSelection.set(item.keyword, item);
-        }
+    try {
+      const newSelection = new Map<string, ClusterItem>();
+      
+      // Safely iterate through clusters with proper validation
+      const clusters = clusteringData.clusters || [];
+      
+      clusters.forEach(cluster => {
+        // Skip if cluster doesn't have items array
+        if (!cluster || !Array.isArray(cluster.items)) return;
+        
+        cluster.items.forEach(item => {
+          // Ensure item has required properties
+          if (item && item.keyword && item.status === 'Select for Blog Creation' && (item.priority || 0) > 0) {
+            newSelection.set(item.keyword, item);
+          }
+        });
       });
-    });
-    
-    setSelectedKeywords(newSelection);
+      
+      setSelectedKeywords(newSelection);
+    } catch (error) {
+      console.error("Error processing keyword selection:", error);
+      // Reset to empty map if there's an error
+      setSelectedKeywords(new Map());
+    }
   }, [clusteringData]);
 
-  // Count of selected keywords
-  const selectedCount = useMemo(() => selectedKeywords.size, [selectedKeywords]);
+  // Count of selected keywords with error handling
+  const selectedCount = useMemo(() => {
+    try {
+      return selectedKeywords.size;
+    } catch (error) {
+      console.error("Error calculating selected count:", error);
+      return 0;
+    }
+  }, [selectedKeywords]);
 
   return {
     selectedKeywords,

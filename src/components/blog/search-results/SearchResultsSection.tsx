@@ -23,12 +23,23 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   maxSelections,
   onToggleSelection
 }) => {
-  // Helper to check if an item is selected
+  // Early return if data is not valid
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+
+  // Helper to check if an item is selected with safety checks
   const isSelected = (item: any) => {
-    if (!selections[heading]) return false;
-    return selections[heading].some((selectedItem: any) => 
-      JSON.stringify(selectedItem) === JSON.stringify(item)
-    );
+    if (!selections || !selections[heading]) return false;
+    
+    try {
+      return selections[heading].some((selectedItem: any) => 
+        JSON.stringify(selectedItem) === JSON.stringify(item)
+      );
+    } catch (error) {
+      console.error("Error checking if item is selected:", error);
+      return false;
+    }
   };
 
   return (
@@ -41,7 +52,11 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
               key={index}
               item={item}
               isSelected={isSelected(item)}
-              onToggle={() => onToggleSelection(heading, item)}
+              onToggle={() => {
+                if (item) { // Only toggle if item exists
+                  onToggleSelection(heading, item);
+                }
+              }}
               index={index}
               heading={heading}
               disabled={!isSelected(item) && totalSelections >= maxSelections}

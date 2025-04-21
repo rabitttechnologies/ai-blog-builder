@@ -3,7 +3,7 @@ import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
 import { isItemSelected } from '@/utils/selectionUtils';
-import { isValidData, headingMappings } from '@/utils/dataValidation';
+import { isValidData, headingMappings, safeFilter, safeGet } from '@/utils/dataValidation';
 import { useKeywordSelections, MAX_SELECTIONS } from '@/hooks/useKeywordSelections';
 import { useVolumeAnalysis } from '@/hooks/useVolumeAnalysis';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -29,7 +29,16 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
   const { isLoading, volumeData, setVolumeData, analyzeSelectedKeywords } = useVolumeAnalysis(keyword, workflowId);
   const profileData = useProfileData();
   
-  if (!data) return null;
+  // Early return if data is completely missing
+  if (!data) {
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-xl font-semibold">No Data Available</h3>
+        <p className="text-muted-foreground mb-4">We couldn't retrieve search results for your keyword.</p>
+        <Button onClick={onClose}>Close</Button>
+      </div>
+    );
+  }
   
   // If we have volume data, show the volume results component
   if (volumeData) {
@@ -47,12 +56,17 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <SearchResultsHeader
-        keyword={keyword}
+        keyword={keyword || 'Unknown'}
         totalSelections={totalSelections}
         maxSelections={MAX_SELECTIONS}
         isLoading={isLoading}
         onClose={onClose}
-        onAnalyze={() => analyzeSelectedKeywords(selections, profileData)}
+        onAnalyze={() => {
+          // Only analyze if we have selections
+          if (selections && Object.keys(selections).length > 0) {
+            analyzeSelectedKeywords(selections, profileData);
+          }
+        }}
       />
       
       <Separator />
@@ -60,16 +74,26 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
       {Object.entries(headingMappings).map(([heading, mapping]) => {
         let sectionData;
         
-        if ('key' in mapping) {
-          sectionData = data[mapping.key];
-        } else if ('keys' in mapping) {
-          sectionData = mapping.keys
-            .map(key => data[key])
-            .filter(Boolean)
-            .flat();
+        try {
+          if ('key' in mapping) {
+            // Safely access data using the key
+            sectionData = safeGet(data, mapping.key, []);
+          } else if ('keys' in mapping) {
+            // Combine data from multiple keys with safety checks
+            sectionData = (mapping.keys || [])
+              .map(key => safeGet(data, key, []))
+              .filter(Array.isArray)
+              .flat();
+          }
+          
+          // Skip rendering if we don't have valid data
+          if (!isValidData(sectionData, mapping.type)) {
+            return null;
+          }
+        } catch (error) {
+          console.error(`Error processing data for section "${heading}":`, error);
+          return null;
         }
-        
-        if (!isValidData(sectionData, mapping.type)) return null;
         
         return (
           <SearchResultsSection
@@ -81,8 +105,8 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
               heading === 'Popular Right Now' ? 'Questions people are asking' :
               'Additional keyword suggestions'
             }
-            data={sectionData}
-            selections={selections}
+            data={sectionData || []}
+            selections={selections || {}}
             totalSelections={totalSelections}
             maxSelections={MAX_SELECTIONS}
             onToggleSelection={handleToggleSelection}
