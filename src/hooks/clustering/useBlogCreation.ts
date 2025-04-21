@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
+import { safeGet } from '@/utils/dataValidation';
 import type { 
   TitleDescriptionResponse,
   BlogCreationPayload
@@ -37,15 +38,17 @@ export const useBlogCreation = (titleDescriptionData: TitleDescriptionResponse |
       const blogId = 11111 + Math.floor(Math.random() * 88888);
       
       const payload: BlogCreationPayload = {
-        Title: selectedItem.title,
-        Description: selectedItem.description,
-        Keyword: selectedItem.keyword,
+        Title: safeGet(selectedItem, 'title', ''),
+        Description: safeGet(selectedItem, 'description', ''),
+        Keyword: safeGet(selectedItem, 'keyword', ''),
         BlogId: blogId,
-        workflowId: titleDescriptionData.workflowId,
+        workflowId: safeGet(titleDescriptionData, 'workflowId', ''),
         userId: user.id,
-        originalKeyword: titleDescriptionData.originalKeyword,
+        originalKeyword: safeGet(titleDescriptionData, 'originalKeyword', ''),
         sessionId: getSessionId()
       };
+
+      console.log("Submitting blog creation request with payload:", JSON.stringify(payload));
 
       const response = await fetch('https://n8n.agiagentworld.com/webhook/createblogmetatags', {
         method: 'POST',
@@ -60,6 +63,7 @@ export const useBlogCreation = (titleDescriptionData: TitleDescriptionResponse |
       }
 
       const data = await response.json();
+      console.log("Blog creation response:", JSON.stringify(data));
       
       toast({
         title: "Blog Creation Initiated",

@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import SearchSectionHeader from '../SearchSectionHeader';
 import SelectableItem from '../SelectableItem';
+import { safeGet } from '@/utils/dataValidation';
 
 interface SearchResultsSectionProps {
   heading: string;
@@ -30,10 +31,10 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
 
   // Helper to check if an item is selected with safety checks
   const isSelected = (item: any) => {
-    if (!selections || !selections[heading]) return false;
+    if (!selections || !safeGet(selections, heading)) return false;
     
     try {
-      return selections[heading].some((selectedItem: any) => 
+      return safeGet(selections, heading, []).some((selectedItem: any) => 
         JSON.stringify(selectedItem) === JSON.stringify(item)
       );
     } catch (error) {
@@ -43,7 +44,7 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="mb-6">
       <SearchSectionHeader heading={heading} description={description} />
       <CardContent>
         <div className="space-y-2">

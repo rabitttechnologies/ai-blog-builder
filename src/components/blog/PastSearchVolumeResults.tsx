@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/auth';
 import LoadingOverlay from './LoadingOverlay';
 import ClusteringWorkflow from '../clustering/ClusteringWorkflow';
+import { safeGet, safeMap } from '@/utils/dataValidation';
+
+// Consistent shared UI class sets
+const contentContainerClasses = "space-y-6 max-w-6xl mx-auto";
+const headerClasses = "flex items-center justify-between flex-wrap gap-4";
+const buttonContainerClasses = "flex items-center gap-2";
 
 type VolumeData = {
   keyword: string;
@@ -58,7 +65,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   const { user, session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [keywordRows, setKeywordRows] = useState<KeywordSelectionRow[]>(() => 
-    volumeData.map(item => ({
+    safeMap(volumeData, item => ({
       ...item,
       clusteringOption: 'Select for Clustering',
       isSelected: true
@@ -73,7 +80,9 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   const toggleSelection = (index: number) => {
     setKeywordRows(prev => {
       const updated = [...prev];
-      updated[index].isSelected = !updated[index].isSelected;
+      if (updated[index]) {
+        updated[index].isSelected = !updated[index].isSelected;
+      }
       return updated;
     });
   };
@@ -82,7 +91,9 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   const updateClusteringOption = (index: number, option: ClusteringOption) => {
     setKeywordRows(prev => {
       const updated = [...prev];
-      updated[index].clusteringOption = option;
+      if (updated[index]) {
+        updated[index].clusteringOption = option;
+      }
       return updated;
     });
   };
@@ -142,6 +153,8 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
         originalKeyword
       };
       
+      console.log("Preparing clustering request with payload:", JSON.stringify(payload));
+      
       // Store the payload for ClusteringWorkflow component
       setClusteringData(payload);
       
@@ -157,7 +170,6 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       });
       
       console.error('Clustering error:', error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -172,11 +184,24 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
     );
   }
 
+  // Validate volumeData
+  if (!volumeData || !Array.isArray(volumeData) || volumeData.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-xl font-semibold mb-2">No volume data available</h3>
+        <p className="text-muted-foreground mb-4">
+          We couldn't retrieve volume data for your selected keywords.
+        </p>
+        <Button onClick={onCancel}>Go Back</Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className={contentContainerClasses}>
+      <div className={headerClasses}>
         <h3 className="text-2xl font-semibold">Keyword Volume Analysis: <span className="text-primary">{originalKeyword}</span></h3>
-        <div className="flex items-center gap-2">
+        <div className={buttonContainerClasses}>
           <Button
             variant="outline"
             onClick={onCancel}
@@ -231,7 +256,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

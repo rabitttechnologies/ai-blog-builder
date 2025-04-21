@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { ClusterItem, ClusteringResponse } from '@/types/clustering';
+import { safeGet } from '@/utils/dataValidation';
 
 export const useKeywordSelection = (clusteringData: ClusteringResponse | null) => {
   const [selectedKeywords, setSelectedKeywords] = useState<Map<string, ClusterItem>>(new Map());
@@ -16,19 +17,26 @@ export const useKeywordSelection = (clusteringData: ClusteringResponse | null) =
       const newSelection = new Map<string, ClusterItem>();
       
       // Safely iterate through clusters with proper validation
-      const clusters = clusteringData.clusters || [];
+      const clusters = safeGet(clusteringData, 'clusters', []);
       
-      clusters.forEach(cluster => {
-        // Skip if cluster doesn't have items array
-        if (!cluster || !Array.isArray(cluster.items)) return;
-        
-        cluster.items.forEach(item => {
-          // Ensure item has required properties
-          if (item && item.keyword && item.status === 'Select for Blog Creation' && (item.priority || 0) > 0) {
-            newSelection.set(item.keyword, item);
+      if (Array.isArray(clusters)) {
+        clusters.forEach(cluster => {
+          // Skip if cluster doesn't have items array
+          const items = safeGet(cluster, 'items', []);
+          
+          if (Array.isArray(items)) {
+            items.forEach(item => {
+              // Ensure item has required properties
+              if (item && 
+                  typeof item.keyword === 'string' && 
+                  item.status === 'Select for Blog Creation' && 
+                  (Number(item.priority) || 0) > 0) {
+                newSelection.set(item.keyword, item);
+              }
+            });
           }
         });
-      });
+      }
       
       setSelectedKeywords(newSelection);
     } catch (error) {

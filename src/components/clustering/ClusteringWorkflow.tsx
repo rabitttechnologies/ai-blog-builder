@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import type { ClusteringResponse, TitleDescriptionResponse } from '@/types/clustering';
 
+// Consistent shared UI class sets
+const contentContainerClasses = "max-w-6xl mx-auto space-y-6";
+const errorContainerClasses = "text-center p-8 max-w-lg mx-auto";
+const buttonContainerClasses = "flex gap-2 justify-center";
+
 interface ClusteringWorkflowProps {
   initialData?: any;
   onClose: () => void;
@@ -25,6 +30,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
     groupBy,
     filters,
     selectedKeywords,
+    selectedCount,
     groupedClusters,
     setFilters,
     setGroupBy,
@@ -39,6 +45,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   useEffect(() => {
     if (initialData && !clusteringData) {
       try {
+        console.log("Initializing clustering workflow with data:", JSON.stringify(initialData));
         fetchClusteringData(initialData).catch(err => {
           console.error("Error fetching clustering data:", err);
           setDataError("Failed to fetch clustering data. Please try again.");
@@ -81,26 +88,12 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
     }
   };
 
-  // Count selected keywords with validation
-  const selectedCount = React.useMemo(() => {
-    try {
-      if (!selectedKeywords) return 0;
-      
-      return Array.from(selectedKeywords.values())
-        .filter(item => item && item.status === 'Select for Blog Creation' && (item.priority || 0) > 0)
-        .length;
-    } catch (err) {
-      console.error("Error calculating selected count:", err);
-      return 0;
-    }
-  }, [selectedKeywords]);
-
   // Handle errors from the API or processing
   const displayError = error || dataError;
   
   if (displayError) {
     return (
-      <div className="text-center p-8">
+      <div className={errorContainerClasses}>
         <div className="flex justify-center mb-6">
           <div className="rounded-full bg-red-100 p-3">
             <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -108,7 +101,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
         </div>
         <h3 className="text-xl font-semibold mb-2">An error occurred</h3>
         <p className="text-muted-foreground mb-4">{displayError}</p>
-        <div className="flex gap-2 justify-center">
+        <div className={buttonContainerClasses}>
           <Button 
             variant="outline" 
             onClick={() => {
@@ -129,23 +122,25 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   return (
     <div className="relative">
       {workflowStep === 'clustering' && clusteringData && (
-        <ClusteringResults
-          clusters={groupedClusters || []}
-          workflowId={clusteringData.workflowId || ''}
-          executionId={clusteringData.executionId || ''}
-          groupBy={groupBy}
-          filters={filters}
-          onUpdateKeyword={updateKeyword}
-          onSetFilters={setFilters}
-          onSetGroupBy={setGroupBy}
-          onClose={onClose}
-          selectedCount={selectedCount}
-          onGenerateTitles={handleGenerateTitles}
-        />
+        <div className={contentContainerClasses}>
+          <ClusteringResults
+            clusters={groupedClusters || []}
+            workflowId={clusteringData.workflowId || ''}
+            executionId={clusteringData.executionId || ''}
+            groupBy={groupBy}
+            filters={filters}
+            onUpdateKeyword={updateKeyword}
+            onSetFilters={setFilters}
+            onSetGroupBy={setGroupBy}
+            onClose={onClose}
+            selectedCount={selectedCount}
+            onGenerateTitles={handleGenerateTitles}
+          />
+        </div>
       )}
       
       {workflowStep === 'titleDescription' && titleDescriptionData && (
-        <div className="space-y-4">
+        <div className={contentContainerClasses}>
           <div className="flex items-center mb-4">
             <Button 
               variant="outline" 
@@ -169,7 +164,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
       )}
       
       {!clusteringData && !loading && (
-        <div className="text-center p-8">
+        <div className={errorContainerClasses}>
           <h3 className="text-xl font-semibold mb-2">No clustering data</h3>
           <p className="text-muted-foreground mb-4">No clustering data is available.</p>
           <Button onClick={onClose}>Close</Button>

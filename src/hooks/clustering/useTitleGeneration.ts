@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
+import { safeGet, safeMap } from '@/utils/dataValidation';
 import type { 
   ClusteringResponse, 
   TitleDescriptionResponse 
@@ -35,31 +36,36 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
 
     try {
       // Prepare the payload
+      const clusters = safeGet(clusteringData, 'clusters', []);
+      const mappedClusters = safeMap(clusters, cluster => ({
+        clusterName: safeGet(cluster, 'clusterName', ''),
+        intentPattern: safeGet(cluster, 'intentPattern', ''),
+        coreTopic: safeGet(cluster, 'coreTopic', ''),
+        Reasoning: safeGet(cluster, 'reasoning', ''),
+        items: safeMap(safeGet(cluster, 'items', []), item => ({
+          keyword: safeGet(item, 'keyword', ''),
+          category: safeGet(item, 'category', ''),
+          monthlySearchVolume: safeGet(item, 'monthlySearchVolume', null),
+          keywordDifficulty: safeGet(item, 'keywordDifficulty', null),
+          competition: safeGet(item, 'competition', null),
+          searchIntent: safeGet(item, 'searchIntent', null),
+          reasoning: safeGet(item, 'reasoning', null),
+          cpc: safeGet(item, 'cpc', null),
+          status: safeGet(item, 'status', 'Select for Blog Creation')
+        }))
+      }));
+
       const payload = {
         data: [{
-          clusters: clusteringData.clusters.map(cluster => ({
-            clusterName: cluster.clusterName,
-            intentPattern: cluster.intentPattern,
-            coreTopic: cluster.coreTopic,
-            Reasoning: cluster.reasoning,
-            items: cluster.items.map(item => ({
-              keyword: item.keyword,
-              category: item.category,
-              monthlySearchVolume: item.monthlySearchVolume,
-              keywordDifficulty: item.keywordDifficulty,
-              competition: item.competition,
-              searchIntent: item.searchIntent,
-              reasoning: item.reasoning,
-              cpc: item.cpc,
-              status: item.status || 'Select for Blog Creation'
-            }))
-          })),
-          workflowId: clusteringData.workflowId,
+          clusters: mappedClusters,
+          workflowId: safeGet(clusteringData, 'workflowId', ''),
           userId: user.id,
-          originalKeyword: clusteringData.originalKeyword,
+          originalKeyword: safeGet(clusteringData, 'originalKeyword', ''),
           sessionId: getSessionId()
         }]
       };
+
+      console.log("Requesting title generation with payload:", JSON.stringify(payload));
 
       const response = await fetch('https://n8n.agiagentworld.com/webhook/titleshortdescription', {
         method: 'POST',
@@ -74,15 +80,18 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
       }
 
       const data = await response.json();
+      console.log("Title generation response:", JSON.stringify(data));
       
       // Process and set title/description data
-      if (data && data.data && Array.isArray(data.data)) {
+      const responseData = safeGet(data, 'data.0', {});
+      
+      if (responseData) {
         const titleDescData = {
-          data: data.data[0]?.data || [],
-          workflowId: clusteringData.workflowId,
+          data: safeGet(responseData, 'data', []),
+          workflowId: safeGet(clusteringData, 'workflowId', ''),
           userId: user.id,
-          originalKeyword: clusteringData.originalKeyword,
-          executionId: data.data[0]?.executionId || ''
+          originalKeyword: safeGet(clusteringData, 'originalKeyword', ''),
+          executionId: safeGet(responseData, 'executionId', '')
         };
         
         setTitleDescriptionData(titleDescData);
@@ -121,8 +130,8 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
       
       return {
         ...prevData,
-        data: prevData.data.map(item => {
-          if (item.keyword === itemId) {
+        data: safeMap(safeGet(prevData, 'data', []), item => {
+          if (safeGet(item, 'keyword', '') === itemId) {
             return { ...item, ...updates };
           }
           return item;

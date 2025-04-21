@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 import type { ClusteringResponse, ClusterItem } from '@/types/clustering';
+import { safeGet } from '@/utils/dataValidation';
 
 export const useClusteringData = () => {
   const { user } = useAuth();
@@ -14,39 +15,87 @@ export const useClusteringData = () => {
   // Process clustering response data
   const processClusteringData = useCallback((data: any) => {
     try {
-      // Extract the clusters array from the response structure
-      let clusters = data;
-      if (data && data.data && Array.isArray(data.data)) {
-        const firstItem = data.data[0];
-        if (firstItem && firstItem.clusters) {
-          clusters = firstItem.clusters;
+      // Handle the specific nested structure from the clustering webhook
+      // The response is: [{ data: [{ clusters: [...], workflowId: '...', ... }] }]
+      let responseClusters = [];
+      let workflowId = '';
+      let userId = '';
+      let originalKeyword = '';
+      let executionId = '';
+
+      // Extract from the nested structure with proper validation
+      if (Array.isArray(data) && data.length > 0) {
+        const firstItem = data[0];
+        const dataArray = safeGet(firstItem, 'data', []);
+        
+        if (Array.isArray(dataArray) && dataArray.length > 0) {
+          const dataItem = dataArray[0];
+          responseClusters = safeGet(dataItem, 'clusters', []);
+          workflowId = safeGet(dataItem, 'workflowId', '');
+          userId = safeGet(dataItem, 'userId', '');
+          originalKeyword = safeGet(dataItem, 'originalKeyword', '');
+          executionId = safeGet(dataItem, 'executionId', '');
+        }
+      } else if (typeof data === 'object' && data !== null) {
+        // Handle case where the response might be flattened
+        const dataArray = safeGet(data, 'data', []);
+        
+        if (Array.isArray(dataArray) && dataArray.length > 0) {
+          const dataItem = dataArray[0];
+          responseClusters = safeGet(dataItem, 'clusters', []);
+          workflowId = safeGet(dataItem, 'workflowId', '');
+          userId = safeGet(dataItem, 'userId', '');
+          originalKeyword = safeGet(dataItem, 'originalKeyword', '');
+          executionId = safeGet(dataItem, 'executionId', '');
+        } else {
+          // Try alternative paths
+          responseClusters = safeGet(data, 'clusters', []);
+          workflowId = safeGet(data, 'workflowId', '');
+          userId = safeGet(data, 'userId', user?.id || '');
+          originalKeyword = safeGet(data, 'originalKeyword', '');
+          executionId = safeGet(data, 'executionId', '');
         }
       }
 
-      // Set default status for all items
-      if (Array.isArray(clusters)) {
-        clusters.forEach(cluster => {
-          if (cluster.items && Array.isArray(cluster.items)) {
-            cluster.items.forEach(item => {
-              item.status = 'Select for Blog Creation';
-              item.priority = 0;
-            });
+      // Validate and normalize clusters
+      if (Array.isArray(responseClusters)) {
+        responseClusters = responseClusters.map(cluster => {
+          const normalizedCluster = {
+            clusterName: safeGet(cluster, 'clusterName', 'Unnamed Cluster'),
+            intentPattern: safeGet(cluster, 'intentPattern', ''),
+            coreTopic: safeGet(cluster, 'coreTopic', ''),
+            reasoning: safeGet(cluster, 'reasoning', ''),
+            items: []
+          };
+
+          // Process and normalize items
+          const items = safeGet(cluster, 'items', []);
+          if (Array.isArray(items)) {
+            normalizedCluster.items = items.map(item => ({
+              keyword: safeGet(item, 'keyword', ''),
+              monthlySearchVolume: safeGet(item, 'monthlySearchVolume', null),
+              keywordDifficulty: safeGet(item, 'keywordDifficulty', null),
+              competition: safeGet(item, 'competition', null),
+              searchIntent: safeGet(item, 'searchIntent', null),
+              reasoning: safeGet(item, 'reasoning', null),
+              cpc: safeGet(item, 'cpc', null),
+              category: safeGet(item, 'category', null),
+              status: 'Select for Blog Creation', // Default status
+              priority: 0 // Default priority
+            }));
           }
+          
+          return normalizedCluster;
         });
       }
 
-      // Extract other fields from the response
-      const workflowId = data.data?.[0]?.workflowId || data.workflowId || '';
-      const userId = data.data?.[0]?.userId || data.userId || user?.id || '';
-      const originalKeyword = data.data?.[0]?.originalKeyword || data.originalKeyword || '';
-      const executionId = data.data?.[0]?.executionId || '';
-
+      // Create the properly formatted response
       const formattedResponse: ClusteringResponse = {
-        clusters: clusters || [],
-        workflowId,
-        userId,
-        originalKeyword,
-        executionId
+        clusters: responseClusters,
+        workflowId: workflowId,
+        userId: userId || user?.id || '',
+        originalKeyword: originalKeyword,
+        executionId: executionId
       };
 
       return formattedResponse;
@@ -101,6 +150,8 @@ export const useClusteringData = () => {
     setError(null);
 
     try {
+      console.log("Requesting clustering data with payload:", JSON.stringify(workflowData));
+      
       const response = await fetch('https://n8n.agiagentworld.com/webhook/clustering', {
         method: 'POST',
         headers: {
@@ -114,7 +165,11 @@ export const useClusteringData = () => {
       }
 
       const data = await response.json();
+      console.log("Received clustering response:", JSON.stringify(data));
+      
       const processedData = processClusteringData(data);
+      console.log("Processed clustering data:", JSON.stringify(processedData));
+      
       setClusteringData(processedData);
       
       toast({
