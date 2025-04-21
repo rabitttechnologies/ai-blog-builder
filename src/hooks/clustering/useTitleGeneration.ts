@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -85,7 +86,7 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
       const responseData = safeGet(data, 'data.0', {});
       
       if (responseData) {
-        const titleDescData: TitleDescriptionResponse = {
+        const titleDescData = {
           data: safeGet(responseData, 'data', []),
           workflowId: safeGet(clusteringData, 'workflowId', ''),
           userId: user.id,
@@ -122,27 +123,22 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
 
   // Update a title/description item
   const updateTitleDescription = useCallback((itemId: string, updates: Partial<TitleDescriptionResponse['data'][0]>) => {
+    if (!titleDescriptionData) return;
+    
     setTitleDescriptionData(prevData => {
       if (!prevData) return null;
-
-      // Assert that prevData is of type TitleDescriptionResponse
-      const prev = prevData as TitleDescriptionResponse;
-
-      const updatedData: TitleDescriptionResponse = {
-        ...prev,
-        data: safeMap(safeGet(prev, 'data', []), (item) => {
-          // Assert item type for spreading
-          const currentItem = item as TitleDescriptionResponse['data'][0];
-          if (currentItem.keyword === itemId) {
-            return { ...currentItem, ...updates };
+      
+      return {
+        ...prevData,
+        data: safeMap(safeGet(prevData, 'data', []), item => {
+          if (safeGet(item, 'keyword', '') === itemId) {
+            return { ...item, ...updates };
           }
-          return currentItem;
-        }),
+          return item;
+        })
       };
-
-      return updatedData;
     });
-  }, []);
+  }, [titleDescriptionData]);
 
   return {
     titleDescriptionData,
