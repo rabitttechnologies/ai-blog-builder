@@ -86,7 +86,7 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
       const responseData = safeGet(data, 'data.0', {});
       
       if (responseData) {
-        const titleDescData = {
+        const titleDescData: TitleDescriptionResponse = {
           data: safeGet(responseData, 'data', []),
           workflowId: safeGet(clusteringData, 'workflowId', ''),
           userId: user.id,
@@ -128,7 +128,8 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
     setTitleDescriptionData(prevData => {
       if (!prevData) return null;
       
-      return {
+      // Create a proper copy of the object to avoid TypeScript spread error
+      const updatedData = {
         ...prevData,
         data: safeMap(safeGet(prevData, 'data', []), item => {
           if (safeGet(item, 'keyword', '') === itemId) {
@@ -137,6 +138,8 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
           return item;
         })
       };
+      
+      return updatedData;
     });
   }, [titleDescriptionData]);
 
