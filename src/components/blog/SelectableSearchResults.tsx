@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { CheckIcon, X, Edit, Save, ArrowLeft } from 'lucide-react';
 import { isItemSelected } from '@/utils/selectionUtils';
 import { isValidData, headingMappings, safeFilter, safeGet } from '@/utils/dataValidation';
 import { useKeywordSelections, MAX_SELECTIONS } from '@/hooks/useKeywordSelections';
@@ -17,17 +19,21 @@ interface SelectableSearchResultsProps {
   keyword: string;
   workflowId: string;
   onClose: () => void;
+  onBack: () => void;
 }
 
 const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({ 
   data, 
   keyword,
   workflowId,
-  onClose 
+  onClose,
+  onBack
 }) => {
   const { selections, totalSelections, handleToggleSelection } = useKeywordSelections();
   const { isLoading, volumeData, setVolumeData, analyzeSelectedKeywords } = useVolumeAnalysis(keyword, workflowId);
   const profileData = useProfileData();
+  const [editableKeywords, setEditableKeywords] = useState<Record<string, boolean>>({});
+  const [keywordValues, setKeywordValues] = useState<Record<string, string>>({});
   
   // Early return if data is completely missing
   if (!data) {
@@ -48,25 +54,45 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
         workflowId={workflowId}
         originalKeyword={keyword}
         onComplete={onClose}
-        onCancel={() => setVolumeData(null)}
+        onBack={() => setVolumeData(null)}
       />
     );
   }
+
+  // Handle editing for keywords
+  const startEditing = (heading: string, item: any) => {
+    const keyId = `${heading}-${item.keyword || item}`;
+    setEditableKeywords(prev => ({ ...prev, [keyId]: true }));
+    setKeywordValues(prev => ({ ...prev, [keyId]: item.keyword || item }));
+  };
+
+  const stopEditing = (heading: string, item: any, save: boolean = false) => {
+    const keyId = `${heading}-${item.keyword || item}`;
+    
+    if (save && keywordValues[keyId] && keywordValues[keyId] !== (item.keyword || item)) {
+      // Handle updating the keyword value in your data structure
+      // This is a placeholder - you'll need to implement actual update logic
+      console.log(`Updated keyword from ${item.keyword || item} to ${keywordValues[keyId]}`);
+    }
+    
+    setEditableKeywords(prev => ({ ...prev, [keyId]: false }));
+  };
+
+  const updateKeywordValue = (heading: string, item: any, value: string) => {
+    const keyId = `${heading}-${item.keyword || item}`;
+    setKeywordValues(prev => ({ ...prev, [keyId]: value }));
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <SearchResultsHeader
         keyword={keyword || 'Unknown'}
+        title="Keyword Ideas for:"
         totalSelections={totalSelections}
         maxSelections={MAX_SELECTIONS}
         isLoading={isLoading}
+        showCloseButton={false}
         onClose={onClose}
-        onAnalyze={() => {
-          // Only analyze if we have selections
-          if (selections && Object.keys(selections).length > 0) {
-            analyzeSelectedKeywords(selections, profileData);
-          }
-        }}
       />
       
       <Separator />
@@ -110,14 +136,42 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
             totalSelections={totalSelections}
             maxSelections={MAX_SELECTIONS}
             onToggleSelection={handleToggleSelection}
+            editableKeywords={editableKeywords}
+            keywordValues={keywordValues}
+            onStartEditing={startEditing}
+            onStopEditing={stopEditing}
+            onUpdateKeyword={updateKeywordValue}
           />
         );
       })}
       
-      {isLoading && <LoadingOverlay />}
+      {isLoading && 
+        <LoadingOverlay 
+          loadingText="Getting Past Search Data" 
+        />
+      }
       
-      <div className="flex justify-center pt-4 pb-8">
-        <Button onClick={onClose} disabled={isLoading}>Close Results</Button>
+      <div className="flex justify-between pt-4 pb-8">
+        <Button 
+          onClick={onBack} 
+          disabled={isLoading}
+          variant="outline"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        
+        <Button 
+          onClick={() => {
+            // Only analyze if we have selections
+            if (selections && Object.keys(selections).length > 0) {
+              analyzeSelectedKeywords(selections, profileData);
+            }
+          }} 
+          disabled={isLoading || totalSelections === 0}
+        >
+          Get Past Search History
+        </Button>
       </div>
     </div>
   );

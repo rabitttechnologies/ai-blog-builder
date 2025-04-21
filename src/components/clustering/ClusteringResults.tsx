@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Filter, SortDesc } from 'lucide-react';
+import { Filter, SortDesc, ArrowLeft } from 'lucide-react';
 import {
   Tabs,
   TabsContent,
@@ -26,6 +26,7 @@ interface ClusteringResultsProps {
   onSetFilters: (filters: ClusteringFilters) => void;
   onSetGroupBy: (groupBy: GroupingOption) => void;
   onClose: () => void;
+  onBack?: () => void;
   onGenerateTitles: () => void;
 }
 
@@ -40,6 +41,7 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
   onSetFilters,
   onSetGroupBy,
   onClose,
+  onBack,
   onGenerateTitles
 }) => {
   const [showFilters, setShowFilters] = useState(false);
@@ -83,19 +85,25 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h3 className="text-2xl font-semibold">Keyword Clustering Results</h3>
-          <p className="text-sm text-muted-foreground">
-            Workflow ID: {workflowId} | Execution ID: {executionId}
-          </p>
+          <h3 className="text-2xl font-semibold">Keyword Clusters</h3>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={toggleFilters} size="sm">
             <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            Filter
           </Button>
-          <Button variant="outline" onClick={onClose} size="sm">
-            Close Results
-          </Button>
+          <Select value={groupBy} onValueChange={(value) => onSetGroupBy(value as GroupingOption)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Group By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="clusterName">Cluster Name</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+              <SelectItem value="intentPattern">Intent Pattern</SelectItem>
+              <SelectItem value="coreTopic">Core Topic</SelectItem>
+              <SelectItem value="searchIntent">Search Intent</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -106,22 +114,6 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
             <TabsTrigger value="card">Card View</TabsTrigger>
             <TabsTrigger value="table">Table View</TabsTrigger>
           </TabsList>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Group By:</span>
-            <Select value={groupBy} onValueChange={(value) => onSetGroupBy(value as GroupingOption)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Grouping" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clusterName">Cluster Name</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-                <SelectItem value="intentPattern">Intent Pattern</SelectItem>
-                <SelectItem value="coreTopic">Core Topic</SelectItem>
-                <SelectItem value="searchIntent">Search Intent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Filter controls */}
@@ -151,11 +143,25 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
         </TabsContent>
       </Tabs>
 
-      {/* Bottom control bar with selected count */}
-      <SelectionCounter 
-        selectedCount={selectedCount} 
-        onGenerateTitles={onGenerateTitles} 
-      />
+      {/* Bottom navigation */}
+      <div className="flex justify-between pt-4 pb-8">
+        {onBack && (
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        )}
+        
+        <Button 
+          onClick={onGenerateTitles} 
+          disabled={selectedCount < 1}
+        >
+          Create Title and Description {selectedCount > 0 && `(${selectedCount}/10)`}
+        </Button>
+      </div>
     </div>
   );
 };

@@ -40,9 +40,9 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
     };
 
     try {
-      // Set up timeout for the fetch request
+      // Set up timeout for the fetch request - increased to 2 minutes (120000ms)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
 
       const response = await fetch('https://n8n.agiagentworld.com/webhook/googlesearchresponse', {
         method: 'POST',

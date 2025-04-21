@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -66,13 +67,20 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
 
       console.log("Requesting title generation with payload:", JSON.stringify(payload));
 
+      // Set up fetch with 5-minute timeout (300000ms)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000);
+
       const response = await fetch('https://n8n.agiagentworld.com/webhook/titleshortdescription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
