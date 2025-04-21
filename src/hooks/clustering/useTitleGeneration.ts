@@ -128,10 +128,12 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
     setTitleDescriptionData(prevData => {
       if (!prevData) return null;
 
-      // Declare updatedData separately first to satisfy TS spread type requirement
+      // Assign prevData to a local const to convince TS it's non-null
+      const prev = prevData;
+
       const updatedData: TitleDescriptionResponse = {
-        ...prevData,
-        data: safeMap(safeGet(prevData, 'data', []), item => {
+        ...prev,
+        data: safeMap(safeGet(prev, 'data', []), item => {
           if (safeGet(item, 'keyword', '') === itemId) {
             return { ...item, ...updates };
           }
