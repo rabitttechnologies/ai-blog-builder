@@ -1,9 +1,9 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/auth';
@@ -32,21 +32,12 @@ interface KeywordSelectionRow extends VolumeData {
   isSelected: boolean;
 }
 
-type SortField = 'keyword' | 'monthlySearches' | 'competitionIndex' | 'competition' | 'lowTopOfPageBid' | 'highTopOfPageBid';
-type SortDirection = 'asc' | 'desc';
-
-interface SortConfig {
-  field: SortField;
-  direction: SortDirection;
-}
-
 interface PastSearchVolumeResultsProps {
   volumeData: VolumeData[];
   workflowId: string;
   originalKeyword: string;
   onComplete: () => void;
   onCancel: () => void;
-  onBack?: () => void;
 }
 
 const formatBidValue = (bid: any): string => {
@@ -68,8 +59,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   workflowId,
   originalKeyword,
   onComplete,
-  onCancel,
-  onBack
+  onCancel
 }) => {
   const { toast } = useToast();
   const { user, session } = useAuth();
@@ -78,11 +68,10 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
     safeMap(volumeData, item => ({
       ...item,
       clusteringOption: 'Select for Clustering',
-      isSelected: item.monthlySearches !== null && item.monthlySearches > 0
+      isSelected: true
     }))
   );
   const [clusteringData, setClusteringData] = useState<any>(null);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'keyword', direction: 'asc' });
 
   // Get session ID for request tracking
   const getSessionId = () => session?.access_token?.substring(0, 16) || 'anonymous-session';
@@ -121,52 +110,6 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
 
   // Get selected count
   const selectedCount = keywordRows.filter(row => row.isSelected).length;
-
-  // Handle sorting
-  const requestSort = (field: SortField) => {
-    let direction: SortDirection = 'asc';
-    
-    if (sortConfig.field === field) {
-      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
-    }
-    
-    setSortConfig({ field, direction });
-  };
-
-  // Get sorted data
-  const sortedKeywordRows = useMemo(() => {
-    const sortableRows = [...keywordRows];
-    
-    sortableRows.sort((a, b) => {
-      // Handle null values
-      if (a[sortConfig.field] === null && b[sortConfig.field] === null) return 0;
-      if (a[sortConfig.field] === null) return 1;
-      if (b[sortConfig.field] === null) return -1;
-      
-      // Compare values based on field type
-      if (typeof a[sortConfig.field] === 'string') {
-        return sortConfig.direction === 'asc'
-          ? (a[sortConfig.field] as string).localeCompare(b[sortConfig.field] as string)
-          : (b[sortConfig.field] as string).localeCompare(a[sortConfig.field] as string);
-      }
-      
-      // For numeric values
-      return sortConfig.direction === 'asc'
-        ? (a[sortConfig.field] as number) - (b[sortConfig.field] as number)
-        : (b[sortConfig.field] as number) - (a[sortConfig.field] as number);
-    });
-    
-    return sortableRows;
-  }, [keywordRows, sortConfig]);
-
-  // Render sort indicator
-  const renderSortIndicator = (field: SortField) => {
-    if (sortConfig.field !== field) return null;
-    
-    return sortConfig.direction === 'asc' 
-      ? <ArrowUp className="ml-1 h-4 w-4 inline" />
-      : <ArrowDown className="ml-1 h-4 w-4 inline" />;
-  };
 
   // Handle sending selected keywords to clustering
   const handleSendToClustering = async () => {
@@ -257,7 +200,29 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   return (
     <div className={contentContainerClasses}>
       <div className={headerClasses}>
-        <h3 className="text-2xl font-semibold">Past Search Data for <span className="text-primary">{originalKeyword}</span></h3>
+        <h3 className="text-2xl font-semibold">Keyword Volume Analysis: <span className="text-primary">{originalKeyword}</span></h3>
+        <div className={buttonContainerClasses}>
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendToClustering}
+            disabled={isLoading || selectedCount === 0}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              `Send to Clustering (${selectedCount})`
+            )}
+          </Button>
+        </div>
       </div>
       
       <Card>
@@ -296,29 +261,17 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">Select</TableHead>
-                  <TableHead className="cursor-pointer" onClick={() => requestSort('keyword')}>
-                    Keyword {renderSortIndicator('keyword')}
-                  </TableHead>
-                  <TableHead className="text-right cursor-pointer" onClick={() => requestSort('monthlySearches')}>
-                    Monthly Searches {renderSortIndicator('monthlySearches')}
-                  </TableHead>
-                  <TableHead className="text-right cursor-pointer" onClick={() => requestSort('competitionIndex')}>
-                    Competition Index {renderSortIndicator('competitionIndex')}
-                  </TableHead>
-                  <TableHead className="text-right cursor-pointer" onClick={() => requestSort('competition')}>
-                    Competition {renderSortIndicator('competition')}
-                  </TableHead>
-                  <TableHead className="text-right cursor-pointer" onClick={() => requestSort('lowTopOfPageBid')}>
-                    Top of Page Bid (Low) {renderSortIndicator('lowTopOfPageBid')}
-                  </TableHead>
-                  <TableHead className="text-right cursor-pointer" onClick={() => requestSort('highTopOfPageBid')}>
-                    Top of Page Bid (High) {renderSortIndicator('highTopOfPageBid')}
-                  </TableHead>
+                  <TableHead>Keyword</TableHead>
+                  <TableHead className="text-right">Monthly Searches</TableHead>
+                  <TableHead className="text-right">Competition Index</TableHead>
+                  <TableHead className="text-right">Competition</TableHead>
+                  <TableHead className="text-right">Top of Page Bid (Low)</TableHead>
+                  <TableHead className="text-right">Top of Page Bid (High)</TableHead>
                   <TableHead className="w-[180px]">Clustering Option</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedKeywordRows.map((row, index) => (
+                {keywordRows.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <input
@@ -370,23 +323,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
         </CardContent>
       </Card>
       
-      <div className="flex justify-between pt-4 pb-8">
-        {onBack && (
-          <Button onClick={onBack} variant="outline" disabled={isLoading}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        )}
-        
-        <Button 
-          onClick={handleSendToClustering}
-          disabled={isLoading || selectedCount === 0}
-        >
-          Send for Clustering {selectedCount > 0 && `(${selectedCount})`}
-        </Button>
-      </div>
-      
-      {isLoading && <LoadingOverlay loadingText="Our AI agent is Clustering Your Keywords" />}
+      {isLoading && <LoadingOverlay />}
     </div>
   );
 };

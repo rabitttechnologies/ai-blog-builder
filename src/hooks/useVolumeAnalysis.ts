@@ -53,8 +53,7 @@ export const useVolumeAnalysis = (keyword: string, workflowId: string) => {
       };
       
       const controller = new AbortController();
-      // Increase timeout to 2 minutes (120000ms)
-      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
       
       const response = await fetch('https://n8n.agiagentworld.com/webhook/pastsearchvolume', {
         method: 'POST',

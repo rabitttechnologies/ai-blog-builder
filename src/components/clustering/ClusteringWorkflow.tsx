@@ -16,13 +16,11 @@ const buttonContainerClasses = "flex gap-2 justify-center";
 interface ClusteringWorkflowProps {
   initialData?: any;
   onClose: () => void;
-  onBack?: () => void;
 }
 
-const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, onClose, onBack }) => {
+const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, onClose }) => {
   const [workflowStep, setWorkflowStep] = useState<'clustering' | 'titleDescription'>('clustering');
   const [dataError, setDataError] = useState<string | null>(null);
-  const [previousStepData, setPreviousStepData] = useState<any>(null);
   
   const {
     clusteringData,
@@ -48,7 +46,6 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
     if (initialData && !clusteringData) {
       try {
         console.log("Initializing clustering workflow with data:", JSON.stringify(initialData));
-        setPreviousStepData(initialData);
         fetchClusteringData(initialData).catch(err => {
           console.error("Error fetching clustering data:", err);
           setDataError("Failed to fetch clustering data. Please try again.");
@@ -77,13 +74,6 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   // Handle going back to clustering step
   const handleBackToClusteringStep = () => {
     setWorkflowStep('clustering');
-  };
-
-  // Handle going back to previous screen
-  const handleBackToPreviousScreen = () => {
-    if (onBack) {
-      onBack();
-    }
   };
 
   // Handle blog creation with error handling
@@ -143,7 +133,6 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
             onSetFilters={setFilters}
             onSetGroupBy={setGroupBy}
             onClose={onClose}
-            onBack={onBack}
             selectedCount={selectedCount}
             onGenerateTitles={handleGenerateTitles}
           />
@@ -182,21 +171,13 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
         </div>
       )}
       
-      {loading && (
-        <LoadingOverlay 
-          loadingText={
-            workflowStep === 'titleDescription' 
-              ? "Our AI Agent is Creating Title and Short Description for Your Keywords" 
-              : "Our AI agent is Clustering Your Keywords"
-          } 
-        />
-      )}
+      {loading && <LoadingOverlay />}
       
       {workflowStep === 'clustering' && selectedCount > 0 && (
-        <div className="flex justify-center mt-6 mb-4">
+        <div className="fixed bottom-4 right-4 z-10">
           <Button 
             onClick={handleGenerateTitles} 
-            disabled={loading || selectedCount < 1}
+            disabled={loading || selectedCount < 10}
             className="shadow-lg"
           >
             {loading ? (
