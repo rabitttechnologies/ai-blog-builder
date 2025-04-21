@@ -127,9 +127,9 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
     
     setTitleDescriptionData(prevData => {
       if (!prevData) return null;
-      
-      // Create a proper copy of the object to avoid TypeScript spread error
-      const updatedData = {
+
+      // Declare updatedData separately first to satisfy TS spread type requirement
+      const updatedData: TitleDescriptionResponse = {
         ...prevData,
         data: safeMap(safeGet(prevData, 'data', []), item => {
           if (safeGet(item, 'keyword', '') === itemId) {
@@ -138,7 +138,7 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
           return item;
         })
       };
-      
+
       return updatedData;
     });
   }, [titleDescriptionData]);
@@ -152,3 +152,4 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
     resetTitleDescriptionData: () => setTitleDescriptionData(null),
   };
 };
+
