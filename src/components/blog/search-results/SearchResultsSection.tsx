@@ -1,24 +1,21 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
-import { Edit, Check, X } from 'lucide-react';
-import { isItemSelected } from '@/utils/selectionUtils';
-import SelectableItem from '../SelectableItem';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Edit, Save, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface SearchResultsSectionProps {
   heading: string;
   description: string;
   data: any[];
-  selections: Record<string, any[]>;
+  selections: Record<string, boolean>;
   totalSelections: number;
   maxSelections: number;
   onToggleSelection: (heading: string, item: any) => void;
   editableKeywords?: Record<string, boolean>;
   keywordValues?: Record<string, string>;
   onStartEditing?: (heading: string, item: any) => void;
-  onStopEditing?: (heading: string, item: any, save: boolean) => void;
+  onStopEditing?: (heading: string, item: any, save?: boolean) => void;
   onUpdateKeyword?: (heading: string, item: any, value: string) => void;
 }
 
@@ -32,83 +29,93 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   onToggleSelection,
   editableKeywords = {},
   keywordValues = {},
-  onStartEditing,
-  onStopEditing,
-  onUpdateKeyword
+  onStartEditing = () => {},
+  onStopEditing = () => {},
+  onUpdateKeyword = () => {}
 }) => {
-  if (!data || data.length === 0) {
-    return null;
-  }
-
-  const renderKeyword = (item: any, index: number) => {
-    const keyword = typeof item === 'string' ? item : item.keyword;
-    const isEditing = editableKeywords[`${heading}-${keyword}`];
-    const editValue = keywordValues[`${heading}-${keyword}`] || keyword;
-    
-    return (
-      <div className="flex items-center gap-2" key={index}>
-        <SelectableItem
-          heading={heading}
-          item={item}
-          isSelected={isItemSelected(selections, heading, item)}
-          onToggle={onToggleSelection}
-          disabled={!isItemSelected(selections, heading, item) && totalSelections >= maxSelections}
-        />
-        
-        {isEditing ? (
-          <div className="flex-1 flex items-center gap-1">
-            <Input
-              value={editValue}
-              onChange={(e) => onUpdateKeyword?.(heading, item, e.target.value)}
-              className="flex-1"
-              autoFocus
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onStopEditing?.(heading, item, true)}
-              className="h-8 w-8 p-0"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onStopEditing?.(heading, item, false)}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center justify-between gap-2">
-            <span>{keyword}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onStartEditing?.(heading, item)}
-              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{heading}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-2">
-          {data.map((item, index) => renderKeyword(item, index))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="mb-8">
+      <h3 className="text-xl font-semibold mb-2">{heading}</h3>
+      <p className="text-sm text-muted-foreground mb-4">{description}</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.map((item, index) => {
+          const keyId = `${heading}-${item.keyword || item}`;
+          const isSelected = selections[keyId] || false;
+          const isEditing = editableKeywords[keyId] || false;
+          const keywordValue = keywordValues[keyId] || item.keyword || item;
+
+          return (
+            <div 
+              key={index} 
+              className="glass p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`select-${keyId}`}
+                    checked={isSelected}
+                    disabled={totalSelections >= maxSelections && !isSelected}
+                    onCheckedChange={() => onToggleSelection(heading, item)}
+                  />
+                  <label
+                    htmlFor={`select-${keyId}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {isEditing ? (
+                      <Input
+                        type="text"
+                        value={keywordValue}
+                        onChange={(e) => onUpdateKeyword(heading, item, e.target.value)}
+                        onBlur={() => onStopEditing(heading, item, false)}
+                        className="text-sm"
+                      />
+                    ) : (
+                      keywordValue
+                    )}
+                  </label>
+                </div>
+
+                <div>
+                  {isEditing ? (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onStopEditing(heading, item, true)}
+                      >
+                        <Save className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onStopEditing(heading, item, false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onStartEditing(heading, item)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {item.volume && (
+                <p className="text-xs text-muted-foreground">
+                  Volume: {item.volume}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

@@ -6,8 +6,8 @@ import KeywordSearchForm from './KeywordSearchForm';
 import SelectableSearchResults from './SelectableSearchResults';
 import { safeGet } from '@/utils/dataValidation';
 
-// Increased dialog size by 1.5x with responsive design
-const dialogContentClasses = "sm:max-w-[1200px] w-[95vw] max-h-[90vh] overflow-y-auto relative";
+// Removed the custom size scaling, using default dialog sizing
+const dialogContentClasses = "w-[95vw] max-h-[90vh] overflow-y-auto relative";
 
 interface CreateBlogDialogProps {
   isOpen: boolean;
