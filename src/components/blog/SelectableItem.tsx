@@ -1,5 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/Button';
+import { Check, X, Edit2 } from 'lucide-react';
 
 interface SelectableItemProps {
   item: any;
@@ -8,6 +11,7 @@ interface SelectableItemProps {
   index: number;
   heading: string;
   disabled?: boolean;
+  editable?: boolean;
 }
 
 const SelectableItem: React.FC<SelectableItemProps> = ({ 
@@ -16,8 +20,12 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
   onToggle, 
   index,
   heading,
-  disabled = false
+  disabled = false,
+  editable = false
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  
   // Helper to extract item text based on content type
   const getItemText = () => {
     if (typeof item === 'string') return item;
@@ -37,6 +45,31 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
     return JSON.stringify(item).substring(0, 100);
   };
 
+  const handleStartEdit = () => {
+    setEditValue(getItemText());
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditValue('');
+  };
+
+  const handleSaveEdit = () => {
+    if (editValue.trim()) {
+      // Update the item text
+      if (typeof item === 'string') {
+        item = editValue;
+      } else if (typeof item === 'object' && item !== null) {
+        if (item.title) item.title = editValue;
+        if (item.text) item.text = editValue;
+        if (item.question) item.question = editValue;
+        if (item.keyword) item.keyword = editValue;
+      }
+    }
+    setIsEditing(false);
+  };
+
   return (
     <div className={`
       p-3 rounded-md transition-colors flex items-start gap-3
@@ -51,19 +84,59 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
         disabled={disabled}
       />
       <div className="flex-1">
-        <p className={`${isSelected ? 'font-medium' : 'font-normal'}`}>
-          {getItemText()}
-        </p>
+        {isEditing ? (
+          <div className="flex flex-col gap-2">
+            <Input 
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleCancelEdit}
+                className="h-8 px-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleSaveEdit}
+                className="h-8 px-2"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-between gap-2">
+            <p className={`${isSelected ? 'font-medium' : 'font-normal'} flex-1`}>
+              {getItemText()}
+            </p>
+            {editable && (
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleStartEdit}
+                className="h-8 px-2 -mt-1 -mr-1"
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
         
         {/* Only show URL if it exists and the heading is 'Top in SERP' */}
-        {heading === 'Top in SERP' && item.url && (
+        {heading === 'Top in SERP' && item.url && !isEditing && (
           <p className="text-xs text-muted-foreground truncate mt-1">
             {item.url}
           </p>
         )}
         
-        {/* Show snippet if it exists */}
-        {item.snippet && (
+        {/* Show snippet if it exists and not editing */}
+        {item.snippet && !isEditing && (
           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
             {item.snippet}
           </p>

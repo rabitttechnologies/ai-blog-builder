@@ -7,20 +7,16 @@ interface SelectionCounterProps {
   onGenerateTitles: () => void;
 }
 
-const SelectionCounter: React.FC<SelectionCounterProps> = ({ selectedCount, onGenerateTitles }) => {
+const SelectionCounter: React.FC<SelectionCounterProps> = ({ 
+  selectedCount,
+  onGenerateTitles
+}) => {
   return (
-    <div className="sticky bottom-4 left-0 right-0 z-10 flex justify-center">
-      <div className="bg-background border rounded-full shadow-lg px-4 py-2 flex items-center">
-        <span className="font-medium mr-4">
-          {selectedCount}/10 keywords selected
-        </span>
-        <Button 
-          onClick={onGenerateTitles} 
-          disabled={selectedCount < 10}
-          size="sm"
-        >
-          Create Title and Description
-        </Button>
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10 shadow-lg flex flex-col items-center bg-white rounded-lg p-4 border">
+      <div className="flex items-center justify-center gap-3">
+        <p className="text-sm font-medium">
+          {selectedCount} keywords selected
+        </p>
       </div>
     </div>
   );

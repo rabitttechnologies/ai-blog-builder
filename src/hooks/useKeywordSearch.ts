@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FormValues } from '@/hooks/useSearchFormData';
 import { useLanguage } from '@/context/language/LanguageContext';
@@ -16,10 +16,28 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
   const { currentLanguage } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const submitSearch = async (formData: FormValues) => {
     setIsLoading(true);
     setTimeoutReached(false);
+
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
 
     const workflowId = generateWorkflowId();
     const sessionId = getSessionId();
@@ -40,9 +58,12 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
     };
 
     try {
-      // Set up timeout for the fetch request
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
+      // Set up timeout for 2 minutes (120000ms)
+      const timeoutId = setTimeout(() => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      }, 120000); // 2 minutes
 
       const response = await fetch('https://n8n.agiagentworld.com/webhook/googlesearchresponse', {
         method: 'POST',
@@ -50,7 +71,7 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload),
-        signal: controller.signal
+        signal: abortControllerRef.current.signal
       });
 
       clearTimeout(timeoutId);
@@ -99,6 +120,7 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
       }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 

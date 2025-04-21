@@ -11,6 +11,7 @@ interface SearchResultsSectionProps {
   totalSelections: number;
   maxSelections: number;
   onToggleSelection: (heading: string, item: any) => void;
+  editable?: boolean;
 }
 
 const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
@@ -20,7 +21,8 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   selections,
   totalSelections,
   maxSelections,
-  onToggleSelection
+  onToggleSelection,
+  editable = false
 }) => {
   // Skip rendering if no data
   if (!data || data.length === 0) {
@@ -71,6 +73,7 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
               index={index}
               heading={heading}
               disabled={!isSelected && isMaxedOut}
+              editable={editable}
             />
           );
         })}

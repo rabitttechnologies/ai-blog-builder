@@ -9,18 +9,20 @@ import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import type { ClusteringResponse, TitleDescriptionResponse } from '@/types/clustering';
 
 // Consistent shared UI class sets
-const contentContainerClasses = "max-w-6xl mx-auto space-y-6";
+const contentContainerClasses = "max-w-6xl mx-auto space-y-6 min-h-[600px]";
 const errorContainerClasses = "text-center p-8 max-w-lg mx-auto";
 const buttonContainerClasses = "flex gap-2 justify-center";
 
 interface ClusteringWorkflowProps {
   initialData?: any;
   onClose: () => void;
+  onBack?: () => void;
 }
 
-const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, onClose }) => {
+const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, onClose, onBack }) => {
   const [workflowStep, setWorkflowStep] = useState<'clustering' | 'titleDescription'>('clustering');
   const [dataError, setDataError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const {
     clusteringData,
@@ -61,13 +63,26 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   const handleGenerateTitles = async () => {
     try {
       setDataError(null);
-      const result = await generateTitleDescription();
-      if (result) {
-        setWorkflowStep('titleDescription');
-      }
+      setIsLoading(true);
+      
+      // Simulate longer loading time (5 minutes max)
+      setTimeout(async () => {
+        try {
+          const result = await generateTitleDescription();
+          if (result) {
+            setWorkflowStep('titleDescription');
+          }
+        } catch (err) {
+          console.error("Error generating titles:", err);
+          setDataError("Failed to generate titles. Please try again.");
+        } finally {
+          setIsLoading(false);
+        }
+      }, Math.min(5000, 300000)); // Use a shorter time for testing, but can be up to 5 minutes
     } catch (err) {
       console.error("Error generating titles:", err);
       setDataError("Failed to generate titles. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -133,6 +148,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
             onSetFilters={setFilters}
             onSetGroupBy={setGroupBy}
             onClose={onClose}
+            onBack={onBack}
             selectedCount={selectedCount}
             onGenerateTitles={handleGenerateTitles}
           />
@@ -163,7 +179,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
         </div>
       )}
       
-      {!clusteringData && !loading && (
+      {!clusteringData && !loading && !isLoading && (
         <div className={errorContainerClasses}>
           <h3 className="text-xl font-semibold mb-2">No clustering data</h3>
           <p className="text-muted-foreground mb-4">No clustering data is available.</p>
@@ -171,25 +187,12 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
         </div>
       )}
       
-      {loading && <LoadingOverlay />}
-      
-      {workflowStep === 'clustering' && selectedCount > 0 && (
-        <div className="fixed bottom-4 right-4 z-10">
-          <Button 
-            onClick={handleGenerateTitles} 
-            disabled={loading || selectedCount < 10}
-            className="shadow-lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              `Create Title and Description (${selectedCount}/10)`
-            )}
-          </Button>
-        </div>
+      {(loading || isLoading) && (
+        <LoadingOverlay message={
+          workflowStep === 'clustering' 
+            ? "Our AI Agent is Creating Title and Short Description for Your Keywords" 
+            : "Processing your request..."
+        } />
       )}
     </div>
   );

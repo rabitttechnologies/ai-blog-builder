@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
+import { X } from 'lucide-react';
 import { isItemSelected } from '@/utils/selectionUtils';
-import { isValidData, headingMappings, safeFilter, safeGet } from '@/utils/dataValidation';
+import { isValidData, headingMappings, safeGet } from '@/utils/dataValidation';
 import { useKeywordSelections, MAX_SELECTIONS, SelectionsState } from '@/hooks/useKeywordSelections';
 import { useVolumeAnalysis } from '@/hooks/useVolumeAnalysis';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -17,13 +18,15 @@ interface SelectableSearchResultsProps {
   keyword: string;
   workflowId: string;
   onClose: () => void;
+  onBack: () => void;
 }
 
 const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({ 
   data, 
   keyword,
   workflowId,
-  onClose 
+  onClose,
+  onBack
 }) => {
   const { selections, totalSelections, handleToggleSelection } = useKeywordSelections();
   const { isLoading, volumeData, setVolumeData, analyzeSelectedKeywords } = useVolumeAnalysis(keyword, workflowId);
@@ -49,24 +52,25 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
         originalKeyword={keyword}
         onComplete={onClose}
         onCancel={() => setVolumeData(null)}
+        onBack={() => setVolumeData(null)}
       />
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto relative">
+      <div className="absolute right-0 top-0">
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </Button>
+      </div>
+      
       <SearchResultsHeader
         keyword={keyword || 'Unknown'}
         totalSelections={totalSelections}
         maxSelections={MAX_SELECTIONS}
         isLoading={isLoading}
-        onClose={onClose}
-        onAnalyze={() => {
-          // Only analyze if we have selections
-          if (selections && Object.keys(selections).length > 0) {
-            analyzeSelectedKeywords(selections, profileData);
-          }
-        }}
       />
       
       <Separator />
@@ -110,14 +114,25 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
             totalSelections={totalSelections}
             maxSelections={MAX_SELECTIONS}
             onToggleSelection={handleToggleSelection}
+            editable={true}
           />
         );
       })}
       
-      {isLoading && <LoadingOverlay />}
+      {isLoading && <LoadingOverlay message="Getting Past Search Data" />}
       
-      <div className="flex justify-center pt-4 pb-8">
-        <Button onClick={onClose} disabled={isLoading}>Close Results</Button>
+      <div className="flex justify-between pt-4 pb-8">
+        <Button onClick={onBack} variant="outline">Back</Button>
+        <Button 
+          onClick={() => {
+            if (selections && Object.keys(selections).length > 0) {
+              analyzeSelectedKeywords(selections, profileData);
+            }
+          }} 
+          disabled={isLoading || totalSelections === 0}
+        >
+          Get Past Search History
+        </Button>
       </div>
     </div>
   );

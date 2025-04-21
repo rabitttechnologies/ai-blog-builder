@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Filter, SortDesc } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import {
   Tabs,
   TabsContent,
@@ -26,13 +26,12 @@ interface ClusteringResultsProps {
   onSetFilters: (filters: ClusteringFilters) => void;
   onSetGroupBy: (groupBy: GroupingOption) => void;
   onClose: () => void;
+  onBack?: () => void;
   onGenerateTitles: () => void;
 }
 
 const ClusteringResults: React.FC<ClusteringResultsProps> = ({
   clusters,
-  workflowId,
-  executionId,
   groupBy,
   filters,
   selectedCount,
@@ -40,6 +39,7 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
   onSetFilters,
   onSetGroupBy,
   onClose,
+  onBack,
   onGenerateTitles
 }) => {
   const [showFilters, setShowFilters] = useState(false);
@@ -81,20 +81,14 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 relative">
         <div>
-          <h3 className="text-2xl font-semibold">Keyword Clustering Results</h3>
-          <p className="text-sm text-muted-foreground">
-            Workflow ID: {workflowId} | Execution ID: {executionId}
-          </p>
+          <h3 className="text-2xl font-semibold">Keyword Clusters</h3>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={toggleFilters} size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </Button>
-          <Button variant="outline" onClick={onClose} size="sm">
-            Close Results
+        <div className="absolute right-0 top-0">
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
           </Button>
         </div>
       </div>
@@ -108,10 +102,9 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
           </TabsList>
           
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Group By:</span>
             <Select value={groupBy} onValueChange={(value) => onSetGroupBy(value as GroupingOption)}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Grouping" />
+                <SelectValue placeholder="Group By" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="clusterName">Cluster Name</SelectItem>
@@ -121,6 +114,11 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
                 <SelectItem value="searchIntent">Search Intent</SelectItem>
               </SelectContent>
             </Select>
+            
+            <Button variant="outline" onClick={toggleFilters} size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
           </div>
         </div>
 
@@ -151,11 +149,23 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
         </TabsContent>
       </Tabs>
 
-      {/* Bottom control bar with selected count */}
-      <SelectionCounter 
-        selectedCount={selectedCount} 
-        onGenerateTitles={onGenerateTitles} 
-      />
+      {/* Bottom action buttons */}
+      <div className="flex justify-between pt-4 pb-8">
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            Back
+          </Button>
+        )}
+        
+        <div className="flex-1" />
+        
+        <Button 
+          onClick={onGenerateTitles} 
+          disabled={selectedCount < 1}
+        >
+          Create Title and Description
+        </Button>
+      </div>
     </div>
   );
 };

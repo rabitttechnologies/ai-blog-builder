@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/auth';
 import LoadingOverlay from './LoadingOverlay';
 import ClusteringWorkflow from '../clustering/ClusteringWorkflow';
-import { safeGet, safeMap } from '@/utils/dataValidation';
+import { safeMap } from '@/utils/dataValidation';
 
 // Consistent shared UI class sets
-const contentContainerClasses = "space-y-6 max-w-6xl mx-auto";
+const contentContainerClasses = "space-y-6 max-w-6xl mx-auto min-h-[600px]";
 const headerClasses = "flex items-center justify-between flex-wrap gap-4";
 const buttonContainerClasses = "flex items-center gap-2";
+
+type SortDirection = 'asc' | 'desc' | null;
+
+type SortableField = 'keyword' | 'monthlySearches' | 'competitionIndex' | 'competition' | 'lowTopOfPageBid' | 'highTopOfPageBid';
+
+interface SortState {
+  field: SortableField;
+  direction: SortDirection;
+}
 
 type VolumeData = {
   keyword: string;
@@ -37,6 +47,7 @@ export interface PastSearchVolumeResultsProps {
   originalKeyword: string;
   onComplete: () => void;
   onCancel: () => void;
+  onBack: () => void;
 }
 
 const formatBidValue = (bid: any): string => {
@@ -53,12 +64,18 @@ const formatBidValue = (bid: any): string => {
   return `$${formattedBid}`;
 };
 
+const getSortIcon = (field: SortableField, sort: SortState) => {
+  if (sort.field !== field) return null;
+  return sort.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+};
+
 const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
   volumeData,
   workflowId,
   originalKeyword,
   onComplete,
-  onCancel
+  onCancel,
+  onBack
 }) => {
   const { toast } = useToast();
   const { user, session } = useAuth();
@@ -67,10 +84,22 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
     safeMap(volumeData, item => ({
       ...item,
       clusteringOption: 'Select for Clustering',
-      isSelected: true
+      // Don't auto-select keywords with zero monthly searches
+      isSelected: item.monthlySearches !== null && item.monthlySearches > 0
     }))
   );
   const [clusteringData, setClusteringData] = useState<any>(null);
+  const [sort, setSort] = useState<SortState>({ field: 'monthlySearches', direction: 'desc' });
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Get session ID for request tracking
   const getSessionId = () => session?.access_token?.substring(0, 16) || 'anonymous-session';
@@ -97,15 +126,71 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
     });
   };
 
-  // Select or deselect all keywords
+  // Select or deselect all keywords except those with zero monthly searches
   const toggleSelectAll = (select: boolean) => {
     setKeywordRows(prev => 
       prev.map(row => ({
         ...row,
-        isSelected: select
+        isSelected: select && (row.monthlySearches !== null && row.monthlySearches > 0)
       }))
     );
   };
+
+  // Handle sorting
+  const handleSort = (field: SortableField) => {
+    if (sort.field === field) {
+      // Toggle direction or reset
+      setSort({
+        field,
+        direction: sort.direction === 'asc' ? 'desc' : sort.direction === 'desc' ? null : 'asc'
+      });
+    } else {
+      // New field, default to ascending
+      setSort({ field, direction: 'asc' });
+    }
+  };
+
+  // Sort rows based on current sort state
+  const sortedRows = [...keywordRows].sort((a, b) => {
+    if (sort.direction === null) return 0;
+
+    // Helper function for null-safe comparison
+    const compare = (valA: any, valB: any, numeric = false) => {
+      // Handle null values
+      if (valA === null && valB === null) return 0;
+      if (valA === null) return 1;
+      if (valB === null) return -1;
+
+      // Compare based on type
+      if (numeric) {
+        return sort.direction === 'asc' ? valA - valB : valB - valA;
+      } else {
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        return sort.direction === 'asc' 
+          ? strA.localeCompare(strB) 
+          : strB.localeCompare(strA);
+      }
+    };
+
+    // Sort based on field
+    switch (sort.field) {
+      case 'keyword':
+        return compare(a.keyword, b.keyword);
+      case 'monthlySearches':
+        return compare(a.monthlySearches, b.monthlySearches, true);
+      case 'competitionIndex':
+        return compare(a.competitionIndex, b.competitionIndex, true);
+      case 'competition':
+        return compare(a.competition, b.competition);
+      case 'lowTopOfPageBid':
+        return compare(a.lowTopOfPageBid, b.lowTopOfPageBid, true);
+      case 'highTopOfPageBid':
+        return compare(a.highTopOfPageBid, b.highTopOfPageBid, true);
+      default:
+        return 0;
+    }
+  });
 
   // Get selected count
   const selectedCount = keywordRows.filter(row => row.isSelected).length;
@@ -133,6 +218,14 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       return;
     }
 
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
+
     setIsLoading(true);
 
     try {
@@ -154,8 +247,18 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       
       console.log("Preparing clustering request with payload:", JSON.stringify(payload));
       
+      // Set up timeout for 3 minutes (180000ms)
+      const timeoutId = setTimeout(() => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      }, 180000); // 3 minutes
+      
       // Store the payload for ClusteringWorkflow component
       setClusteringData(payload);
+      
+      // Clear timeout as we're not actually making the request here
+      clearTimeout(timeoutId);
       
     } catch (error: any) {
       const errorMessage = error.name === 'AbortError' 
@@ -170,6 +273,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       
       console.error('Clustering error:', error);
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -179,6 +283,10 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       <ClusteringWorkflow
         initialData={clusteringData}
         onClose={onComplete}
+        onBack={() => {
+          setClusteringData(null);
+          setIsLoading(false);
+        }}
       />
     );
   }
@@ -191,35 +299,19 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
         <p className="text-muted-foreground mb-4">
           We couldn't retrieve volume data for your selected keywords.
         </p>
-        <Button onClick={onCancel}>Go Back</Button>
+        <Button onClick={onBack}>Go Back</Button>
       </div>
     );
   }
 
   return (
     <div className={contentContainerClasses}>
-      <div className={headerClasses}>
-        <h3 className="text-2xl font-semibold">Keyword Volume Analysis: <span className="text-primary">{originalKeyword}</span></h3>
-        <div className={buttonContainerClasses}>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSendToClustering}
-            disabled={isLoading || selectedCount === 0}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              `Send to Clustering (${selectedCount})`
-            )}
+      <div className="relative">
+        <div className={headerClasses}>
+          <h3 className="text-2xl font-semibold">Past Search Data for: <span className="text-primary">{originalKeyword}</span></h3>
+          <Button variant="ghost" size="icon" onClick={onComplete} className="absolute top-0 right-0 md:mr-0">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
           </Button>
         </div>
       </div>
@@ -239,7 +331,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={() => toggleSelectAll(true)}
-                disabled={keywordRows.every(row => row.isSelected)}
+                disabled={keywordRows.every(row => row.isSelected || (row.monthlySearches !== null && row.monthlySearches === 0))}
               >
                 Select All
               </Button>
@@ -260,17 +352,65 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">Select</TableHead>
-                  <TableHead>Keyword</TableHead>
-                  <TableHead className="text-right">Monthly Searches</TableHead>
-                  <TableHead className="text-right">Competition Index</TableHead>
-                  <TableHead className="text-right">Competition</TableHead>
-                  <TableHead className="text-right">Top of Page Bid (Low)</TableHead>
-                  <TableHead className="text-right">Top of Page Bid (High)</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('keyword')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Keyword 
+                      {getSortIcon('keyword', sort)}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('monthlySearches')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Monthly Searches
+                      {getSortIcon('monthlySearches', sort)}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('competitionIndex')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Competition Index
+                      {getSortIcon('competitionIndex', sort)}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('competition')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Competition
+                      {getSortIcon('competition', sort)}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('lowTopOfPageBid')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Top of Page Bid (Low)
+                      {getSortIcon('lowTopOfPageBid', sort)}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('highTopOfPageBid')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Top of Page Bid (High)
+                      {getSortIcon('highTopOfPageBid', sort)}
+                    </div>
+                  </TableHead>
                   <TableHead className="w-[180px]">Clustering Option</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {keywordRows.map((row, index) => (
+                {sortedRows.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <input
@@ -300,7 +440,7 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
                       <Select
                         value={row.clusteringOption}
                         onValueChange={(value: ClusteringOption) => 
-                          updateClusteringOption(index, value as ClusteringOption)
+                          updateClusteringOption(sortedRows.indexOf(row), value as ClusteringOption)
                         }
                         disabled={!row.isSelected}
                       >
@@ -322,7 +462,17 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
         </CardContent>
       </Card>
       
-      {isLoading && <LoadingOverlay />}
+      <div className="flex justify-between pt-4 pb-8">
+        <Button onClick={onBack} variant="outline">Back</Button>
+        <Button 
+          onClick={handleSendToClustering}
+          disabled={isLoading || selectedCount === 0}
+        >
+          Send for Clustering
+        </Button>
+      </div>
+      
+      {isLoading && <LoadingOverlay message="Our AI agent is Clustering Your Keywords" />}
     </div>
   );
 };
