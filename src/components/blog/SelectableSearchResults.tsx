@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
 import { isItemSelected } from '@/utils/selectionUtils';
 import { isValidData, headingMappings, safeFilter, safeGet } from '@/utils/dataValidation';
-import { useKeywordSelections, MAX_SELECTIONS } from '@/hooks/useKeywordSelections';
+import { useKeywordSelections, MAX_SELECTIONS, SelectionsState } from '@/hooks/useKeywordSelections';
 import { useVolumeAnalysis } from '@/hooks/useVolumeAnalysis';
 import { useProfileData } from '@/hooks/useProfileData';
 import LoadingOverlay from './LoadingOverlay';
