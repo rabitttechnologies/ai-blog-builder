@@ -1,15 +1,13 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import SearchSectionHeader from '../SearchSectionHeader';
+import { SelectionsState } from '@/hooks/useKeywordSelections';
 import SelectableItem from '../SelectableItem';
-import { safeGet } from '@/utils/dataValidation';
 
 interface SearchResultsSectionProps {
   heading: string;
   description: string;
   data: any[];
-  selections: Record<string, any[]>;
+  selections: SelectionsState;
   totalSelections: number;
   maxSelections: number;
   onToggleSelection: (heading: string, item: any) => void;
@@ -24,48 +22,60 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   maxSelections,
   onToggleSelection
 }) => {
-  // Early return if data is not valid
-  if (!data || !Array.isArray(data) || data.length === 0) {
+  // Skip rendering if no data
+  if (!data || data.length === 0) {
     return null;
   }
-
-  // Helper to check if an item is selected with safety checks
-  const isSelected = (item: any) => {
-    if (!selections || !safeGet(selections, heading)) return false;
-    
-    try {
-      return safeGet(selections, heading, []).some((selectedItem: any) => 
-        JSON.stringify(selectedItem) === JSON.stringify(item)
-      );
-    } catch (error) {
-      console.error("Error checking if item is selected:", error);
-      return false;
-    }
-  };
-
+  
+  // Determine if more selections would exceed the maximum
+  const isMaxedOut = totalSelections >= maxSelections;
+  
   return (
-    <Card className="mb-6">
-      <SearchSectionHeader heading={heading} description={description} />
-      <CardContent>
-        <div className="space-y-2">
-          {data.map((item, index) => (
+    <div className="space-y-3">
+      <div>
+        <h4 className="text-lg font-semibold">{heading}</h4>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {data.map((item, index) => {
+          // Get current selections for this heading
+          const headingSelections = selections[heading] || [];
+          
+          // Check if this item is selected
+          const isSelected = headingSelections.some(selectedItem => {
+            // Handle different item formats
+            if (typeof item === 'string' && typeof selectedItem === 'string') {
+              return item === selectedItem;
+            }
+            
+            if (typeof item === 'object' && item !== null && 
+                typeof selectedItem === 'object' && selectedItem !== null) {
+              // Compare by common identifiers
+              if (item.id && selectedItem.id) return item.id === selectedItem.id;
+              if (item.title && selectedItem.title) return item.title === selectedItem.title;
+              if (item.text && selectedItem.text) return item.text === selectedItem.text;
+              if (item.keyword && selectedItem.keyword) return item.keyword === selectedItem.keyword;
+            }
+            
+            // Fallback to string comparison
+            return JSON.stringify(item) === JSON.stringify(selectedItem);
+          });
+          
+          return (
             <SelectableItem
               key={index}
               item={item}
-              isSelected={isSelected(item)}
-              onToggle={() => {
-                if (item) { // Only toggle if item exists
-                  onToggleSelection(heading, item);
-                }
-              }}
+              isSelected={isSelected}
+              onToggle={() => onToggleSelection(heading, item)}
               index={index}
               heading={heading}
-              disabled={!isSelected(item) && totalSelections >= maxSelections}
+              disabled={!isSelected && isMaxedOut}
             />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

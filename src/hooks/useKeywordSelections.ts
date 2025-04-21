@@ -10,6 +10,7 @@ export interface SelectionItem {
   [key: string]: any;
 }
 
+// Update the SelectionsState type to match what's expected in components
 export type SelectionsState = Record<string, any[]>;
 
 export const useKeywordSelections = () => {

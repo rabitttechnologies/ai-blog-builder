@@ -106,7 +106,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
               'Additional keyword suggestions'
             }
             data={sectionData || []}
-            selections={selections || {}}
+            selections={selections}
             totalSelections={totalSelections}
             maxSelections={MAX_SELECTIONS}
             onToggleSelection={handleToggleSelection}

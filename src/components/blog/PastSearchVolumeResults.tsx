@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +31,7 @@ interface KeywordSelectionRow extends VolumeData {
   isSelected: boolean;
 }
 
-interface PastSearchVolumeResultsProps {
+export interface PastSearchVolumeResultsProps {
   volumeData: VolumeData[];
   workflowId: string;
   originalKeyword: string;
