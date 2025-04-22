@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +66,20 @@ const formatBidValue = (bid: any): string => {
 const getSortIcon = (field: SortableField, sort: SortState) => {
   if (sort.field !== field) return null;
   return sort.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+};
+
+// Function to format table headers with two lines
+const formatTableHeader = (text: string): JSX.Element => {
+  if (text.includes('Top of Page Bid')) {
+    const parts = text.split('(');
+    return (
+      <>
+        <span className="block">Top of Page Bid</span>
+        <span className="block text-xs font-normal">({parts[1]}</span>
+      </>
+    );
+  }
+  return <>{text}</>;
 };
 
 const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
@@ -218,6 +231,9 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
       return;
     }
 
+    // Show loading overlay immediately
+    setIsLoading(true);
+
     // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -225,8 +241,6 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
 
     // Create new AbortController for this request
     abortControllerRef.current = new AbortController();
-
-    setIsLoading(true);
 
     try {
       const payload = {
@@ -389,20 +403,20 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
                     </div>
                   </TableHead>
                   <TableHead 
-                    className="text-right cursor-pointer hover:bg-muted/50"
+                    className="text-right cursor-pointer hover:bg-muted/50 min-w-[120px]"
                     onClick={() => handleSort('lowTopOfPageBid')}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      Top of Page Bid (Low)
+                      {formatTableHeader('Top of Page Bid (Low)')}
                       {getSortIcon('lowTopOfPageBid', sort)}
                     </div>
                   </TableHead>
                   <TableHead 
-                    className="text-right cursor-pointer hover:bg-muted/50"
+                    className="text-right cursor-pointer hover:bg-muted/50 min-w-[120px]"
                     onClick={() => handleSort('highTopOfPageBid')}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      Top of Page Bid (High)
+                      {formatTableHeader('Top of Page Bid (High)')}
                       {getSortIcon('highTopOfPageBid', sort)}
                     </div>
                   </TableHead>
@@ -468,7 +482,12 @@ const PastSearchVolumeResults: React.FC<PastSearchVolumeResultsProps> = ({
           onClick={handleSendToClustering}
           disabled={isLoading || selectedCount === 0}
         >
-          Send for Clustering
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : 'Send for Clustering'}
         </Button>
       </div>
       

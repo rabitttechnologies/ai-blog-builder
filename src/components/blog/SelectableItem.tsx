@@ -83,7 +83,7 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
         className="h-5 w-5 mt-0.5 cursor-pointer"
         disabled={disabled}
       />
-      <div className="flex-1 overflow-x-auto">
+      <div className="flex-1 min-w-0">
         {isEditing ? (
           <div className="flex flex-col gap-2">
             <Input 
@@ -111,8 +111,8 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex justify-between gap-2 whitespace-nowrap">
-            <p className={`${isSelected ? 'font-medium' : 'font-normal'} flex-1 text-left overflow-x-auto pb-1`}>
+          <div className="flex justify-between items-center gap-2">
+            <p className={`${isSelected ? 'font-medium' : 'font-normal'} text-left whitespace-nowrap overflow-x-auto scrollbar-thin pb-1`}>
               {getItemText()}
             </p>
             {editable && (
@@ -120,7 +120,7 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
                 size="sm" 
                 variant="ghost" 
                 onClick={handleStartEdit}
-                className="h-8 px-2 -mt-1 -mr-1 flex-shrink-0"
+                className="h-8 px-2 flex-shrink-0"
               >
                 <Edit2 className="h-4 w-4" />
               </Button>

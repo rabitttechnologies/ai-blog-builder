@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useClusteringWorkflow } from '@/hooks/useClusteringWorkflow';
 import ClusteringResults from './ClusteringResults';
 import TitleDescriptionResults from './TitleDescriptionResults';
@@ -65,7 +65,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
       setDataError(null);
       setIsLoading(true);
       
-      // Show loading indicator while generating titles
+      // Show improved loading message
       const result = await generateTitleDescription();
       if (result) {
         setWorkflowStep('titleDescription');
@@ -131,7 +131,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   }
 
   return (
-    <div className="relative">
+    <div className="relative min-h-[600px]">
       {workflowStep === 'clustering' && clusteringData && (
         <div className={contentContainerClasses}>
           <ClusteringResults
@@ -184,11 +184,14 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
       )}
       
       {(loading || isLoading) && (
-        <LoadingOverlay message={
-          workflowStep === 'clustering' 
-            ? "Our AI Agent is Creating Title and Short Description for Your Keywords" 
-            : "Processing your request..."
-        } />
+        <LoadingOverlay 
+          message={
+            workflowStep === 'clustering' 
+              ? "Our AI Agent is Creating Title and Short Description for Your Keywords" 
+              : "Processing your request..."
+          }
+          subMessage="This may take a minute or two to complete" 
+        />
       )}
     </div>
   );

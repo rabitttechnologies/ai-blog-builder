@@ -5,7 +5,8 @@ import KeywordSearchForm from './KeywordSearchForm';
 import SelectableSearchResults from './SelectableSearchResults';
 import { safeGet } from '@/utils/dataValidation';
 
-const dialogContentClasses = "sm:max-w-[800px] max-h-[90vh] overflow-y-auto";
+// Consistent dialog sizing to prevent jumping
+const dialogContentClasses = "sm:max-w-[800px] max-h-[90vh] overflow-y-auto min-h-[600px]";
 
 interface CreateBlogDialogProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ isOpen, onClose }) 
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className={dialogContentClasses}>
+      <DialogContent className={dialogContentClasses} hideCloseButton={true}>
         {!searchResults ? (
           <>
             <DialogHeader>
