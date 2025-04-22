@@ -49,7 +49,7 @@ const Header: React.FC = () => {
           to="/" 
           className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400"
         >
-          Insight Writer AI
+          AI Agent Writer
         </Link>
 
         {/* Desktop Navigation */}

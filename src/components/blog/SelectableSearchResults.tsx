@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
-import { X } from 'lucide-react';
 import { isItemSelected } from '@/utils/selectionUtils';
 import { isValidData, headingMappings, safeGet } from '@/utils/dataValidation';
 import { useKeywordSelections, MAX_SELECTIONS, SelectionsState } from '@/hooks/useKeywordSelections';
@@ -59,13 +58,6 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto relative">
-      <div className="absolute right-0 top-0">
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </Button>
-      </div>
-      
       <SearchResultsHeader
         keyword={keyword || 'Unknown'}
         totalSelections={totalSelections}
@@ -122,7 +114,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
       {isLoading && <LoadingOverlay message="Getting Past Search Data" />}
       
       <div className="flex justify-between pt-4 pb-8">
-        <Button onClick={onBack} variant="outline">Back</Button>
+        <Button onClick={onBack} variant="outline" size="md">Back</Button>
         <Button 
           onClick={() => {
             if (selections && Object.keys(selections).length > 0) {
@@ -130,6 +122,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
             }
           }} 
           disabled={isLoading || totalSelections === 0}
+          size="md"
         >
           Get Past Search History
         </Button>

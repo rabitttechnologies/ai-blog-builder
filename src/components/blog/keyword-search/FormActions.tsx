@@ -20,6 +20,7 @@ const FormActions: React.FC<FormActionsProps> = ({
         variant="outline"
         onClick={onCancel}
         disabled={isLoading}
+        size="md"
       >
         Cancel
       </Button>
@@ -27,6 +28,7 @@ const FormActions: React.FC<FormActionsProps> = ({
       <Button 
         type="submit" 
         disabled={isLoading}
+        size="md"
       >
         {isLoading ? 'Searching...' : 'Search'}
       </Button>

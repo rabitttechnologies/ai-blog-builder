@@ -133,6 +133,7 @@ export function AdminBlogManagement() {
                   setStatusFilter("all");
                   setLanguageFilter("all");
                 }}
+                size="md"
               >
                 Clear Filters
               </Button>

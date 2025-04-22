@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Filter, X } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import {
   Tabs,
   TabsContent,
@@ -50,7 +50,7 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
       <div className="text-center p-8">
         <h3 className="text-xl font-semibold mb-2">No clusters found</h3>
         <p className="text-muted-foreground mb-4">No clustering data is available for this analysis.</p>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose} size="md">Close</Button>
       </div>
     );
   }
@@ -84,12 +84,6 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
       <div className="flex items-center justify-between flex-wrap gap-4 relative">
         <div>
           <h3 className="text-2xl font-semibold">Keyword Clusters</h3>
-        </div>
-        <div className="absolute right-0 top-0">
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
         </div>
       </div>
 
@@ -152,7 +146,7 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
       {/* Bottom action buttons */}
       <div className="flex justify-between pt-4 pb-8">
         {onBack && (
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={onBack} size="md">
             Back
           </Button>
         )}
@@ -162,10 +156,17 @@ const ClusteringResults: React.FC<ClusteringResultsProps> = ({
         <Button 
           onClick={onGenerateTitles} 
           disabled={selectedCount < 1}
+          size="md"
         >
           Create Title and Description
         </Button>
       </div>
+      
+      {/* Selection counter */}
+      <SelectionCounter
+        selectedCount={selectedCount}
+        onGenerateTitles={onGenerateTitles}
+      />
     </div>
   );
 };

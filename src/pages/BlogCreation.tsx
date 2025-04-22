@@ -19,7 +19,7 @@ const BlogCreation = () => {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Create Blog - Insight Writer AI</title>
+        <title>Create Blog - AI Agent Writer</title>
         <meta 
           name="description" 
           content="Research keywords and create optimized blog content with AI assistance." 

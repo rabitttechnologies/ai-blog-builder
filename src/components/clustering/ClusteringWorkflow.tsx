@@ -5,7 +5,7 @@ import ClusteringResults from './ClusteringResults';
 import TitleDescriptionResults from './TitleDescriptionResults';
 import LoadingOverlay from '@/components/blog/LoadingOverlay';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import type { ClusteringResponse, TitleDescriptionResponse } from '@/types/clustering';
 
 // Consistent shared UI class sets
@@ -65,23 +65,15 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
       setDataError(null);
       setIsLoading(true);
       
-      // Simulate longer loading time (5 minutes max)
-      setTimeout(async () => {
-        try {
-          const result = await generateTitleDescription();
-          if (result) {
-            setWorkflowStep('titleDescription');
-          }
-        } catch (err) {
-          console.error("Error generating titles:", err);
-          setDataError("Failed to generate titles. Please try again.");
-        } finally {
-          setIsLoading(false);
-        }
-      }, Math.min(5000, 300000)); // Use a shorter time for testing, but can be up to 5 minutes
+      // Show loading indicator while generating titles
+      const result = await generateTitleDescription();
+      if (result) {
+        setWorkflowStep('titleDescription');
+      }
     } catch (err) {
       console.error("Error generating titles:", err);
       setDataError("Failed to generate titles. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -95,9 +87,12 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
   const handleCreateBlog = async (selectedItem: TitleDescriptionResponse['data'][0]) => {
     try {
       setDataError(null);
+      setIsLoading(true);
       await createBlog(selectedItem);
+      setIsLoading(false);
       onClose();
     } catch (err) {
+      setIsLoading(false);
       console.error("Error creating blog:", err);
       setDataError("Failed to create blog. Please try again.");
     }
@@ -125,10 +120,11 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
                 fetchClusteringData(initialData);
               }
             }}
+            size="md"
           >
             Try Again
           </Button>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose} size="md">Close</Button>
         </div>
       </div>
     );
@@ -183,7 +179,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({ initialData, on
         <div className={errorContainerClasses}>
           <h3 className="text-xl font-semibold mb-2">No clustering data</h3>
           <p className="text-muted-foreground mb-4">No clustering data is available.</p>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose} size="md">Close</Button>
         </div>
       )}
       

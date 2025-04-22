@@ -1,15 +1,17 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
 import { Clock, AlertTriangle, PlusCircle } from "lucide-react";
+import CreateBlogDialog from "@/components/blog/CreateBlogDialog";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -20,7 +22,7 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Dashboard - BlogCraft</title>
+        <title>Dashboard - AI Agent Writer</title>
       </Helmet>
       
       <div className="container max-w-6xl py-8">
@@ -31,9 +33,10 @@ const Dashboard = () => {
           </div>
           
           <Button 
-            onClick={() => navigate("/blogs")}
+            onClick={() => setIsDialogOpen(true)}
             className="mt-4 md:mt-0"
             leftIcon={<PlusCircle className="h-4 w-4" />}
+            size="md"
           >
             Create New Blog
           </Button>
@@ -53,6 +56,7 @@ const Dashboard = () => {
             <Button 
               variant="outline"
               onClick={() => navigate("/pricing")}
+              size="md"
             >
               Upgrade
             </Button>
@@ -96,6 +100,12 @@ const Dashboard = () => {
             </p>
           </div>
         </div>
+        
+        {/* Dialog for creating a new blog */}
+        <CreateBlogDialog 
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
       </div>
     </DashboardLayout>
   );

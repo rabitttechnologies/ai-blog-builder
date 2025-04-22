@@ -30,10 +30,10 @@ const buttonVariants = cva(
         link: "bg-transparent underline-offset-4 hover:underline text-primary"
       },
       size: {
-        sm: "text-xs h-8 px-3",
-        md: "text-sm h-10 px-4",
-        lg: "text-base h-12 px-6",
-        icon: "h-8 w-8 p-0" // Added icon size variant
+        sm: "text-xs h-8 px-3 py-1 min-w-[80px] max-w-[200px]",
+        md: "text-sm h-10 px-4 py-2 min-w-[100px] max-w-[220px]",
+        lg: "text-base h-12 px-6 py-3 min-w-[120px] max-w-[240px]",
+        icon: "h-8 w-8 p-0" // Icon size variant
       },
       fullWidth: {
         true: "w-full",
