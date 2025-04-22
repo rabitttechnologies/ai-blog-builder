@@ -1,7 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Enhanced Google Analytics with error handling -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3Z982WD23P"></script>
+    <script>
+      try {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-3Z982WD23P', {
+          send_page_view: true,
+          transport_type: 'beacon',
+          anonymize_ip: true
+        });
+      } catch (e) {
+        console.error('Analytics initialization error:', e);
+      }
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Blog Content Platform - Login</title>
