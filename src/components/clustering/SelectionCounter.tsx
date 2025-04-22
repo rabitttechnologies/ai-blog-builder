@@ -17,6 +17,15 @@ const SelectionCounter: React.FC<SelectionCounterProps> = ({
         <p className="text-sm font-medium">
           {selectedCount} keywords selected
         </p>
+        {selectedCount > 0 && (
+          <Button 
+            size="sm" 
+            onClick={onGenerateTitles} 
+            className="ml-2"
+          >
+            Generate Titles
+          </Button>
+        )}
       </div>
     </div>
   );

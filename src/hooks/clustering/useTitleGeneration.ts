@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +28,7 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
         description: "Clustering data or user information is missing.",
         variant: "destructive"
       });
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -78,32 +79,78 @@ export const useTitleGeneration = (clusteringData: ClusteringResponse | null) =>
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("Title generation response:", JSON.stringify(data));
+      const rawData = await response.json();
+      console.log("Title generation raw response:", JSON.stringify(rawData));
       
-      // Process and set title/description data
-      const responseData = safeGet(data, 'data.0', {});
+      // Handle the array-wrapped response structure from the webhook
+      // The structure is [{ data: [{ data: [...], userId, workflowId, ExecutionId }] }]
+      let responseData;
       
-      if (responseData) {
-        const titleDescData: TitleDescriptionResponse = {
-          data: safeGet(responseData, 'data', []),
-          workflowId: safeGet(clusteringData, 'workflowId', ''),
-          userId: user.id,
-          originalKeyword: safeGet(clusteringData, 'originalKeyword', ''),
-          executionId: safeGet(responseData, 'executionId', '')
-        };
-        
-        setTitleDescriptionData(titleDescData);
-        
-        toast({
-          title: "Title Generation Complete",
-          description: "Blog titles and descriptions have been generated.",
-        });
-        
-        return titleDescData;
+      if (Array.isArray(rawData) && rawData.length > 0) {
+        // Handle array-wrapped response
+        const firstItem = rawData[0];
+        if (firstItem && Array.isArray(firstItem.data) && firstItem.data.length > 0) {
+          responseData = firstItem.data[0];
+        }
+      } else if (rawData && rawData.data) {
+        // Handle object response with data property
+        responseData = safeGet(rawData, 'data.0', {});
       }
       
-      throw new Error('Invalid response format');
+      // If we couldn't extract the data using either method, throw an error
+      if (!responseData) {
+        console.error("Invalid response format:", rawData);
+        throw new Error('Invalid response format');
+      }
+      
+      console.log("Processed response data:", JSON.stringify(responseData));
+      
+      // Extract data items ensuring type safety
+      const dataItems = Array.isArray(safeGet(responseData, 'data', [])) 
+        ? safeGet(responseData, 'data', []) 
+        : [];
+      
+      if (dataItems.length === 0) {
+        throw new Error('No title/description data returned');
+      }
+      
+      // Handle the ExecutionId/executionId case sensitivity issue
+      const executionId = safeGet(responseData, 'ExecutionId', '') || 
+                         safeGet(responseData, 'executionId', '');
+      
+      // Use provided values or fallback to clustering data
+      const userId = safeGet(responseData, 'userId', user.id);
+      const workflowId = safeGet(responseData, 'workflowId', safeGet(clusteringData, 'workflowId', ''));
+      const originalKeyword = safeGet(responseData, 'originalKeyword', safeGet(clusteringData, 'originalKeyword', ''));
+      
+      const titleDescData: TitleDescriptionResponse = {
+        data: dataItems.map(item => ({
+          cluster_name: safeGet(item, 'cluster_name', ''),
+          keyword: safeGet(item, 'keyword', ''),
+          title: safeGet(item, 'title', ''),
+          description: safeGet(item, 'description', ''),
+          type: safeGet(item, 'type', 'spoke'),
+          reasoning: safeGet(item, 'reasoning', ''),
+          primary_keyword: safeGet(item, 'primary_keyword', ''),
+          category: safeGet(item, 'category', ''),
+          status: 'Select for Blog Creation'
+        })),
+        workflowId,
+        userId,
+        originalKeyword,
+        executionId
+      };
+      
+      console.log("Processed title description data:", JSON.stringify(titleDescData));
+      
+      setTitleDescriptionData(titleDescData);
+      
+      toast({
+        title: "Title Generation Complete",
+        description: "Blog titles and descriptions have been generated.",
+      });
+      
+      return titleDescData;
     } catch (error: any) {
       console.error('Error generating titles/descriptions:', error);
       setError(error.message || 'Failed to generate titles and descriptions');
