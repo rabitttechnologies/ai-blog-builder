@@ -3,10 +3,9 @@ import React from 'react';
 import ClusteringStep from './steps/ClusteringStep';
 import TitleDescriptionStep from './steps/TitleDescriptionStep';
 import DialogSteps from './steps/DialogSteps';
-import type { ClusteringResponse, TitleDescriptionResponse } from '@/types/clustering';
+import type { ClusteringResponse, TitleDescriptionResponse, GroupingOption } from '@/types/clustering';
 import type { OutlinePromptFormData } from '@/hooks/clustering/useOutlinePrompt';
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
-import type { GroupingOption } from '@/types/clustering';
 
 type WorkflowStep = 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog';
 
@@ -29,8 +28,8 @@ interface WorkflowStepsProps {
   onBack?: () => void;
   onGenerateTitles: () => void;
   onGenerateOutlinePrompt: (selectedItem: any) => void;
-  onCreateFinalBlog: () => void;
-  onSaveBlog: () => void;
+  onCreateFinalBlog: (formData?: any) => void;
+  onSaveBlog: (formData?: any) => void;
   onUpdateOutlineField: (field: string, value: string) => void;
   onUpdateFinalBlogField: (field: string, value: string) => void;
   onBackToClusteringStep: () => void;

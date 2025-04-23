@@ -50,6 +50,9 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
     setDataError,
     isLoading,
     setIsLoading,
+    selectedTitleItem,
+    setSelectedTitleItem,
+    resetWorkflowState
   } = useWorkflowState();
 
   // Initialize clustering data
@@ -67,6 +70,19 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
       }
     }
   }, [initialData, clusteringData, fetchClusteringData, setDataError]);
+
+  // Handle back navigation from different steps
+  const handleBackToClusteringStep = () => {
+    setWorkflowStep('clustering');
+  };
+
+  const handleBackToTitleStep = () => {
+    setWorkflowStep('titleDescription');
+  };
+
+  const handleBackToOutlineStep = () => {
+    setWorkflowStep('outlinePrompt');
+  };
 
   // Handle errors
   const displayError = error || dataError;
@@ -130,6 +146,14 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
           onBack={onBack}
           onUpdateOutlineField={updateOutlineField}
           onUpdateFinalBlogField={updateFinalBlogField}
+          onBackToClusteringStep={handleBackToClusteringStep}
+          onBackToTitleStep={handleBackToTitleStep}
+          onBackToOutlineStep={handleBackToOutlineStep}
+          // Add the missing props required by WorkflowSteps
+          onGenerateTitles={() => {}} // These will be overridden by WorkflowEventHandler
+          onGenerateOutlinePrompt={() => {}}
+          onCreateFinalBlog={() => {}}
+          onSaveBlog={() => {}}
         />
       </WorkflowEventHandler>
       

@@ -15,6 +15,7 @@ interface WorkflowEventHandlerProps {
   setIsLoading: (loading: boolean) => void;
   setWorkflowStep: (step: 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog') => void;
   onClose: () => void;
+  children: React.ReactNode; // Add children to the props interface
 }
 
 const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
