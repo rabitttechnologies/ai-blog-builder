@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useClusteringWorkflow } from '@/hooks/useClusteringWorkflow';
-import LoadingOverlay from '@/components/blog/LoadingOverlay';
+import { useWorkflowState } from '@/hooks/clustering/useWorkflowState';
 import ErrorDisplay from './workflow/ErrorDisplay';
 import WorkflowSteps from './workflow/WorkflowSteps';
-import type { TitleDescriptionResponse } from '@/types/clustering';
-
-type WorkflowStep = 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog';
+import WorkflowLoadingOverlay from './workflow/WorkflowLoadingOverlay';
+import WorkflowEventHandler from './workflow/WorkflowEventHandler';
 
 interface ClusteringWorkflowProps {
   initialData?: any;
@@ -19,11 +18,6 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
   onClose, 
   onBack 
 }) => {
-  const [workflowStep, setWorkflowStep] = useState<WorkflowStep>('clustering');
-  const [dataError, setDataError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedTitleItem, setSelectedTitleItem] = useState<TitleDescriptionResponse['data'][0] | null>(null);
-  
   const {
     clusteringData,
     titleDescriptionData,
@@ -36,7 +30,6 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
     groupBy,
     filters,
     selectedCount,
-    groupedClusters,
     setFilters,
     setGroupBy,
     updateKeyword,
@@ -49,6 +42,15 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
     updateFinalBlogField,
     saveBlogToSupabase,
   } = useClusteringWorkflow();
+
+  const {
+    workflowStep,
+    setWorkflowStep,
+    dataError,
+    setDataError,
+    isLoading,
+    setIsLoading,
+  } = useWorkflowState();
 
   // Initialize clustering data
   useEffect(() => {
@@ -64,78 +66,7 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
         setDataError("An unexpected error occurred. Please try again.");
       }
     }
-  }, [initialData, clusteringData, fetchClusteringData]);
-
-  // Event handlers
-  const handleGenerateTitles = async () => {
-    try {
-      setDataError(null);
-      setIsLoading(true);
-      const result = await generateTitleDescription();
-      if (result) {
-        setWorkflowStep('titleDescription');
-      }
-    } catch (err) {
-      console.error("Error generating titles:", err);
-      setDataError("Failed to generate titles. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGenerateOutlinePrompt = async (selectedItem: TitleDescriptionResponse['data'][0]) => {
-    try {
-      setDataError(null);
-      setIsLoading(true);
-      setSelectedTitleItem(selectedItem);
-      const result = await generateOutlinePrompt(selectedItem);
-      if (result) {
-        setWorkflowStep('outlinePrompt');
-      }
-    } catch (err) {
-      console.error("Error generating outline and prompt:", err);
-      setDataError("Failed to generate outline and prompt. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCreateFinalBlog = async () => {
-    try {
-      setDataError(null);
-      setIsLoading(true);
-      const result = await createFinalBlog(outlineFormData);
-      if (result) {
-        setWorkflowStep('finalBlog');
-      }
-    } catch (err) {
-      console.error("Error creating final blog:", err);
-      setDataError("Failed to create final blog. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveBlog = async () => {
-    try {
-      setDataError(null);
-      setIsLoading(true);
-      const result = await saveBlogToSupabase(finalBlogFormData);
-      if (result) {
-        onClose();
-      }
-    } catch (err) {
-      console.error("Error saving blog:", err);
-      setDataError("Failed to save blog. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Navigation handlers
-  const handleBackToClusteringStep = () => setWorkflowStep('clustering');
-  const handleBackToTitleStep = () => setWorkflowStep('titleDescription');
-  const handleBackToOutlineStep = () => setWorkflowStep('outlinePrompt');
+  }, [initialData, clusteringData, fetchClusteringData, setDataError]);
 
   // Handle errors
   const displayError = error || dataError;
@@ -155,14 +86,31 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
     );
   }
 
+  if (!clusteringData && !loading && !isLoading) {
+    return (
+      <ErrorDisplay
+        error="No clustering data available."
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <div className="relative min-h-[600px]">
-      {!clusteringData && !loading && !isLoading ? (
-        <ErrorDisplay
-          error="No clustering data available."
-          onClose={onClose}
-        />
-      ) : (
+      <WorkflowEventHandler
+        clusteringData={clusteringData}
+        titleDescriptionData={titleDescriptionData}
+        outlineFormData={outlineFormData}
+        finalBlogFormData={finalBlogFormData}
+        onGenerateTitleDescription={generateTitleDescription}
+        onGenerateOutlinePrompt={generateOutlinePrompt}
+        onCreateFinalBlog={createFinalBlog}
+        onSaveBlog={saveBlogToSupabase}
+        setDataError={setDataError}
+        setIsLoading={setIsLoading}
+        setWorkflowStep={setWorkflowStep}
+        onClose={onClose}
+      >
         <WorkflowSteps
           step={workflowStep}
           clusteringData={clusteringData}
@@ -180,24 +128,15 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
           onSetGroupBy={setGroupBy}
           onClose={onClose}
           onBack={onBack}
-          onGenerateTitles={handleGenerateTitles}
-          onGenerateOutlinePrompt={handleGenerateOutlinePrompt}
-          onCreateFinalBlog={handleCreateFinalBlog}
-          onSaveBlog={handleSaveBlog}
           onUpdateOutlineField={updateOutlineField}
           onUpdateFinalBlogField={updateFinalBlogField}
-          onBackToClusteringStep={handleBackToClusteringStep}
-          onBackToTitleStep={handleBackToTitleStep}
-          onBackToOutlineStep={handleBackToOutlineStep}
         />
-      )}
+      </WorkflowEventHandler>
       
-      {(loading || isLoading) && workflowStep === 'clustering' && (
-        <LoadingOverlay 
-          message="Our AI Agent is Creating Title and Short Description for Your Keywords" 
-          subMessage="This may take a minute or two to complete" 
-        />
-      )}
+      <WorkflowLoadingOverlay 
+        isVisible={loading || isLoading}
+        step={workflowStep}
+      />
     </div>
   );
 };
