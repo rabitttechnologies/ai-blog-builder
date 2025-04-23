@@ -8,8 +8,10 @@ import type { OutlinePromptFormData } from '@/hooks/clustering/useOutlinePrompt'
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 import type { GroupingOption } from '@/types/clustering';
 
+type WorkflowStep = 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog';
+
 interface WorkflowStepsProps {
-  step: 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog';
+  step: WorkflowStep;
   clusteringData: ClusteringResponse;
   titleDescriptionData: TitleDescriptionResponse | null;
   outlinePromptData: any;
@@ -91,6 +93,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
     );
   }
 
+  // Pass the current step to DialogSteps
   return (
     <DialogSteps
       step={step}

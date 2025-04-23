@@ -2,16 +2,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
 import ClusteringResults from '../../ClusteringResults';
-import type { ClusteringResponse } from '@/types/clustering';
+import type { ClusteringResponse, GroupingOption } from '@/types/clustering';
 
 interface ClusteringStepProps {
   clusteringData: ClusteringResponse;
-  groupBy: string;
+  groupBy: GroupingOption;
   filters: any;
   selectedCount: number;
   onUpdateKeyword: (clusterName: string, keyword: string, updates: any) => void;
   onSetFilters: (filters: any) => void;
-  onSetGroupBy: (groupBy: string) => void;
+  onSetGroupBy: (groupBy: GroupingOption) => void;
   onClose: () => void;
   onBack?: () => void;
   onGenerateTitles: () => void;

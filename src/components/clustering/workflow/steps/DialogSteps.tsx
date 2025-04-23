@@ -6,7 +6,7 @@ import type { OutlinePromptFormData } from '@/hooks/clustering/useOutlinePrompt'
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 
 interface DialogStepsProps {
-  step: 'outlinePrompt' | 'finalBlog';
+  step: 'outlinePrompt' | 'finalBlog' | 'clustering' | 'titleDescription';
   outlinePromptData: any;
   finalBlogData: any;
   outlineFormData: OutlinePromptFormData;
@@ -36,6 +36,9 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
   onUpdateOutlineField,
   onUpdateFinalBlogField
 }) => {
+  // Only render outline prompt if step is 'outlinePrompt'
+  // Only render final blog if step is 'finalBlog'
+  // Ignore other steps ('clustering', 'titleDescription')
   return (
     <>
       <OutlinePromptDialog 
