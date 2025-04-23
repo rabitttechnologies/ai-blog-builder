@@ -1,8 +1,8 @@
 
 import React from 'react';
-import ClusteringStep from './steps/ClusteringStep';
-import TitleDescriptionStep from './steps/TitleDescriptionStep';
-import DialogSteps from './steps/DialogSteps';
+import ClusteringStepWrapper from './steps/clustering/ClusteringStepWrapper';
+import TitleDescriptionStepWrapper from './steps/title/TitleDescriptionStepWrapper';
+import DialogStepsWrapper from './steps/dialog/DialogStepsWrapper';
 import type { ClusteringResponse, TitleDescriptionResponse, GroupingOption } from '@/types/clustering';
 import type { OutlinePromptFormData } from '@/hooks/clustering/useOutlinePrompt';
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
@@ -66,7 +66,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
 }) => {
   if (step === 'clustering' && clusteringData) {
     return (
-      <ClusteringStep
+      <ClusteringStepWrapper
         clusteringData={clusteringData}
         groupBy={groupBy}
         filters={filters}
@@ -83,7 +83,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
 
   if (step === 'titleDescription' && titleDescriptionData) {
     return (
-      <TitleDescriptionStep
+      <TitleDescriptionStepWrapper
         data={titleDescriptionData}
         onBack={onBackToClusteringStep}
         onClose={onClose}
@@ -92,24 +92,28 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
     );
   }
 
-  // Pass the current step to DialogSteps
-  return (
-    <DialogSteps
-      step={step}
-      outlinePromptData={outlinePromptData}
-      finalBlogData={finalBlogData}
-      outlineFormData={outlineFormData}
-      finalBlogFormData={finalBlogFormData}
-      loading={loading}
-      onClose={onClose}
-      onBackToTitleStep={onBackToTitleStep}
-      onBackToOutlineStep={onBackToOutlineStep}
-      onCreateFinalBlog={onCreateFinalBlog}
-      onSaveBlog={onSaveBlog}
-      onUpdateOutlineField={onUpdateOutlineField}
-      onUpdateFinalBlogField={onUpdateFinalBlogField}
-    />
-  );
+  // For outline prompt and final blog steps
+  if ((step === 'outlinePrompt' || step === 'finalBlog')) {
+    return (
+      <DialogStepsWrapper
+        step={step}
+        outlinePromptData={outlinePromptData}
+        finalBlogData={finalBlogData}
+        outlineFormData={outlineFormData}
+        finalBlogFormData={finalBlogFormData}
+        loading={loading}
+        onClose={onClose}
+        onBackToTitleStep={onBackToTitleStep}
+        onBackToOutlineStep={onBackToOutlineStep}
+        onCreateFinalBlog={onCreateFinalBlog}
+        onSaveBlog={onSaveBlog}
+        onUpdateOutlineField={onUpdateOutlineField}
+        onUpdateFinalBlogField={onUpdateFinalBlogField}
+      />
+    );
+  }
+
+  return null;
 };
 
 export default WorkflowSteps;
