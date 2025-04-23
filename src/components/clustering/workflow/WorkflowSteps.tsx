@@ -1,14 +1,12 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
-import { ArrowLeft } from 'lucide-react';
-import ClusteringResults from '../ClusteringResults';
-import TitleDescriptionResults from '../TitleDescriptionResults';
-import OutlinePromptDialog from '../outline-prompt/OutlinePromptDialog';
-import FinalBlogDialog from '../final-blog/FinalBlogDialog';
+import ClusteringStep from './steps/ClusteringStep';
+import TitleDescriptionStep from './steps/TitleDescriptionStep';
+import DialogSteps from './steps/DialogSteps';
 import type { ClusteringResponse, TitleDescriptionResponse } from '@/types/clustering';
 import type { OutlinePromptFormData } from '@/hooks/clustering/useOutlinePrompt';
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
+import type { GroupingOption } from '@/types/clustering';
 
 interface WorkflowStepsProps {
   step: 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog';
@@ -19,12 +17,12 @@ interface WorkflowStepsProps {
   outlineFormData: OutlinePromptFormData;
   finalBlogFormData: FinalBlogFormData;
   loading: boolean;
-  groupBy: string;
+  groupBy: GroupingOption;
   filters: any;
   selectedCount: number;
   onUpdateKeyword: (clusterName: string, keyword: string, updates: any) => void;
   onSetFilters: (filters: any) => void;
-  onSetGroupBy: (groupBy: string) => void;
+  onSetGroupBy: (groupBy: GroupingOption) => void;
   onClose: () => void;
   onBack?: () => void;
   onGenerateTitles: () => void;
@@ -67,75 +65,48 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
 }) => {
   if (step === 'clustering' && clusteringData) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
-        <ClusteringResults
-          clusters={clusteringData.clusters}
-          workflowId={clusteringData.workflowId}
-          executionId={clusteringData.executionId}
-          groupBy={groupBy}
-          filters={filters}
-          onUpdateKeyword={onUpdateKeyword}
-          onSetFilters={onSetFilters}
-          onSetGroupBy={onSetGroupBy}
-          onClose={onClose}
-          onBack={onBack}
-          selectedCount={selectedCount}
-          onGenerateTitles={onGenerateTitles}
-        />
-      </div>
+      <ClusteringStep
+        clusteringData={clusteringData}
+        groupBy={groupBy}
+        filters={filters}
+        selectedCount={selectedCount}
+        onUpdateKeyword={onUpdateKeyword}
+        onSetFilters={onSetFilters}
+        onSetGroupBy={onSetGroupBy}
+        onClose={onClose}
+        onBack={onBack}
+        onGenerateTitles={onGenerateTitles}
+      />
     );
   }
 
   if (step === 'titleDescription' && titleDescriptionData) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center mb-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onBackToClusteringStep}
-            className="mr-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Keywords
-          </Button>
-          <h2 className="text-2xl font-semibold">Blog Title Options</h2>
-        </div>
-        
-        <TitleDescriptionResults
-          data={titleDescriptionData}
-          onUpdateItem={() => {}}
-          onCreateBlog={onGenerateOutlinePrompt}
-          onClose={onClose}
-        />
-      </div>
+      <TitleDescriptionStep
+        data={titleDescriptionData}
+        onBack={onBackToClusteringStep}
+        onClose={onClose}
+        onCreateBlog={onGenerateOutlinePrompt}
+      />
     );
   }
 
   return (
-    <>
-      <OutlinePromptDialog 
-        isOpen={step === 'outlinePrompt'}
-        onClose={onClose}
-        onBack={onBackToTitleStep}
-        data={outlinePromptData}
-        formData={outlineFormData}
-        onUpdateField={onUpdateOutlineField}
-        onSubmit={onCreateFinalBlog}
-        isLoading={loading}
-      />
-      
-      <FinalBlogDialog 
-        isOpen={step === 'finalBlog'}
-        onClose={onClose}
-        onBack={onBackToOutlineStep}
-        data={finalBlogData}
-        formData={finalBlogFormData}
-        onUpdateField={onUpdateFinalBlogField}
-        onSubmit={onSaveBlog}
-        isLoading={loading}
-      />
-    </>
+    <DialogSteps
+      step={step}
+      outlinePromptData={outlinePromptData}
+      finalBlogData={finalBlogData}
+      outlineFormData={outlineFormData}
+      finalBlogFormData={finalBlogFormData}
+      loading={loading}
+      onClose={onClose}
+      onBackToTitleStep={onBackToTitleStep}
+      onBackToOutlineStep={onBackToOutlineStep}
+      onCreateFinalBlog={onCreateFinalBlog}
+      onSaveBlog={onSaveBlog}
+      onUpdateOutlineField={onUpdateOutlineField}
+      onUpdateFinalBlogField={onUpdateFinalBlogField}
+    />
   );
 };
 
