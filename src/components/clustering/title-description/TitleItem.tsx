@@ -148,7 +148,7 @@ const TitleItem: React.FC<TitleItemProps> = ({ item, onUpdateItem, onCreateBlog 
               onClick={() => onCreateBlog(item)}
               disabled={item.status !== 'Select for Blog Creation'}
             >
-              Create Blog
+              Outline and Prompt for Body
             </Button>
           </div>
         </div>
