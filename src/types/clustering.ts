@@ -29,6 +29,7 @@ export type ClusterItem = {
   category: string | null;
   status: 'Select for Blog Creation' | 'Reject for Blog Creation' | 'Keep for Future';
   priority: number;
+  isEditing?: boolean;
 };
 
 export type GroupingOption = 'clusterName' | 'category' | 'intentPattern' | 'coreTopic' | 'searchIntent';
@@ -37,6 +38,9 @@ export type ClusteringFilters = {
   searchIntent?: string;
   category?: string;
   keyword?: string;
+  competition?: string;
+  minDifficulty?: number;
+  maxDifficulty?: number;
 };
 
 // Title/Description types

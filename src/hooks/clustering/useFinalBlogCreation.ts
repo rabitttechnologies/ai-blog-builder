@@ -86,7 +86,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       toast({
         title: "Operation Taking Too Long",
         description: "The request is still processing but may take longer than expected.",
-        variant: "warning"
+        variant: "destructive" // Changed from "warning" to "destructive"
       });
     }, 300000); // 300 seconds
 
