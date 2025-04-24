@@ -66,6 +66,7 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
           onUpdateField={onUpdateFinalBlogField}
           onSubmit={onSaveBlog}
           isLoading={loading}
+          onSaveBlog={onSaveBlog}
         />
       )}
     </>
