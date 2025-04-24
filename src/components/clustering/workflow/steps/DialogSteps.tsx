@@ -18,7 +18,7 @@ interface DialogStepsProps {
   onBackToTitleStep: () => void;
   onBackToOutlineStep: () => void;
   onCreateFinalBlog: (formData?: any) => void;
-  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>; // Updated signature to match
+  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>; 
   onUpdateOutlineField: (field: string, value: string) => void;
   onUpdateFinalBlogField: (field: string, value: string) => void;
 }
@@ -64,8 +64,9 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
           data={finalBlogData}
           formData={finalBlogFormData}
           onUpdateField={onUpdateFinalBlogField}
-          onSubmit={onSaveBlog}
+          onSubmit={() => {}}
           isLoading={loading}
+          onSaveBlog={onSaveBlog}
         />
       )}
     </>
