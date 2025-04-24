@@ -70,17 +70,15 @@ const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
       if (result) {
         setWorkflowStep('finalBlog');
       }
-      return result;
     } catch (err) {
       console.error("Error creating final blog:", err);
       setDataError("Failed to create final blog. Please try again.");
-      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSaveBlog = async (formData: FinalBlogFormData): Promise<boolean> => {
+  const handleSaveBlog = async (formData: FinalBlogFormData) => {
     try {
       setDataError(null);
       setIsLoading(true);

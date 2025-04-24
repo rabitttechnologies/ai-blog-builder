@@ -15,7 +15,7 @@ interface DialogStepsWrapperProps {
   onBackToTitleStep: () => void;
   onBackToOutlineStep: () => void;
   onCreateFinalBlog: (formData?: any) => void;
-  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>;
+  onSaveBlog: (formData?: any) => void;
   onUpdateOutlineField: (field: string, value: string) => void;
   onUpdateFinalBlogField: (field: string, value: string) => void;
 }
