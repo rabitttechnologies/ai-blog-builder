@@ -1,21 +1,22 @@
 
 import React from 'react';
 import type { TitleDescriptionResponse } from '@/types/clustering';
+import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 
 interface WorkflowEventHandlerProps {
   clusteringData: any;
   titleDescriptionData: TitleDescriptionResponse | null;
   outlineFormData: any;
-  finalBlogFormData: any;
+  finalBlogFormData: FinalBlogFormData;
   onGenerateTitleDescription: () => Promise<any>;
   onGenerateOutlinePrompt: (selectedItem: any) => Promise<any>;
   onCreateFinalBlog: (formData: any) => Promise<any>;
-  onSaveBlog: (formData: any) => Promise<any>;
+  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>;
   setDataError: (error: string | null) => void;
   setIsLoading: (loading: boolean) => void;
   setWorkflowStep: (step: 'clustering' | 'titleDescription' | 'outlinePrompt' | 'finalBlog') => void;
   onClose: () => void;
-  children: React.ReactNode; // Add children to the props interface
+  children: React.ReactNode;
 }
 
 const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
@@ -77,7 +78,7 @@ const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
     }
   };
 
-  const handleSaveBlog = async (formData: any) => {
+  const handleSaveBlog = async (formData: FinalBlogFormData) => {
     try {
       setDataError(null);
       setIsLoading(true);
@@ -85,9 +86,11 @@ const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
       if (result) {
         onClose();
       }
+      return result;
     } catch (err) {
       console.error("Error saving blog:", err);
       setDataError("Failed to save blog. Please try again.");
+      return false;
     } finally {
       setIsLoading(false);
     }

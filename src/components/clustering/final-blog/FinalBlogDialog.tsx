@@ -9,7 +9,6 @@ import {
 import FinalBlogEditor from './FinalBlogEditor';
 import LoadingOverlay from '@/components/blog/LoadingOverlay';
 import BlogSubmissionDialog from '@/components/blog/dialogs/BlogSubmissionDialog';
-import { useBlogSubmission } from '@/hooks/blog/useBlogSubmission';
 import type { FinalBlogResponse, FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 
 interface FinalBlogDialogProps {
@@ -21,6 +20,7 @@ interface FinalBlogDialogProps {
   onUpdateField: (field: keyof FinalBlogFormData, value: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>;
 }
 
 const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
@@ -31,15 +31,11 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
   formData,
   onUpdateField,
   onSubmit,
-  isLoading
+  isLoading,
+  onSaveBlog
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-  const { isSubmitting, submitBlog, cancelSubmission } = useBlogSubmission({
-    onSuccess: () => {
-      setShowConfirm(false);
-      onSubmit();
-    }
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!data) return null;
   
@@ -48,13 +44,19 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
   };
 
   const handleConfirmSubmit = async () => {
-    await submitBlog(formData);
+    setIsSubmitting(true);
+    try {
+      const success = await onSaveBlog(formData);
+      if (success) {
+        setShowConfirm(false);
+        onSubmit();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
-    if (isSubmitting) {
-      cancelSubmission();
-    }
     setShowConfirm(false);
   };
   
