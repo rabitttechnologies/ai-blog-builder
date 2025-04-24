@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { OutlinePromptFormData } from '../clustering/useOutlinePrompt';
+import type { FinalBlogFormData } from '../clustering/useFinalBlogCreation';
 
 interface UseBlogSubmissionProps {
   onSuccess?: () => void;
@@ -26,14 +26,14 @@ export const useBlogSubmission = ({ onSuccess, onError }: UseBlogSubmissionProps
     }
   }, [abortController, toast]);
 
-  const submitBlog = useCallback(async (formData: OutlinePromptFormData) => {
+  const submitBlog = useCallback(async (formData: FinalBlogFormData) => {
     // Cancel any existing submission
     if (abortController) {
       cancelSubmission();
     }
 
     // Validate required fields
-    const requiredFields: (keyof OutlinePromptFormData)[] = ['title', 'alternateTitle', 'promptForBody'];
+    const requiredFields: (keyof FinalBlogFormData)[] = ['title', 'alternateTitle', 'finalArticle'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     
     if (missingFields.length > 0) {
@@ -60,7 +60,11 @@ export const useBlogSubmission = ({ onSuccess, onError }: UseBlogSubmissionProps
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          title: formData.title,
+          alternateTitle: formData.alternateTitle,
+          content: formData.finalArticle
+        }),
         signal: controller.signal
       });
 
