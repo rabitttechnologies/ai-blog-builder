@@ -6,6 +6,7 @@ import ErrorDisplay from './workflow/ErrorDisplay';
 import WorkflowSteps from './workflow/WorkflowSteps';
 import WorkflowLoadingOverlay from './workflow/WorkflowLoadingOverlay';
 import WorkflowEventHandler from './workflow/WorkflowEventHandler';
+import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 
 interface ClusteringWorkflowProps {
   initialData?: any;
@@ -149,11 +150,11 @@ const ClusteringWorkflow: React.FC<ClusteringWorkflowProps> = ({
           onBackToClusteringStep={handleBackToClusteringStep}
           onBackToTitleStep={handleBackToTitleStep}
           onBackToOutlineStep={handleBackToOutlineStep}
-          // Add the missing props required by WorkflowSteps
-          onGenerateTitles={() => {}} // These will be overridden by WorkflowEventHandler
+          // Initialize with placeholder functions that will be overridden by WorkflowEventHandler
+          onGenerateTitles={() => {}} 
           onGenerateOutlinePrompt={() => {}}
           onCreateFinalBlog={() => {}}
-          onSaveBlog={() => {}}
+          onSaveBlog={(formData: FinalBlogFormData) => Promise.resolve(false)} // Updated to return Promise<boolean>
         />
       </WorkflowEventHandler>
       

@@ -29,7 +29,7 @@ interface WorkflowStepsProps {
   onGenerateTitles: () => void;
   onGenerateOutlinePrompt: (selectedItem: any) => void;
   onCreateFinalBlog: (formData?: any) => void;
-  onSaveBlog: (formData?: any) => void;
+  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>; // Updated signature to match
   onUpdateOutlineField: (field: string, value: string) => void;
   onUpdateFinalBlogField: (field: string, value: string) => void;
   onBackToClusteringStep: () => void;
