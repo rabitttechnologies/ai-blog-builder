@@ -15,7 +15,7 @@ export async function handleSessionFound(session: Session): Promise<AuthUser | n
       .eq('id', supabaseUser.id)
       .single();
     
-    if (profileError && profileError.code !== 'PGRST116') {
+    if (profileError) {
       console.error("Error fetching user profile:", profileError);
       // Continue execution even if profile fetch fails
     }

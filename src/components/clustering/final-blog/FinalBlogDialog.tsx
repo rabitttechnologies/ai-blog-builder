@@ -49,8 +49,10 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
       const success = await onSaveBlog(formData);
       if (success) {
         setShowConfirm(false);
-        onSubmit(); // This now calls the wrapper function in DialogSteps
+        onSubmit(); // This calls the wrapper function in DialogSteps
       }
+    } catch (error) {
+      console.error("Error saving blog:", error);
     } finally {
       setIsSubmitting(false);
     }

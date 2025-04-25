@@ -86,7 +86,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       toast({
         title: "Operation Taking Too Long",
         description: "The request is still processing but may take longer than expected.",
-        variant: "destructive" // Changed from "warning" to "destructive"
+        variant: "destructive"
       });
     }, 300000); // 300 seconds
 
@@ -187,45 +187,64 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
     setError(null);
 
     try {
+      const blogId = `blog-${finalBlogData.BlogId}`;
+      console.log("Saving blog to Supabase with ID:", blogId);
+
+      // Check if the blog already exists
+      const { data: existingBlog, error: checkError } = await supabase
+        .from('blog_posts')
+        .select('id')
+        .eq('id', blogId)
+        .single();
+      
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error("Error checking for existing blog:", checkError);
+        throw new Error("Failed to check if blog already exists");
+      }
+
+      let operation;
       // Prepare blog data for saving
       const blogData = {
-        blog_id: finalBlogData.BlogId,
+        id: blogId,
         title: updatedFormData.title,
-        alternate_title: updatedFormData.alternateTitle,
-        primary_keyword: finalBlogData["original Keyword"],
-        keywords: finalBlogData.Keywords,
-        final_article: updatedFormData.finalArticle,
+        content: JSON.stringify({ content: updatedFormData.finalArticle }),
         meta_description: finalBlogData["Meta description"],
-        image_prompt: finalBlogData["Image Prompt"],
-        workflow_id: finalBlogData["Workflow Id"],
-        execution_id: finalBlogData["Execution Id"],
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        excerpt: finalBlogData["Meta description"]?.substring(0, 160),
+        status: 'draft',
+        slug: updatedFormData.title.toLowerCase()
+          .replace(/[^\w\s]/gi, '')
+          .replace(/\s+/g, '-'),
+        language_code: 'en',
+        author_id: user.id,
+        tags: finalBlogData.Keywords?.split(',').map(k => k.trim()) || [],
       };
 
-      console.log("Saving blog to Supabase:", JSON.stringify(blogData));
+      if (existingBlog) {
+        // Update existing blog
+        console.log("Updating existing blog:", blogId);
+        operation = supabase
+          .from('blog_posts')
+          .update({
+            ...blogData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', blogId);
+      } else {
+        // Insert new blog
+        console.log("Inserting new blog:", blogId);
+        operation = supabase
+          .from('blog_posts')
+          .insert({
+            ...blogData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+      }
 
-      // Insert into blog_posts table
-      const { error: insertError } = await supabase
-        .from('blog_posts')
-        .insert({
-          id: `blog-${finalBlogData.BlogId}`,
-          title: updatedFormData.title,
-          content: JSON.stringify({ content: updatedFormData.finalArticle }),
-          meta_description: finalBlogData["Meta description"],
-          excerpt: finalBlogData["Meta description"]?.substring(0, 160),
-          status: 'draft',
-          slug: updatedFormData.title.toLowerCase()
-            .replace(/[^\w\s]/gi, '')
-            .replace(/\s+/g, '-'),
-          language_code: 'en',
-          author_id: user.id,
-          tags: [finalBlogData.Keywords].flat().filter(Boolean),
-        });
-
-      if (insertError) {
-        throw insertError;
+      const { error: operationError } = await operation;
+      if (operationError) {
+        console.error("Blog save operation error:", operationError);
+        throw operationError;
       }
       
       // Show success toast
