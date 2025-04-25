@@ -18,7 +18,7 @@ interface DialogStepsProps {
   onBackToTitleStep: () => void;
   onBackToOutlineStep: () => void;
   onCreateFinalBlog: (formData?: any) => void;
-  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>; 
+  onSaveBlog: (formData: FinalBlogFormData) => Promise<boolean>;
   onUpdateOutlineField: (field: string, value: string) => void;
   onUpdateFinalBlogField: (field: string, value: string) => void;
 }
@@ -38,9 +38,6 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
   onUpdateOutlineField,
   onUpdateFinalBlogField
 }) => {
-  // Only render outline prompt if step is 'outlinePrompt'
-  // Only render final blog if step is 'finalBlog'
-  // Ignore other steps ('clustering', 'titleDescription')
   return (
     <>
       {step === 'outlinePrompt' && (
@@ -64,7 +61,7 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
           data={finalBlogData}
           formData={finalBlogFormData}
           onUpdateField={onUpdateFinalBlogField}
-          onSubmit={() => {}}
+          onSubmit={onSaveBlog}
           isLoading={loading}
           onSaveBlog={onSaveBlog}
         />
