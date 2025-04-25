@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { BlogPostStatus, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
 import type { OutlinePromptResponse, OutlinePromptFormData } from './useOutlinePrompt';
 
 export interface FinalBlogPayload {
@@ -202,49 +203,57 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         throw new Error("Failed to check if blog already exists");
       }
 
-      let operation;
-      // Prepare blog data for saving
-      const blogData = {
+      // Define the blog status using the correct type
+      const blogStatus: BlogPostStatus = 'draft';
+
+      // Prepare blog data for saving with proper JSON content typing
+      const blogData: BlogPostUpdate = {
         id: blogId,
         title: updatedFormData.title,
-        content: JSON.stringify({ content: updatedFormData.finalArticle }),
+        content: JSON.stringify({ content: updatedFormData.finalArticle }) as any,
         meta_description: finalBlogData["Meta description"],
         excerpt: finalBlogData["Meta description"]?.substring(0, 160),
-        status: 'draft',
+        status: blogStatus,
         slug: updatedFormData.title.toLowerCase()
           .replace(/[^\w\s]/gi, '')
           .replace(/\s+/g, '-'),
         language_code: 'en',
         author_id: user.id,
         tags: finalBlogData.Keywords?.split(',').map(k => k.trim()) || [],
+        updated_at: new Date().toISOString()
       };
 
       if (existingBlog) {
         // Update existing blog
         console.log("Updating existing blog:", blogId);
-        operation = supabase
+        const { error: operationError } = await supabase
           .from('blog_posts')
-          .update({
-            ...blogData,
-            updated_at: new Date().toISOString(),
-          })
+          .update(blogData)
           .eq('id', blogId);
+          
+        if (operationError) {
+          console.error("Blog update operation error:", operationError);
+          throw operationError;
+        }
       } else {
-        // Insert new blog
+        // Insert new blog with proper types
         console.log("Inserting new blog:", blogId);
-        operation = supabase
+        const newBlogData: BlogPostInsert = {
+          ...blogData,
+          id: blogId,
+          language_code: 'en',
+          is_original: true,
+          created_at: new Date().toISOString()
+        };
+        
+        const { error: operationError } = await supabase
           .from('blog_posts')
-          .insert({
-            ...blogData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-      }
-
-      const { error: operationError } = await operation;
-      if (operationError) {
-        console.error("Blog save operation error:", operationError);
-        throw operationError;
+          .insert(newBlogData);
+          
+        if (operationError) {
+          console.error("Blog insert operation error:", operationError);
+          throw operationError;
+        }
       }
       
       // Show success toast
