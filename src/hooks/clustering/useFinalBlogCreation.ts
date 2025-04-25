@@ -203,6 +203,11 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         throw new Error("Failed to check if blog already exists");
       }
 
+      // Generate a slug from the title
+      const slug = updatedFormData.title.toLowerCase()
+        .replace(/[^\w\s]/gi, '')
+        .replace(/\s+/g, '-');
+
       // Define the blog status using the correct type
       const blogStatus: BlogPostStatus = 'draft';
 
@@ -214,9 +219,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         meta_description: finalBlogData["Meta description"],
         excerpt: finalBlogData["Meta description"]?.substring(0, 160),
         status: blogStatus,
-        slug: updatedFormData.title.toLowerCase()
-          .replace(/[^\w\s]/gi, '')
-          .replace(/\s+/g, '-'),
+        slug: slug,
         language_code: 'en',
         author_id: user.id,
         tags: finalBlogData.Keywords?.split(',').map(k => k.trim()) || [],
@@ -241,6 +244,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         const newBlogData: BlogPostInsert = {
           ...blogData,
           id: blogId,
+          slug: slug, // Explicitly set slug here to satisfy the type requirements
           language_code: 'en',
           is_original: true,
           created_at: new Date().toISOString()
