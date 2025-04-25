@@ -61,7 +61,8 @@ const DialogSteps: React.FC<DialogStepsProps> = ({
           data={finalBlogData}
           formData={finalBlogFormData}
           onUpdateField={onUpdateFinalBlogField}
-          onSubmit={onSaveBlog}
+          // Create a wrapper function that calls onSaveBlog with the current formData
+          onSubmit={() => onSaveBlog(finalBlogFormData)}
           isLoading={loading}
           onSaveBlog={onSaveBlog}
         />

@@ -49,7 +49,7 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
       const success = await onSaveBlog(formData);
       if (success) {
         setShowConfirm(false);
-        onSubmit();
+        onSubmit(); // This now calls the wrapper function in DialogSteps
       }
     } finally {
       setIsSubmitting(false);
