@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -244,7 +243,8 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         const newBlogData: BlogPostInsert = {
           ...blogData,
           id: blogId,
-          slug: slug, // Explicitly set slug here to satisfy the type requirements
+          title: updatedFormData.title, // Explicitly set title to fix type error
+          slug: slug,
           language_code: 'en',
           is_original: true,
           created_at: new Date().toISOString()
