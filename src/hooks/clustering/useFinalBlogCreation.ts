@@ -92,10 +92,11 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
 
     try {
       // Prepare payload for final blog creation webhook
+      // Fix the issue by ensuring both Title and new_title are properly set
       const payload: FinalBlogPayload = {
         Blog_id: outlinePromptData["Blog id"],
-        new_title: updatedFormData.title,
-        Title: updatedFormData.alternateTitle,
+        new_title: updatedFormData.title || outlinePromptData.new_title || '', // Use form title as new_title
+        Title: updatedFormData.alternateTitle || outlinePromptData.Title || '', // Use alternate title as Title
         Keyword: outlinePromptData.Keyword,
         "Primary Keyword": outlinePromptData["Primary Keyword"],
         key_takeaways: outlinePromptData.key_takeaways,
@@ -141,8 +142,8 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       
       // Initialize form data with values from response
       setFormData({
-        title: responseData.new_title || '',
-        alternateTitle: responseData.Title || '',
+        title: responseData.new_title || responseData.Title || '', // Use either title field
+        alternateTitle: responseData.Title || '', // Use Title as alternateTitle
         finalArticle: responseData.final_article || ''
       });
       
