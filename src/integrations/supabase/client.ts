@@ -6,6 +6,46 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://kzxcyqadsxhfgdtmeocx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGN5cWFkc3hoZmdkdG1lb2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2NzU0NzQsImV4cCI6MjA1NzI1MTQ3NH0.pS4Dqq1moUaGDL8khYsSvXt6sAb6qKxPlLK6_NshU-4";
 
+// Safe storage functions
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      const value = document.cookie
+        .split('; ')
+        .find(row => row.startsWith(`${key}=`))
+        ?.split('=')[1];
+      try {
+        return value ? JSON.parse(decodeURIComponent(value)) : null;
+      } catch (error) {
+        console.error("Error parsing cookie:", error);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error accessing cookies:", error);
+      return null;
+    }
+  },
+  
+  setItem: (key: string, value: any): void => {
+    try {
+      // Set cookie to expire in 7 days, with HttpOnly, SameSite and Secure flags
+      const encodedValue = encodeURIComponent(JSON.stringify(value));
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `${key}=${encodedValue}; expires=${expires}; path=/; samesite=strict`;
+    } catch (error) {
+      console.error("Error setting cookie:", error);
+    }
+  },
+  
+  removeItem: (key: string): void => {
+    try {
+      document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; samesite=strict`;
+    } catch (error) {
+      console.error("Error removing cookie:", error);
+    }
+  }
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -13,28 +53,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    storage: {
-      getItem: (key) => {
-        const value = document.cookie
-          .split('; ')
-          .find(row => row.startsWith(`${key}=`))
-          ?.split('=')[1];
-        try {
-          return value ? JSON.parse(decodeURIComponent(value)) : null;
-        } catch (error) {
-          console.error("Error parsing cookie:", error);
-          return null;
-        }
-      },
-      setItem: (key, value) => {
-        // Set cookie to expire in 7 days, with HttpOnly, SameSite and Secure flags
-        const encodedValue = encodeURIComponent(JSON.stringify(value));
-        const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
-        document.cookie = `${key}=${encodedValue}; expires=${expires}; path=/; samesite=strict`;
-      },
-      removeItem: (key) => {
-        document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; samesite=strict`;
-      }
-    }
+    storage: safeStorage
   }
 });

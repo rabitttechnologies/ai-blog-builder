@@ -1,7 +1,27 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getLanguageFromPath, createLocalizedUrl, updateLanguageMeta } from '@/utils/languageUtils';
 import { isRTLLanguage, getTextDirection } from '@/utils/rtlUtils';
+
+// Safe storage functions to handle localStorage access issues
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Error setting localStorage:', error);
+    }
+  }
+};
 
 // Update SUPPORTED_LANGUAGES with all new languages
 export const SUPPORTED_LANGUAGES = [
@@ -59,20 +79,25 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     const pathLanguage = getLanguageFromPath(location.pathname);
     if (pathLanguage) return pathLanguage;
     
-    // Second priority: check localStorage
-    const savedLanguage = localStorage.getItem('preferredLanguage');
+    // Second priority: check localStorage with safe access
+    const savedLanguage = safeStorage.getItem('preferredLanguage');
     if (savedLanguage && SUPPORTED_LANGUAGES.some(lang => lang.code === savedLanguage)) {
       return savedLanguage;
     }
     
     // Third priority: check browser language
-    const browserLang = navigator.language.split('-')[0];
-    return SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) ? browserLang : 'en';
+    try {
+      const browserLang = navigator.language.split('-')[0];
+      return SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) ? browserLang : 'en';
+    } catch (error) {
+      console.error('Error accessing navigator.language:', error);
+      return 'en'; // Default to English if all else fails
+    }
   });
 
   // Update localStorage when language changes
   useEffect(() => {
-    localStorage.setItem('preferredLanguage', currentLanguage);
+    safeStorage.setItem('preferredLanguage', currentLanguage);
     updateLanguageMeta(currentLanguage);
   }, [currentLanguage]);
 
@@ -135,36 +160,45 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   // Detect and set language based on browser settings
   const detectLanguage = useCallback(() => {
-    const browserLang = navigator.language.split('-')[0];
-    const detectedLang = SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) 
-      ? browserLang 
-      : 'en';
-    
-    if (detectedLang !== currentLanguage) {
-      setLanguage(detectedLang);
+    try {
+      const browserLang = navigator.language.split('-')[0];
+      const detectedLang = SUPPORTED_LANGUAGES.some(lang => lang.code === browserLang) 
+        ? browserLang 
+        : 'en';
+      
+      if (detectedLang !== currentLanguage) {
+        setLanguage(detectedLang);
+      }
+    } catch (error) {
+      console.error('Error detecting browser language:', error);
+      // If we can't access navigator.language, don't change anything
     }
   }, [currentLanguage, setLanguage]);
 
   // Update meta tags and document direction
   useEffect(() => {
-    document.documentElement.lang = currentLanguage;
-    document.documentElement.dir = getTextDirection(currentLanguage);
-    
-    let metaLanguage = document.querySelector('meta[name="language"]');
-    if (!metaLanguage) {
-      metaLanguage = document.createElement('meta');
-      metaLanguage.setAttribute('name', 'language');
-      document.head.appendChild(metaLanguage);
+    try {
+      document.documentElement.lang = currentLanguage;
+      document.documentElement.dir = getTextDirection(currentLanguage);
+      
+      let metaLanguage = document.querySelector('meta[name="language"]');
+      if (!metaLanguage) {
+        metaLanguage = document.createElement('meta');
+        metaLanguage.setAttribute('name', 'language');
+        document.head.appendChild(metaLanguage);
+      }
+      metaLanguage.setAttribute('content', currentLanguage);
+      
+      let metaContentLanguage = document.querySelector('meta[http-equiv="content-language"]');
+      if (!metaContentLanguage) {
+        metaContentLanguage = document.createElement('meta');
+        metaContentLanguage.setAttribute('http-equiv', 'content-language');
+        document.head.appendChild(metaContentLanguage);
+      }
+      metaContentLanguage.setAttribute('content', currentLanguage);
+    } catch (error) {
+      console.error('Error updating DOM with language settings:', error);
     }
-    metaLanguage.setAttribute('content', currentLanguage);
-    
-    let metaContentLanguage = document.querySelector('meta[http-equiv="content-language"]');
-    if (!metaContentLanguage) {
-      metaContentLanguage = document.createElement('meta');
-      metaContentLanguage.setAttribute('http-equiv', 'content-language');
-      document.head.appendChild(metaContentLanguage);
-    }
-    metaContentLanguage.setAttribute('content', currentLanguage);
   }, [currentLanguage]);
 
   return (
