@@ -33,7 +33,9 @@ const Hero: React.FC = () => {
         </div>
 
         {/* This is the LCP element - prioritize its rendering */}
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]">
+{/*         <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in [animation-delay:150ms]"> */}
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+          
           Use AI Blogger to Empower Your Blogging with AI & Search Data to Rank #1
         </h1>
 
