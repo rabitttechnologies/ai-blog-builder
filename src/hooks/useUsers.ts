@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
@@ -23,11 +22,12 @@ export const useUsers = () => {
       try {
         setIsLoading(true);
         
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, name, created_at');
+        // Get users through the Edge Function
+        const { data: { users }, error: usersError } = await supabase.functions.invoke('admin-operations', {
+          body: { operation: 'listUsers' }
+        });
         
-        if (profilesError) throw profilesError;
+        if (usersError) throw usersError;
         
         const { data: adminRolesData, error: rolesError } = await supabase
           .rpc('get_all_admin_users');
@@ -36,24 +36,19 @@ export const useUsers = () => {
         
         const adminUserIds = new Set(adminRolesData.map((r: {user_id: string}) => r.user_id));
         
-        const userEmails = await Promise.all(
-          profiles.map(async (profile) => {
-            const { data: authUser } = await supabase.auth.admin.getUserById(profile.id);
-            return {
-              id: profile.id,
-              email: authUser?.user?.email || 'Unknown email',
-              created_at: profile.created_at,
-              isAdmin: adminUserIds.has(profile.id)
-            };
-          })
-        );
+        const userEmails = users.map((authUser: any) => ({
+          id: authUser.id,
+          email: authUser.email || 'Unknown email',
+          created_at: authUser.created_at,
+          isAdmin: adminUserIds.has(authUser.id)
+        }));
         
         setUsers(userEmails);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching users:", error);
         toast({
           title: "Error",
-          description: "Failed to load users. You may not have admin privileges.",
+          description: error.message || "Failed to load users. You may not have admin privileges.",
           variant: "destructive",
         });
       } finally {
