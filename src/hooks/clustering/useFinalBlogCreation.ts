@@ -1,8 +1,8 @@
-
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query'; // Add this import
 import type { BlogPostStatus, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
 import type { OutlinePromptResponse, OutlinePromptFormData } from './useOutlinePrompt';
 
@@ -43,6 +43,7 @@ export interface FinalBlogFormData {
 export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | null) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Get the queryClient instance directly
   const [loading, setLoading] = useState<boolean>(false);
   const [timeoutReached, setTimeoutReached] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -225,7 +226,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       const blogData: BlogPostUpdate = {
         id: blogId,
         title: updatedFormData.title,
-        content: JSON.stringify({ content: updatedFormData.finalArticle }) as any,
+        content: updatedFormData.finalArticle, // Store as plain text for easier rendering
         meta_description: finalBlogData["Meta description"],
         excerpt: finalBlogData["Meta description"]?.substring(0, 160),
         status: blogStatus, // Published status so it shows on dashboard
@@ -279,14 +280,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       });
       
       // Invalidate the blog posts query cache to refresh dashboard
-      try {
-        const { queryClient } = await import('@tanstack/react-query');
-        if (queryClient) {
-          queryClient.invalidateQueries({queryKey: ['blog_posts']});
-        }
-      } catch (error) {
-        console.log("Could not invalidate query cache:", error);
-      }
+      queryClient.invalidateQueries({queryKey: ['blog_posts']});
       
       return true;
     } catch (error: any) {
@@ -303,7 +297,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
     } finally {
       setLoading(false);
     }
-  }, [finalBlogData, user, toast]);
+  }, [finalBlogData, user, toast, queryClient]);
 
   return {
     loading,

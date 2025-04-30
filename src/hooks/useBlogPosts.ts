@@ -17,6 +17,8 @@ export const useBlogPosts = () => {
         return blogPosts;
       }
       
+      console.log(`Fetching blogs for user ID: ${user.id}, language: ${language}`);
+      
       // Fetch all blogs - both drafts and published - that belong to the current user
       const { data, error } = await supabase
         .from('blog_posts')
@@ -28,7 +30,12 @@ export const useBlogPosts = () => {
         .eq('author_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching blog posts:", error);
+        throw error;
+      }
+      
+      console.log(`Received ${data?.length || 0} blogs from Supabase:`, data);
       
       if (data && data.length > 0) {
         return data.map(post => {
@@ -56,6 +63,7 @@ export const useBlogPosts = () => {
         });
       }
       
+      console.log("No blogs found in Supabase, returning default blog posts");
       return blogPosts;
     } catch (error) {
       console.error('Error fetching blog posts:', error);
@@ -63,9 +71,10 @@ export const useBlogPosts = () => {
     }
   };
 
-  const { data: posts, isLoading, error } = useQuery({
+  const { data: posts, isLoading, error, refetch } = useQuery({
     queryKey: ['blog_posts', currentLanguage, user?.id],
     queryFn: () => getBlogPosts(currentLanguage),
+    enabled: !!user // Only run the query when we have a user
   });
 
   const createPost = useMutation({
@@ -105,6 +114,7 @@ export const useBlogPosts = () => {
     posts,
     isLoading,
     error,
+    refetch,
     createPost,
     updatePost,
   };

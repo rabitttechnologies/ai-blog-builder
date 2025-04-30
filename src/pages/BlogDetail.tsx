@@ -38,6 +38,7 @@ const BlogDetail = () => {
           setError("Failed to load blog. It may have been deleted or you don't have permission to view it.");
         } else if (data) {
           setBlog(data as BlogPost);
+          console.log("Fetched blog data:", data);
         }
       } catch (err) {
         console.error("Exception fetching blog:", err);
@@ -62,21 +63,25 @@ const BlogDetail = () => {
     });
   };
 
-  // Parse content from JSON if needed
+  // Parse content from string or JSON if needed
   const parseContent = (content: any): string => {
     if (!content) return '';
     
     try {
+      // If content is already a string, return it directly
       if (typeof content === 'string') {
         return content;
       }
       
+      // If content is stored as JSON
       if (typeof content === 'object') {
-        // If content is stored as JSON with a content property
-        return content.content || JSON.stringify(content);
+        if (content.content) {
+          return typeof content.content === 'string' ? content.content : JSON.stringify(content.content);
+        }
+        return JSON.stringify(content);
       }
       
-      return JSON.stringify(content);
+      return String(content);
     } catch (e) {
       console.error("Error parsing content:", e);
       return "Content could not be displayed";
@@ -158,6 +163,9 @@ const BlogDetail = () => {
                     .replace(/\n/g, '<br />')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/#{3}(.*?)\n/g, '<h3>$1</h3>')
+                    .replace(/#{2}(.*?)\n/g, '<h2>$1</h2>')
+                    .replace(/#{1}(.*?)\n/g, '<h1>$1</h1>')
                 }} />
               )}
             </div>
