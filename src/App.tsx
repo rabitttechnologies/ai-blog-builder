@@ -1,6 +1,7 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { ErrorBoundary } from "react-error-boundary";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
