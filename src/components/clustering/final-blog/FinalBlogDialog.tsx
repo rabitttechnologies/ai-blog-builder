@@ -37,12 +37,23 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize form fields when data changes
+  // Initialize form fields when data changes - Fixed to properly handle different title scenarios
   useEffect(() => {
     if (data) {
-      onUpdateField('title', data.Title || data.new_title || '');
-      onUpdateField('alternateTitle', data.new_title || data.Title || '');
+      // Ensure we properly set the title values, handling all possible cases
+      const title = data.new_title || data.Title || '';
+      const alternateTitle = data.Title || data.new_title || '';
+      
+      onUpdateField('title', title);
+      onUpdateField('alternateTitle', alternateTitle);
       onUpdateField('finalArticle', data.final_article || '');
+      
+      console.log("FinalBlogDialog - Data received:", {
+        dataTitle: data.Title,
+        dataNewTitle: data.new_title,
+        setTitle: title,
+        setAltTitle: alternateTitle
+      });
     }
   }, [data, onUpdateField]);
 

@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -140,10 +141,19 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
       // Update state with the response data
       setFinalBlogData(responseData);
       
-      // Initialize form data with values from response
+      // Initialize form data with values from response - Improved to handle more scenarios
+      const title = responseData.new_title || responseData.Title || '';
+      const alternateTitle = responseData.Title || responseData.new_title || '';
+      
+      console.log("Setting form data from response:", {
+        title,
+        alternateTitle,
+        finalArticle: responseData.final_article || ''
+      });
+      
       setFormData({
-        title: responseData.new_title || responseData.Title || '', // Use either title field
-        alternateTitle: responseData.Title || '', // Use Title as alternateTitle
+        title: title,
+        alternateTitle: alternateTitle,
         finalArticle: responseData.final_article || ''
       });
       

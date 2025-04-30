@@ -25,6 +25,20 @@ const FinalBlogEditor: React.FC<FinalBlogEditorProps> = ({
   onSubmit,
   isLoading
 }) => {
+  // Log the data for debugging
+  React.useEffect(() => {
+    console.log("FinalBlogEditor - Props received:", { 
+      data, 
+      formData,
+      titles: {
+        dataTitle: data.Title,
+        dataNewTitle: data.new_title,
+        formTitle: formData.title,
+        formAltTitle: formData.alternateTitle
+      }
+    });
+  }, [data, formData]);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
@@ -86,6 +100,7 @@ const FinalBlogEditor: React.FC<FinalBlogEditorProps> = ({
               value={formData.title}
               onChange={(e) => onUpdateField('title', e.target.value)}
               className="w-full"
+              placeholder="Enter blog title"
             />
           </div>
           
@@ -98,6 +113,7 @@ const FinalBlogEditor: React.FC<FinalBlogEditorProps> = ({
               value={formData.alternateTitle}
               onChange={(e) => onUpdateField('alternateTitle', e.target.value)}
               className="w-full"
+              placeholder="Enter alternate title"
             />
           </div>
         </div>
@@ -113,6 +129,7 @@ const FinalBlogEditor: React.FC<FinalBlogEditorProps> = ({
           value={formData.finalArticle}
           onChange={(e) => onUpdateField('finalArticle', e.target.value)}
           className="min-h-[500px] w-full"
+          placeholder="Article content will appear here"
         />
       </div>
 
