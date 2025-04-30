@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent,
@@ -36,6 +36,15 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Initialize form fields when data changes
+  useEffect(() => {
+    if (data) {
+      onUpdateField('title', data.Title || data.new_title || '');
+      onUpdateField('alternateTitle', data.new_title || data.Title || '');
+      onUpdateField('finalArticle', data.final_article || '');
+    }
+  }, [data, onUpdateField]);
 
   if (!data) return null;
   

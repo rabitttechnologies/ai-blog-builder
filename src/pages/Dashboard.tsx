@@ -1,17 +1,23 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
-import { Clock, AlertTriangle, PlusCircle } from "lucide-react";
+import { Clock, AlertTriangle, PlusCircle, FileText } from "lucide-react";
 import CreateBlogDialog from "@/components/blog/CreateBlogDialog";
+import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { posts, isLoading } = useBlogPosts();
+  
+  // Show only 3 most recent blogs on dashboard
+  const recentBlogs = posts?.slice(0, 3) || [];
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -85,20 +91,62 @@ const Dashboard = () => {
         )}
         
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          
-          {/* Empty state for new users */}
-          <div className="glass p-8 rounded-xl text-center">
-            <img 
-              src="/placeholder.svg" 
-              alt="No activity" 
-              className="w-32 h-32 mx-auto mb-4 opacity-50" 
-            />
-            <h3 className="text-lg font-medium mb-2">No recent activity</h3>
-            <p className="text-foreground/70 mb-6 max-w-md mx-auto">
-              Your recent account activity will appear here.
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Recent Blogs</h2>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/blogs")}
+              className="text-sm"
+            >
+              View All
+            </Button>
           </div>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : recentBlogs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {recentBlogs.map((blog) => (
+                <Card key={blog.id} className="flex flex-col h-full">
+                  <CardContent className="pt-6 flex-grow">
+                    <h3 className="text-lg font-medium line-clamp-2 mb-2">{blog.title}</h3>
+                    <p className="text-sm text-foreground/70 line-clamp-2">
+                      {blog.excerpt || blog.meta_description || "No description available"}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="pt-2 pb-3 border-t">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => navigate(`/blog/${blog.id}`)}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      View Blog
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="glass p-8 rounded-xl text-center">
+              <img 
+                src="/placeholder.svg" 
+                alt="No activity" 
+                className="w-32 h-32 mx-auto mb-4 opacity-50" 
+              />
+              <h3 className="text-lg font-medium mb-2">No blogs created yet</h3>
+              <p className="text-foreground/70 mb-6 max-w-md mx-auto">
+                Create your first blog to see it here.
+              </p>
+              <Button onClick={() => setIsDialogOpen(true)}>
+                Create Blog
+              </Button>
+            </div>
+          )}
         </div>
         
         {/* Dialog for creating a new blog */}
