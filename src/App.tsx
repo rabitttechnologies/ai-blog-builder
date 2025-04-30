@@ -11,24 +11,30 @@ import Dashboard from "@/pages/Dashboard";
 import BlogCreation from "@/pages/BlogCreation";
 import BlogDetail from "@/pages/BlogDetail";
 import { AuthProvider } from "@/context/auth/AuthProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
-      <AuthProvider>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/blogs" element={<BlogCreation />} />
-            <Route path="/blog/:id" element={<BlogDetail />} />
-          </Routes>
-        </ErrorBoundary>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/blogs" element={<BlogCreation />} />
+              <Route path="/blog/:id" element={<BlogDetail />} />
+            </Routes>
+          </ErrorBoundary>
+        </AuthProvider>
+      </QueryClientProvider>
     </div>
   );
 }
