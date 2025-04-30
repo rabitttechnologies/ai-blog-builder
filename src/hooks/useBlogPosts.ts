@@ -1,15 +1,23 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { BlogPost, BlogPostInsert, BlogPostUpdate, BlogTranslation } from '@/types/blog';
 import { useLanguage } from '@/context/language/LanguageContext';
 import { blogPosts } from '@/data/blogPosts';
+import { useAuth } from '@/context/auth';
 
 export const useBlogPosts = () => {
   const queryClient = useQueryClient();
   const { currentLanguage } = useLanguage();
+  const { user } = useAuth();
 
   const getBlogPosts = async (language: string): Promise<BlogPost[]> => {
     try {
+      if (!user) {
+        return blogPosts;
+      }
+      
+      // Fetch all blogs - both drafts and published - that belong to the current user
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
@@ -17,7 +25,7 @@ export const useBlogPosts = () => {
           translations:blog_posts!original_id(*)
         `)
         .eq('language_code', language)
-        .eq('status', 'published')
+        .eq('author_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -56,7 +64,7 @@ export const useBlogPosts = () => {
   };
 
   const { data: posts, isLoading, error } = useQuery({
-    queryKey: ['blog_posts', currentLanguage],
+    queryKey: ['blog_posts', currentLanguage, user?.id],
     queryFn: () => getBlogPosts(currentLanguage),
   });
 

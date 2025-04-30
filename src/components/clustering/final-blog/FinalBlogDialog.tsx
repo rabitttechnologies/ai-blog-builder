@@ -10,6 +10,8 @@ import FinalBlogEditor from './FinalBlogEditor';
 import LoadingOverlay from '@/components/blog/LoadingOverlay';
 import BlogSubmissionDialog from '@/components/blog/dialogs/BlogSubmissionDialog';
 import type { FinalBlogResponse, FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface FinalBlogDialogProps {
   isOpen: boolean;
@@ -36,6 +38,8 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Initialize form fields when data changes - Fixed to properly handle different title scenarios
   useEffect(() => {
@@ -69,10 +73,24 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
       const success = await onSaveBlog(formData);
       if (success) {
         setShowConfirm(false);
+        toast({
+          title: "Blog Saved Successfully",
+          description: "Your blog has been saved and will appear on your dashboard.",
+        });
         onSubmit(); // This calls the wrapper function in DialogSteps
+        
+        // Redirect to dashboard after a short delay to show the success message
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
       }
     } catch (error) {
       console.error("Error saving blog:", error);
+      toast({
+        title: "Error Saving Blog",
+        description: "There was a problem saving your blog. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -9,12 +9,19 @@ import { Clock, AlertTriangle, PlusCircle, FileText } from "lucide-react";
 import CreateBlogDialog from "@/components/blog/CreateBlogDialog";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { posts, isLoading } = useBlogPosts();
+  const queryClient = useQueryClient();
+  
+  // Force refresh of blog posts when component mounts
+  useEffect(() => {
+    queryClient.invalidateQueries({queryKey: ['blog_posts']});
+  }, [queryClient]);
   
   // Show only 3 most recent blogs on dashboard
   const recentBlogs = posts?.slice(0, 3) || [];

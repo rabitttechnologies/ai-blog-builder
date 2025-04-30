@@ -9,12 +9,19 @@ import { PlusCircle, FileText, ArrowUpRight } from "lucide-react";
 import CreateBlogDialog from "@/components/blog/CreateBlogDialog";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BlogCreation = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { posts, isLoading } = useBlogPosts();
+  const queryClient = useQueryClient();
+  
+  // Force refresh of blog posts when component mounts
+  useEffect(() => {
+    queryClient.invalidateQueries({queryKey: ['blog_posts']});
+  }, [queryClient]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;

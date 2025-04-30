@@ -219,7 +219,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         .replace(/\s+/g, '-');
 
       // Define the blog status using the correct type
-      const blogStatus: BlogPostStatus = 'draft';
+      const blogStatus: BlogPostStatus = 'published'; // Changed from 'draft' to 'published' to show on dashboard
 
       // Prepare blog data for saving with proper JSON content typing
       const blogData: BlogPostUpdate = {
@@ -228,12 +228,13 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         content: JSON.stringify({ content: updatedFormData.finalArticle }) as any,
         meta_description: finalBlogData["Meta description"],
         excerpt: finalBlogData["Meta description"]?.substring(0, 160),
-        status: blogStatus,
+        status: blogStatus, // Published status so it shows on dashboard
         slug: slug,
         language_code: 'en',
         author_id: user.id,
         tags: finalBlogData.Keywords?.split(',').map(k => k.trim()) || [],
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        published_at: new Date().toISOString() // Add published date for published blogs
       };
 
       if (existingBlog) {
@@ -276,6 +277,16 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         title: "Blog Saved",
         description: "Your blog has been saved successfully.",
       });
+      
+      // Invalidate the blog posts query cache to refresh dashboard
+      try {
+        const { queryClient } = await import('@tanstack/react-query');
+        if (queryClient) {
+          queryClient.invalidateQueries({queryKey: ['blog_posts']});
+        }
+      } catch (error) {
+        console.log("Could not invalidate query cache:", error);
+      }
       
       return true;
     } catch (error: any) {
