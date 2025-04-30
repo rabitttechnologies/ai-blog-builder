@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { TitleDescriptionResponse } from '@/types/clustering';
 import type { FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
@@ -78,11 +77,14 @@ const WorkflowEventHandler: React.FC<WorkflowEventHandlerProps> = ({
     }
   };
 
+  // Enhanced logging for the save blog handler
   const handleSaveBlog = async (formData: FinalBlogFormData) => {
     try {
+      console.log("WorkflowEventHandler: handleSaveBlog called with formData", formData);
       setDataError(null);
       setIsLoading(true);
       const result = await onSaveBlog(formData);
+      console.log("WorkflowEventHandler: onSaveBlog result:", result);
       if (result) {
         onClose();
       }

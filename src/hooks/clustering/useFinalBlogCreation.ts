@@ -1,8 +1,9 @@
+
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query'; // Add this import
+import { useQueryClient } from '@tanstack/react-query'; 
 import type { BlogPostStatus, BlogPostInsert, BlogPostUpdate } from '@/types/blog';
 import type { OutlinePromptResponse, OutlinePromptFormData } from './useOutlinePrompt';
 
@@ -43,7 +44,7 @@ export interface FinalBlogFormData {
 export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | null) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient(); // Get the queryClient instance directly
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
   const [timeoutReached, setTimeoutReached] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -182,16 +183,25 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
     }
   }, [outlinePromptData, user, toast, getSessionId]);
 
-  // Save blog to Supabase
+  // Save blog to Supabase - Enhanced with better logging and error handling
   const saveBlogToSupabase = useCallback(async (
     updatedFormData: FinalBlogFormData
   ) => {
+    console.log("saveBlogToSupabase called with data:", updatedFormData);
+    
     if (!finalBlogData || !user?.id) {
+      const errorMessage = !finalBlogData 
+        ? "Missing blog data" 
+        : "User authentication required";
+      
+      console.error(`Save blog error: ${errorMessage}`);
+      
       toast({
         title: "Missing Data",
-        description: "Blog data or user information is missing.",
+        description: `${errorMessage}. Please try again.`,
         variant: "destructive"
       });
+      
       return false;
     }
 
@@ -220,23 +230,25 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         .replace(/\s+/g, '-');
 
       // Define the blog status using the correct type
-      const blogStatus: BlogPostStatus = 'published'; // Changed from 'draft' to 'published' to show on dashboard
+      const blogStatus: BlogPostStatus = 'published';
 
-      // Prepare blog data for saving with proper JSON content typing
+      // Prepare blog data for saving
       const blogData: BlogPostUpdate = {
         id: blogId,
         title: updatedFormData.title,
-        content: updatedFormData.finalArticle, // Store as plain text for easier rendering
+        content: updatedFormData.finalArticle,
         meta_description: finalBlogData["Meta description"],
         excerpt: finalBlogData["Meta description"]?.substring(0, 160),
-        status: blogStatus, // Published status so it shows on dashboard
+        status: blogStatus,
         slug: slug,
         language_code: 'en',
         author_id: user.id,
         tags: finalBlogData.Keywords?.split(',').map(k => k.trim()) || [],
         updated_at: new Date().toISOString(),
-        published_at: new Date().toISOString() // Add published date for published blogs
+        published_at: new Date().toISOString()
       };
+
+      console.log("Blog data prepared for save:", blogData);
 
       if (existingBlog) {
         // Update existing blog
@@ -256,7 +268,7 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
         const newBlogData: BlogPostInsert = {
           ...blogData,
           id: blogId,
-          title: updatedFormData.title, // Explicitly set title to fix type error
+          title: updatedFormData.title,
           slug: slug,
           language_code: 'en',
           is_original: true,
@@ -272,6 +284,8 @@ export const useFinalBlogCreation = (outlinePromptData: OutlinePromptResponse | 
           throw operationError;
         }
       }
+      
+      console.log("Blog saved successfully!");
       
       // Show success toast
       toast({

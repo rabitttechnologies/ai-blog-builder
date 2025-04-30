@@ -41,7 +41,7 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Initialize form fields when data changes - Fixed to properly handle different title scenarios
+  // Initialize form fields when data changes
   useEffect(() => {
     if (data) {
       // Ensure we properly set the title values, handling all possible cases
@@ -67,22 +67,30 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
     setShowConfirm(true);
   };
 
+  // Updated to ensure proper save process
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
+    console.log("Starting blog save process...");
+    
     try {
+      // This is the critical part - explicitly call onSaveBlog with current formData
       const success = await onSaveBlog(formData);
+      console.log("Blog save result:", success);
+      
       if (success) {
         setShowConfirm(false);
         toast({
           title: "Blog Saved Successfully",
           description: "Your blog has been saved and will appear on your dashboard.",
         });
-        onSubmit(); // This calls the wrapper function in DialogSteps
+        onSubmit(); // Call the wrapper function in DialogSteps
         
         // Redirect to dashboard after a short delay to show the success message
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
+      } else {
+        throw new Error("Failed to save blog");
       }
     } catch (error) {
       console.error("Error saving blog:", error);

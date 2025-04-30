@@ -42,7 +42,10 @@ const BlogSubmissionDialog: React.FC<BlogSubmissionDialogProps> = ({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={() => {
+              console.log("Create Blog button clicked - calling onConfirm");
+              onConfirm();
+            }}
             disabled={isSubmitting}
             className="relative"
           >
