@@ -13,6 +13,7 @@ import { useArticleWriter, ContentType } from '@/context/articleWriter/ArticleWr
 import { useKeywordResearch } from '@/hooks/useKeywordResearch';
 import { AlertCircle, Loader } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 // Content type options
 const contentTypeOptions: ContentType[] = [
@@ -59,7 +60,7 @@ const KeywordEntryStep = () => {
     setCurrentStep,
   } = useArticleWriter();
   
-  const { isLoading, timeoutReached, submitKeywordResearch } = useKeywordResearch({
+  const { isLoading, timeoutReached, progress, submitKeywordResearch } = useKeywordResearch({
     userId: user?.id || '',
     sessionId,
     workflowId
@@ -84,8 +85,14 @@ const KeywordEntryStep = () => {
     
     setValidationError(null);
     
-    // Submit the form data to API
-    const response = await submitKeywordResearch(keywordForm);
+    // Submit the form data to API with custom timeout based on keyword complexity
+    // Longer keywords might need more time
+    const timeoutDuration = keywordForm.keyword.length > 30 ? 180000 : 120000; // 3 min for complex, 2 min for simple
+    
+    const response = await submitKeywordResearch(keywordForm, {
+      timeoutDuration,
+      retryAttempts: 1 // Add one retry attempt for network issues
+    });
     
     if (response) {
       setKeywordResponse(response);
@@ -97,6 +104,14 @@ const KeywordEntryStep = () => {
   
   const handleBack = () => {
     navigate('/article-writer');
+  };
+  
+  // Determine what message to show during loading based on progress
+  const getLoadingMessage = () => {
+    if (progress < 25) return "Initializing keyword research...";
+    if (progress < 50) return "Analyzing keyword data...";
+    if (progress < 75) return "Gathering related keywords...";
+    return "Finalizing results...";
   };
   
   return (
@@ -129,6 +144,7 @@ const KeywordEntryStep = () => {
                 value={keywordForm.keyword}
                 onChange={(e) => updateKeywordForm({ keyword: e.target.value })}
                 className="h-12"
+                disabled={isLoading}
               />
               <p className="text-sm text-gray-500">
                 This will be the primary focus of your article.
@@ -141,6 +157,7 @@ const KeywordEntryStep = () => {
                 <Select 
                   value={keywordForm.country}
                   onValueChange={(value) => updateKeywordForm({ country: value })}
+                  disabled={isLoading}
                 >
                   <SelectTrigger id="country" className="h-12">
                     <SelectValue placeholder="Select country" />
@@ -163,6 +180,7 @@ const KeywordEntryStep = () => {
                 <Select 
                   value={keywordForm.language}
                   onValueChange={(value) => updateKeywordForm({ language: value })}
+                  disabled={isLoading}
                 >
                   <SelectTrigger id="language" className="h-12">
                     <SelectValue placeholder="Select language" />
@@ -195,6 +213,7 @@ const KeywordEntryStep = () => {
                       setSelectedContentType(type);
                       updateKeywordForm({ contentType: type });
                     }}
+                    disabled={isLoading}
                   >
                     {type}
                   </button>
@@ -204,6 +223,16 @@ const KeywordEntryStep = () => {
                 Select the type of content you want to create.
               </p>
             </div>
+            
+            {isLoading && (
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium">{getLoadingMessage()}</span>
+                  <span className="text-sm font-medium">{progress}%</span>
+                </div>
+                <Progress value={progress} className="w-full h-2" />
+              </div>
+            )}
             
             <div className="flex justify-between pt-4">
               <Button
@@ -217,7 +246,6 @@ const KeywordEntryStep = () => {
               <Button
                 type="submit"
                 disabled={isLoading || !keywordForm.keyword.trim()}
-                isLoading={isLoading}
               >
                 {isLoading ? 'Researching...' : 'Continue'}
               </Button>
