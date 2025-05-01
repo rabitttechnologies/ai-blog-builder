@@ -22,7 +22,7 @@ const mockOutline: ArticleOutline = {
   sections: [
     {
       heading: 'What is Sustainable Gardening?',
-      content: 'Sustainable gardening is an approach that minimizes environmental impact while maximizing the garden's benefits. It involves working with nature rather than against it, conserving resources, and creating habitats for wildlife.'
+      content: "Sustainable gardening is an approach that minimizes environmental impact while maximizing the garden's benefits. It involves working with nature rather than against it, conserving resources, and creating habitats for wildlife."
     },
     {
       heading: 'Water Conservation Techniques',
