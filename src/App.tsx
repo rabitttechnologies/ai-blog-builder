@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/auth";
 import { LanguageProvider, useLanguage, SUPPORTED_LANGUAGES } from "./context/language/LanguageContext";
+import { ArticleWriterProvider } from "./context/articleWriter/ArticleWriterContext";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { Helmet } from "react-helmet";
 import { getLanguageFromPath } from "./utils/languageUtils";
@@ -39,6 +41,14 @@ const API = lazy(() => import('./pages/API'));
 const Support = lazy(() => import('./pages/Support'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Careers = lazy(() => import('./pages/Careers'));
+
+// Article Writer pages
+const ArticleWriterOverview = lazy(() => import('./pages/ArticleWriter/ArticleWriterOverview'));
+const KeywordEntryStep = lazy(() => import('./pages/ArticleWriter/KeywordEntryStep'));
+const SelectKeywordsStep = lazy(() => import('./pages/ArticleWriter/SelectKeywordsStep'));
+const TitleDescriptionStep = lazy(() => import('./pages/ArticleWriter/TitleDescriptionStep'));
+const OutlineStep = lazy(() => import('./pages/ArticleWriter/OutlineStep'));
+const GeneratedArticleStep = lazy(() => import('./pages/ArticleWriter/GeneratedArticleStep'));
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -126,6 +136,14 @@ const AppRoutes = () => {
         <Route path="/enterprise" element={<Enterprise />} />
         <Route path="/careers" element={<Careers />} />
         
+        {/* Article Writer Routes */}
+        <Route path="/article-writer" element={<ArticleWriterOverview />} />
+        <Route path="/article-writer/keyword" element={<KeywordEntryStep />} />
+        <Route path="/article-writer/select-keywords" element={<SelectKeywordsStep />} />
+        <Route path="/article-writer/title-description" element={<TitleDescriptionStep />} />
+        <Route path="/article-writer/outline" element={<OutlineStep />} />
+        <Route path="/article-writer/generated" element={<GeneratedArticleStep />} />
+        
         {/* Localized routes for non-English languages */}
         {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'en').map(lang => (
           <React.Fragment key={lang.code}>
@@ -157,6 +175,14 @@ const AppRoutes = () => {
             <Route path={`/${lang.code}/support`} element={<Support />} />
             <Route path={`/${lang.code}/enterprise`} element={<Enterprise />} />
             <Route path={`/${lang.code}/careers`} element={<Careers />} />
+            
+            {/* Localized Article Writer Routes */}
+            <Route path={`/${lang.code}/article-writer`} element={<ArticleWriterOverview />} />
+            <Route path={`/${lang.code}/article-writer/keyword`} element={<KeywordEntryStep />} />
+            <Route path={`/${lang.code}/article-writer/select-keywords`} element={<SelectKeywordsStep />} />
+            <Route path={`/${lang.code}/article-writer/title-description`} element={<TitleDescriptionStep />} />
+            <Route path={`/${lang.code}/article-writer/outline`} element={<OutlineStep />} />
+            <Route path={`/${lang.code}/article-writer/generated`} element={<GeneratedArticleStep />} />
           </React.Fragment>
         ))}
 
@@ -193,22 +219,24 @@ const App = () => {
         <TooltipProvider>
           <AuthProvider>
             <LanguageProvider>
-              <ErrorBoundary redirectTo="/error">
-                <LanguageRouteDetector>
-                  <Helmet
-                    titleTemplate="%s | Insight Writer AI"
-                    defaultTitle="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger"
-                  >
-                    <meta 
-                      name="description" 
-                      content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" 
-                    />
-                  </Helmet>
-                  <Toaster />
-                  <Sonner />
-                  <AppRoutes />
-                </LanguageRouteDetector>
-              </ErrorBoundary>
+              <ArticleWriterProvider>
+                <ErrorBoundary redirectTo="/error">
+                  <LanguageRouteDetector>
+                    <Helmet
+                      titleTemplate="%s | Insight Writer AI"
+                      defaultTitle="Rank #1 with AI Blogging Tools - AI Blog Writer & Article Generator for Blogger"
+                    >
+                      <meta 
+                        name="description" 
+                        content="Use our efficient ai article writer and blog writer for superior article writing and efficient blog writing, helping every blogger create high-quality articles and elevate their blogging presence. Explore AI-powered writing today!" 
+                      />
+                    </Helmet>
+                    <Toaster />
+                    <Sonner />
+                    <AppRoutes />
+                  </LanguageRouteDetector>
+                </ErrorBoundary>
+              </ArticleWriterProvider>
             </LanguageProvider>
           </AuthProvider>
         </TooltipProvider>
