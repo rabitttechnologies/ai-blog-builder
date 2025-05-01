@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/dialog';
 import FinalBlogEditor from './FinalBlogEditor';
 import LoadingOverlay from '@/components/blog/LoadingOverlay';
-import BlogSubmissionDialog from '@/components/blog/dialogs/BlogSubmissionDialog';
 import type { FinalBlogResponse, FinalBlogFormData } from '@/hooks/clustering/useFinalBlogCreation';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +35,6 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
   isLoading,
   onSaveBlog
 }) => {
-  const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -63,22 +61,17 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
 
   if (!data) return null;
   
-  const handleSubmit = () => {
-    setShowConfirm(true);
-  };
-
-  // Updated to ensure proper save process
-  const handleConfirmSubmit = async () => {
+  // Modified to save directly without confirmation
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-    console.log("Starting blog save process...");
+    console.log("Starting direct blog save process...");
     
     try {
-      // This is the critical part - explicitly call onSaveBlog with current formData
+      // Directly call onSaveBlog with current formData
       const success = await onSaveBlog(formData);
       console.log("Blog save result:", success);
       
       if (success) {
-        setShowConfirm(false);
         toast({
           title: "Blog Saved Successfully",
           description: "Your blog has been saved and will appear on your dashboard.",
@@ -103,56 +96,43 @@ const FinalBlogDialog: React.FC<FinalBlogDialogProps> = ({
       setIsSubmitting(false);
     }
   };
-
-  const handleCancel = () => {
-    setShowConfirm(false);
-  };
   
   return (
-    <>
-      <Dialog 
-        open={isOpen} 
-        onOpenChange={(open) => !open && onClose()}
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <DialogContent 
+        className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
+        hideCloseButton={isLoading || isSubmitting}
       >
-        <DialogContent 
-          className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
-          hideCloseButton={isLoading || isSubmitting}
-        >
-          <DialogHeader>
-            <DialogTitle>Final Blog Content</DialogTitle>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Final Blog Content</DialogTitle>
+        </DialogHeader>
+        
+        <div className="relative">
+          <FinalBlogEditor 
+            data={data}
+            formData={formData}
+            onUpdateField={onUpdateField}
+            onBack={onBack}
+            onSubmit={handleSubmit}
+            isLoading={isLoading || isSubmitting}
+          />
           
-          <div className="relative">
-            <FinalBlogEditor 
-              data={data}
-              formData={formData}
-              onUpdateField={onUpdateField}
-              onBack={onBack}
-              onSubmit={handleSubmit}
-              isLoading={isLoading || isSubmitting}
+          {(isLoading || isSubmitting) && (
+            <LoadingOverlay 
+              message={isSubmitting ? "Saving Your Blog" : "Loading Blog Content"} 
+              subMessage={
+                isSubmitting 
+                  ? "This may take up to 1 minute to complete" 
+                  : "Please wait while we load your blog content"
+              }
             />
-            
-            {(isLoading || isSubmitting) && (
-              <LoadingOverlay 
-                message={isSubmitting ? "Creating Your Blog" : "Saving Your Blog"} 
-                subMessage={
-                  isSubmitting 
-                    ? "This may take up to 5 minutes to complete" 
-                    : "Please wait while we save your blog"
-                }
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      <BlogSubmissionDialog 
-        isOpen={showConfirm}
-        isSubmitting={isSubmitting}
-        onConfirm={handleConfirmSubmit}
-        onCancel={handleCancel}
-      />
-    </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
