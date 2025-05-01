@@ -27,8 +27,9 @@ const TooltipContent = React.forwardRef<
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
 // Create a simpler API for the Tooltip
+// Make content optional and also accept children to match how it's used
 type TooltipProps = {
-  content: React.ReactNode;
+  content?: React.ReactNode;
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
