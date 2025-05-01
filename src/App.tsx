@@ -10,6 +10,9 @@ import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import BlogCreation from "@/pages/BlogCreation";
 import BlogDetail from "@/pages/BlogDetail";
+import NotFound from "@/pages/NotFound";
+import ServerError from "@/pages/ServerError";
+import Support from "@/pages/Support";
 import { AuthProvider } from "@/context/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LanguageProvider } from "@/context/language/LanguageContext";
@@ -33,6 +36,9 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/blogs" element={<BlogCreation />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/error" element={<ServerError />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </ErrorBoundary>
           </LanguageProvider>
