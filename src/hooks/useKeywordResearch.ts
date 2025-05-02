@@ -68,9 +68,20 @@ export const useKeywordResearch = ({
       ? data.historicalSearchData 
       : [];
       
-    const references = Array.isArray(data.references) 
-      ? data.references 
-      : [];
+    // Handle references - could be string JSON or array
+    let parsedReferences = [];
+    if (data.references) {
+      try {
+        if (typeof data.references === 'string') {
+          parsedReferences = JSON.parse(data.references);
+        } else if (Array.isArray(data.references)) {
+          parsedReferences = data.references;
+        }
+      } catch (e) {
+        console.error("Error parsing references:", e);
+        parsedReferences = [];
+      }
+    }
     
     // Construct validated response with fallbacks for missing data
     return {
@@ -80,9 +91,9 @@ export const useKeywordResearch = ({
       originalKeyword: data.originalKeyword || '',
       country: data.country || '',
       language: data.language || '',
-      contentType: data.contentType || '',
+      contentType: data.contentType || data['Type of Content'] || '',
       historicalSearchData: historicalSearchData,
-      references: references,
+      references: parsedReferences,
       additionalData: data.additionalData || {}
     };
   };

@@ -1,6 +1,6 @@
+
 import * as React from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
-import { Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -32,11 +32,34 @@ const RadioGroupItem = React.forwardRef<
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <Circle className="h-2.5 w-2.5 fill-current text-current" />
+        <div className="h-2.5 w-2.5 rounded-full bg-current" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   )
 })
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName
 
-export { RadioGroup, RadioGroupItem }
+// Simple Radio component for standalone use
+const Radio = React.forwardRef<
+  React.ElementRef<typeof RadioGroupPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> & {
+    name?: string;
+  }
+>(({ className, name, ...props }, ref) => {
+  // Create a simple wrapper around RadioGroupItem for standalone use
+  return (
+    <RadioGroupPrimitive.Root name={name} defaultValue={props.value}>
+      <RadioGroupItem
+        ref={ref}
+        className={cn(
+          "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        {...props}
+      />
+    </RadioGroupPrimitive.Root>
+  );
+});
+Radio.displayName = "Radio";
+
+export { RadioGroup, RadioGroupItem, Radio }
