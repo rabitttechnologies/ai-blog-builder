@@ -49,6 +49,37 @@ export interface SelectedKeyword {
   isSelected: boolean;
 }
 
+// Title description interface
+export interface TitleDescription {
+  id: string;
+  title: string;
+  description: string;
+}
+
+// Article outline section
+export interface OutlineSection {
+  heading: string;
+  content: string;
+}
+
+// Article outline
+export interface ArticleOutline {
+  id: string;
+  title: string;
+  introduction: string;
+  sections: OutlineSection[];
+  conclusion: string;
+}
+
+// Generated article
+export interface GeneratedArticle {
+  id: string;
+  title: string;
+  content: string;
+  metaDescription: string;
+  date: string;
+}
+
 // Article writer context interface
 interface ArticleWriterContextType {
   currentStep: number;
@@ -58,12 +89,27 @@ interface ArticleWriterContextType {
   keywordResponse: KeywordResponse | null;
   keywordSelectResponse: KeywordSelectResponse | null;
   selectedKeywords: SelectedKeyword[];
+  // Title description properties
+  titleDescriptionOptions: TitleDescription[];
+  setTitleDescriptionOptions: (options: TitleDescription[]) => void;
+  selectedTitleDescription: TitleDescription | null;
+  setSelectedTitleDescription: (titleDesc: TitleDescription | null) => void;
+  // Article outline properties
+  articleOutlineOptions: ArticleOutline[];
+  setArticleOutlineOptions: (options: ArticleOutline[]) => void;
+  selectedOutline: ArticleOutline | null;
+  setSelectedOutline: (outline: ArticleOutline | null) => void;
+  // Generated article properties
+  generatedArticle: GeneratedArticle | null;
+  setGeneratedArticle: (article: GeneratedArticle | null) => void;
+  // Methods
   setCurrentStep: (step: number) => void;
   updateKeywordForm: (updates: Partial<KeywordFormData>) => void;
   setKeywordResponse: (response: KeywordResponse | null) => void;
   setKeywordSelectResponse: (response: KeywordSelectResponse | null) => void;
   updateSelectedKeyword: (keyword: string, isSelected: boolean) => void;
   resetArticleWriter: () => void;
+  resetWorkflow: () => void; // Alias for resetArticleWriter
 }
 
 // Create the context
@@ -94,6 +140,17 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   
   // Selected keywords
   const [selectedKeywords, setSelectedKeywords] = useState<SelectedKeyword[]>([]);
+  
+  // Title description state
+  const [titleDescriptionOptions, setTitleDescriptionOptions] = useState<TitleDescription[]>([]);
+  const [selectedTitleDescription, setSelectedTitleDescription] = useState<TitleDescription | null>(null);
+  
+  // Article outline state
+  const [articleOutlineOptions, setArticleOutlineOptions] = useState<ArticleOutline[]>([]);
+  const [selectedOutline, setSelectedOutline] = useState<ArticleOutline | null>(null);
+  
+  // Generated article state
+  const [generatedArticle, setGeneratedArticle] = useState<GeneratedArticle | null>(null);
   
   // Update keyword form data
   const updateKeywordForm = (updates: Partial<KeywordFormData>) => {
@@ -130,7 +187,15 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setKeywordResponse(null);
     setKeywordSelectResponse(null);
     setSelectedKeywords([]);
+    setTitleDescriptionOptions([]);
+    setSelectedTitleDescription(null);
+    setArticleOutlineOptions([]);
+    setSelectedOutline(null);
+    setGeneratedArticle(null);
   };
+  
+  // Alias for resetArticleWriter
+  const resetWorkflow = resetArticleWriter;
   
   // Context value
   const value = {
@@ -141,12 +206,23 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     keywordResponse,
     keywordSelectResponse,
     selectedKeywords,
+    titleDescriptionOptions,
+    setTitleDescriptionOptions,
+    selectedTitleDescription,
+    setSelectedTitleDescription,
+    articleOutlineOptions,
+    setArticleOutlineOptions,
+    selectedOutline,
+    setSelectedOutline,
+    generatedArticle,
+    setGeneratedArticle,
     setCurrentStep,
     updateKeywordForm,
     setKeywordResponse,
     setKeywordSelectResponse,
     updateSelectedKeyword,
-    resetArticleWriter
+    resetArticleWriter,
+    resetWorkflow
   };
   
   return (
