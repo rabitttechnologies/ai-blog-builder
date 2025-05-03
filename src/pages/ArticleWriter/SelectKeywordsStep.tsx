@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -22,8 +21,9 @@ import {
   ChevronLeft, ChevronRight, Plus, ArrowUpDown, InfoIcon, ExternalLink, Trash
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useArticleWriter, KeywordResponse } from '@/context/articleWriter/ArticleWriterContext';
+import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { Separator } from '@/components/ui/separator';
+import { extractKeywords, extractReferences } from '@/utils/dataValidation';
 
 // Alert component
 const StatusAlert = ({ 
@@ -147,29 +147,16 @@ const SelectKeywordsStep = () => {
     // Parse keyword response data
     if (keywordResponse) {
       try {
-        // Parse historical search data
-        const historicalData = keywordResponse.historicalSearchData || [];
-        const parsedData = historicalData.filter(item => item && item.text).map(item => ({
-          text: item.text,
-          keywordMetrics: item.keywordMetrics || {},
-          closeVariants: Array.isArray(item.closeVariants) ? item.closeVariants : []
-        }));
+        console.log("Processing keyword response:", keywordResponse);
+        
+        // Parse historical search data using our utility
+        const parsedData = extractKeywords(keywordResponse);
+        console.log("Parsed keywords:", parsedData);
         setParsedKeywords(parsedData);
         
-        // Parse references
-        let refs: Reference[] = [];
-        if (typeof keywordResponse.references === 'string') {
-          try {
-            refs = JSON.parse(keywordResponse.references);
-          } catch (e) {
-            console.error('Failed to parse references string:', e);
-          }
-        } else if (Array.isArray(keywordResponse.references)) {
-          refs = keywordResponse.references;
-        }
-        
-        // Make sure references have the correct format
-        refs = refs.filter(ref => ref && typeof ref === 'object' && ref.title && ref.url);
+        // Parse references using our utility
+        const refs = extractReferences(keywordResponse);
+        console.log("Parsed references:", refs);
         setParsedReferences(refs);
         
         // Update selection state with references
@@ -676,8 +663,7 @@ const SelectKeywordsStep = () => {
                                 <TooltipContent>
                                   {renderMonthlyVolumes(keyword.keywordMetrics?.monthlySearchVolumes)}
                                 </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                              </TooltipProvider>
                           </TableCell>
                           <TableCell>
                             {formatCompetition(keyword.keywordMetrics?.competition)}

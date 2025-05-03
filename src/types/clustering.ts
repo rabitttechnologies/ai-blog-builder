@@ -1,4 +1,3 @@
-
 // Extend or create if file doesn't exist yet
 
 // Clustering data types
@@ -24,7 +23,7 @@ export type ClusterItem = {
   keywordDifficulty: number | null;
   competition: string | null;
   searchIntent: string | null;
-  reasoning: string | null;
+  reasoning: string;
   cpc: number | null;
   category: string | null;
   status: 'Select for Blog Creation' | 'Reject for Blog Creation' | 'Keep for Future';
@@ -104,4 +103,62 @@ export type FinalBlogData = {
   "Workflow Id": string;
   UserId: string;
   "Execution Id": string;
+};
+
+// Add a new type for the webhook response structure
+export type KeywordResearchWebhookResponse = {
+  'workflow Id'?: string;
+  'user Id'?: string;
+  'Execution Id'?: string;
+  'Original Keyword'?: string;
+  'Country'?: string;
+  'Language'?: string;
+  'Type of Content'?: string;
+  'Historical Search Data'?: Array<{
+    text: string;
+    keywordMetrics?: {
+      competition?: string;
+      monthlySearchVolumes?: Array<{
+        month: string;
+        year: string;
+        monthlySearches: string;
+      }>;
+      avgMonthlySearches?: string;
+      competitionIndex?: string;
+    };
+    closeVariants?: string[];
+  }>;
+  'References'?: Array<{
+    title: string;
+    url: string;
+  }>;
+  'Additional Data'?: string | any;
+  
+  // Alternative camelCase versions
+  workflowId?: string;
+  userId?: string;
+  executionId?: string;
+  originalKeyword?: string;
+  country?: string;
+  language?: string;
+  contentType?: string;
+  historicalSearchData?: Array<{
+    text: string;
+    keywordMetrics?: {
+      competition?: string;
+      monthlySearchVolumes?: Array<{
+        month: string;
+        year: string;
+        monthlySearches: string;
+      }>;
+      avgMonthlySearches?: string;
+      competitionIndex?: string;
+    };
+    closeVariants?: string[];
+  }>;
+  references?: Array<{
+    title: string;
+    url: string;
+  }> | string;
+  additionalData?: any;
 };

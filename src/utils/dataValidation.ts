@@ -7,6 +7,7 @@ export const headingMappings = {
   },
   'Hot Keyword Ideas': {
     key: 'historicalSearchData',
+    altKeys: ['Historical Search Data'],
     type: 'array'
   },
   'Popular Right Now': {
@@ -53,13 +54,89 @@ export function isValidData(data: any, type: string): boolean {
   return true;
 }
 
+// Function to try getting a value from multiple possible field names (case-insensitive)
+export function getFieldCaseInsensitive(obj: any, fieldNames: string[]): any {
+  if (!obj || typeof obj !== 'object') return null;
+
+  // Try exact matches first
+  for (const field of fieldNames) {
+    if (obj[field] !== undefined) {
+      return obj[field];
+    }
+  }
+
+  // Try case-insensitive matches
+  const lowerFieldNames = fieldNames.map(name => name.toLowerCase());
+  const objKeys = Object.keys(obj);
+  
+  for (const key of objKeys) {
+    const lowerKey = key.toLowerCase();
+    const index = lowerFieldNames.findIndex(field => field === lowerKey);
+    if (index !== -1) {
+      return obj[key];
+    }
+  }
+
+  return null;
+}
+
+// Function to normalize API response keys
+export function normalizeResponse(data: any): any {
+  if (!data) return null;
+
+  // If it's an array with one item, extract the item
+  if (Array.isArray(data) && data.length === 1) {
+    data = data[0];
+  }
+
+  const normalizedData: any = {};
+
+  // Map common field names
+  const fieldMappings = {
+    workflowId: ['workflowId', 'workflow Id', 'workflow_id', 'WorkflowId'],
+    userId: ['userId', 'user Id', 'user_id', 'UserId'],
+    executionId: ['executionId', 'Execution Id', 'execution_id', 'ExecutionId'],
+    originalKeyword: ['originalKeyword', 'Original Keyword', 'original_keyword'],
+    country: ['country', 'Country'],
+    language: ['language', 'Language'],
+    contentType: ['contentType', 'Type of Content', 'content_type'],
+    historicalSearchData: ['historicalSearchData', 'Historical Search Data'],
+    references: ['references', 'References'],
+    additionalData: ['additionalData', 'Additional Data']
+  };
+
+  // Populate normalized data
+  for (const [normalizedKey, possibleKeys] of Object.entries(fieldMappings)) {
+    const value = getFieldCaseInsensitive(data, possibleKeys);
+    if (value !== null) {
+      normalizedData[normalizedKey] = value;
+    }
+  }
+
+  // Handle additional data field which might be a string
+  if (normalizedData.additionalData && typeof normalizedData.additionalData === 'string') {
+    try {
+      normalizedData.additionalData = JSON.parse(normalizedData.additionalData);
+    } catch (e) {
+      normalizedData.additionalData = {};
+    }
+  }
+
+  return normalizedData;
+}
+
 // Function to extract keywords from historical search data
 export function extractKeywords(data: any): any[] {
-  if (!data || !Array.isArray(data.historicalSearchData)) {
+  if (!data) return [];
+  
+  // Try to get historicalSearchData using different possible field names
+  const historicalData = getFieldCaseInsensitive(data, ['historicalSearchData', 'Historical Search Data']);
+  
+  if (!Array.isArray(historicalData)) {
     return [];
   }
   
-  return data.historicalSearchData.map(item => ({
+  return historicalData.map(item => ({
     text: item.text,
     keywordMetrics: item.keywordMetrics || {},
     closeVariants: Array.isArray(item.closeVariants) ? item.closeVariants : []
@@ -72,19 +149,17 @@ export function extractReferences(data: any): Array<{title: string, url: string}
   
   let refs = [];
   
+  // Try to get references using different possible field names
+  const references = getFieldCaseInsensitive(data, ['references', 'References']);
+  
   // Handle direct references array
-  if (Array.isArray(data.References)) {
-    refs = data.References;
-  }
-  // Handle references in the response object
-  else if (Array.isArray(data.references)) {
-    refs = data.references;
+  if (Array.isArray(references)) {
+    refs = references;
   }
   // Try to parse references if it's a string
-  else if (typeof data.references === 'string' || typeof data.References === 'string') {
-    const refsStr = data.references || data.References;
+  else if (typeof references === 'string') {
     try {
-      const parsedRefs = JSON.parse(refsStr);
+      const parsedRefs = JSON.parse(references);
       if (Array.isArray(parsedRefs)) {
         refs = parsedRefs;
       }

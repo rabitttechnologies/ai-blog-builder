@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { KeywordFormData, KeywordResponse } from '@/context/articleWriter/ArticleWriterContext';
+import { normalizeResponse } from '@/utils/dataValidation';
 
 // HTTP status code error messages
 const ERROR_MESSAGES = {
@@ -55,46 +56,53 @@ export const useKeywordResearch = ({
   const validateResponse = (data: any): KeywordResponse | null => {
     if (!data) return null;
     
+    // Normalize the response fields
+    const normalized = normalizeResponse(data);
+    if (!normalized) return null;
+    
     // Check required fields
     const requiredFields = ['workflowId', 'userId', 'originalKeyword', 'country', 'language'];
-    const missingFields = requiredFields.filter(field => !data[field]);
+    const missingFields = requiredFields.filter(field => !normalized[field]);
     
     if (missingFields.length > 0) {
       console.warn(`Response missing required fields: ${missingFields.join(', ')}`);
     }
     
-    // Safe access to nested arrays with type checking
-    const historicalSearchData = Array.isArray(data.historicalSearchData) 
-      ? data.historicalSearchData 
+    // Safe access to historicalSearchData with type checking
+    const historicalSearchData = Array.isArray(normalized.historicalSearchData) 
+      ? normalized.historicalSearchData 
       : [];
       
-    // Handle references - could be string JSON or array
+    // Handle references
     let parsedReferences = [];
-    if (data.references) {
-      try {
-        if (typeof data.references === 'string') {
-          parsedReferences = JSON.parse(data.references);
-        } else if (Array.isArray(data.references)) {
-          parsedReferences = data.references;
+    if (normalized.references) {
+      if (Array.isArray(normalized.references)) {
+        parsedReferences = normalized.references;
+      } else if (typeof normalized.references === 'string') {
+        try {
+          parsedReferences = JSON.parse(normalized.references);
+        } catch (e) {
+          console.error("Error parsing references:", e);
+          parsedReferences = [];
         }
-      } catch (e) {
-        console.error("Error parsing references:", e);
-        parsedReferences = [];
       }
     }
     
+    // Log the normalized data for debugging
+    console.log("Normalized response data:", normalized);
+    
     // Construct validated response with fallbacks for missing data
     return {
-      workflowId: data.workflowId || workflowId,
-      userId: data.userId || userId,
-      executionId: data.executionId || '',
-      originalKeyword: data.originalKeyword || '',
-      country: data.country || '',
-      language: data.language || '',
-      contentType: data.contentType || data['Type of Content'] || '',
+      workflowId: normalized.workflowId || workflowId,
+      userId: normalized.userId || userId,
+      executionId: normalized.executionId || '',
+      originalKeyword: normalized.originalKeyword || '',
+      country: normalized.country || '',
+      language: normalized.language || '',
+      contentType: normalized.contentType || '',
       historicalSearchData: historicalSearchData,
       references: parsedReferences,
-      additionalData: data.additionalData || {}
+      additionalData: normalized.additionalData || {}
     };
   };
 
@@ -213,13 +221,14 @@ export const useKeywordResearch = ({
       }
 
       const responseData = await response.json();
-      console.log("Keyword research response:", responseData);
+      console.log("Keyword research raw response:", responseData);
       
       // Process and validate successful response
       if (responseData) {
         const validatedResponse = validateResponse(responseData);
         
         if (validatedResponse) {
+          console.log("Validated response:", validatedResponse);
           setResponse(validatedResponse);
           return validatedResponse;
         } else {

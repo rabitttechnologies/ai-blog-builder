@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/Button';
 import { isItemSelected } from '@/utils/selectionUtils';
-import { isValidData, headingMappings, safeGet } from '@/utils/dataValidation';
+import { isValidData, headingMappings, safeGet, getFieldCaseInsensitive } from '@/utils/dataValidation';
 import { useKeywordSelections, MAX_SELECTIONS, SelectionsState } from '@/hooks/useKeywordSelections';
 import { useVolumeAnalysis } from '@/hooks/useVolumeAnalysis';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -30,6 +30,8 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
   const { selections, totalSelections, handleToggleSelection } = useKeywordSelections();
   const { isLoading, volumeData, setVolumeData, analyzeSelectedKeywords } = useVolumeAnalysis(keyword, workflowId);
   const profileData = useProfileData();
+  
+  console.log("SelectableSearchResults received data:", data);
   
   // Early return if data is completely missing
   if (!data) {
@@ -72,20 +74,44 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
         
         try {
           if ('key' in mapping) {
-            // Safely access data using the key
+            // Try the main key first
             sectionData = safeGet(data, mapping.key, []);
+            
+            // If we didn't get data and there are alternative keys, try them
+            if ((!sectionData || !isValidData(sectionData, mapping.type)) && mapping.altKeys) {
+              for (const altKey of mapping.altKeys) {
+                const altData = getFieldCaseInsensitive(data, [altKey]);
+                if (altData && isValidData(altData, mapping.type)) {
+                  sectionData = altData;
+                  break;
+                }
+              }
+            }
           } else if ('keys' in mapping) {
             // Combine data from multiple keys with safety checks
             sectionData = (mapping.keys || [])
-              .map(key => safeGet(data, key, []))
+              .map(key => {
+                // Try the exact key first
+                let keyData = safeGet(data, key, []);
+                
+                // If that fails, try case-insensitive match
+                if (!keyData || !isValidData(keyData, 'array')) {
+                  keyData = getFieldCaseInsensitive(data, [key]);
+                }
+                
+                return keyData;
+              })
               .filter(Array.isArray)
               .flat();
           }
           
           // Skip rendering if we don't have valid data
           if (!isValidData(sectionData, mapping.type)) {
+            console.log(`No valid data for section "${heading}"`, sectionData);
             return null;
           }
+          
+          console.log(`Section "${heading}" data:`, sectionData);
         } catch (error) {
           console.error(`Error processing data for section "${heading}":`, error);
           return null;
