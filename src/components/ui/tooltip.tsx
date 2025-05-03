@@ -46,9 +46,11 @@ const Tooltip = ({
   <TooltipProvider>
     <TooltipRoot delayDuration={delayDuration}>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side={side} align={align}>
-        {content}
-      </TooltipContent>
+      {content && (
+        <TooltipContent side={side} align={align}>
+          {content}
+        </TooltipContent>
+      )}
     </TooltipRoot>
   </TooltipProvider>
 );
