@@ -78,7 +78,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
             sectionData = safeGet(data, mapping.key, []);
             
             // If we didn't get data and there are alternative keys, try them
-            if ((!sectionData || !isValidData(sectionData, mapping.type)) && mapping.altKeys) {
+            if ((!sectionData || !isValidData(sectionData, mapping.type)) && 'altKeys' in mapping && mapping.altKeys) {
               for (const altKey of mapping.altKeys) {
                 const altData = getFieldCaseInsensitive(data, [altKey]);
                 if (altData && isValidData(altData, mapping.type)) {
@@ -95,7 +95,7 @@ const SelectableSearchResults: React.FC<SelectableSearchResultsProps> = ({
                 let keyData = safeGet(data, key, []);
                 
                 // If that fails, try case-insensitive match
-                if (!keyData || !isValidData(keyData, 'array')) {
+                if (!keyData || !isValidData(keyData, mapping.type)) {
                   keyData = getFieldCaseInsensitive(data, [key]);
                 }
                 
