@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/auth';
 import LoadingOverlay from './LoadingOverlay';
 import ClusteringWorkflow from '../clustering/ClusteringWorkflow';
-import { safeMap } from '@/utils/dataValidation';
+import { safeGet, safeMap } from '@/utils/dataValidation';
 
 // Consistent shared UI class sets
 const contentContainerClasses = "space-y-6 max-w-6xl mx-auto min-h-[600px]";

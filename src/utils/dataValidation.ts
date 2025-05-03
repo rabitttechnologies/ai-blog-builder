@@ -1,3 +1,4 @@
+
 // Headings and data mappings for the search results
 export const headingMappings = {
   'Top in SERP': {
@@ -27,6 +28,14 @@ export function safeGet(obj: any, path: string, defaultValue: any = null): any {
     if (acc === null || acc === undefined) return defaultValue;
     return acc[key] !== undefined ? acc[key] : defaultValue;
   }, obj);
+}
+
+// Safe map function that handles potentially undefined arrays
+export function safeMap<T, R>(arr: T[] | null | undefined, callback: (item: T, index: number) => R): R[] {
+  if (!arr || !Array.isArray(arr)) {
+    return [];
+  }
+  return arr.map(callback);
 }
 
 // Data validation function
