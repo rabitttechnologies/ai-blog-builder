@@ -688,6 +688,7 @@ const SelectKeywordsStep = () => {
                         </TableRow>
                       ))}
                       
+                      {/* Custom Keywords Section */}
                       {selectionState.customKeywords.map((keyword, index) => (
                         <TableRow key={`custom-${index}`}>
                           <TableCell>
@@ -731,6 +732,7 @@ const SelectKeywordsStep = () => {
                         </TableRow>
                       ))}
                       
+                      {/* Empty State */}
                       {parsedKeywords.length === 0 && selectionState.customKeywords.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={4} className="text-center py-8">
@@ -742,6 +744,7 @@ const SelectKeywordsStep = () => {
                   </Table>
                 </div>
                 
+                {/* Add Custom Keyword Section */}
                 <div className="mt-6">
                   <Label htmlFor="custom-keyword" className="text-sm font-medium">
                     Add a custom keyword
@@ -769,6 +772,7 @@ const SelectKeywordsStep = () => {
           </div>
           
           <div>
+            {/* References Card */}
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>References</CardTitle>
@@ -798,6 +802,7 @@ const SelectKeywordsStep = () => {
                     )}
                   </div>
                   
+                  {/* Custom References */}
                   {selectionState.customReferences.length > 0 && (
                     <div>
                       <h3 className="font-medium text-sm mb-2">Your Added References</h3>
@@ -825,6 +830,7 @@ const SelectKeywordsStep = () => {
                     </div>
                   )}
                   
+                  {/* Add Reference Form */}
                   <div className="pt-4">
                     <h3 className="font-medium text-sm mb-2">Add a reference</h3>
                     <div className="space-y-3">
@@ -864,6 +870,7 @@ const SelectKeywordsStep = () => {
               </CardContent>
             </Card>
             
+            {/* Research Type Card */}
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -908,6 +915,7 @@ const SelectKeywordsStep = () => {
           </div>
         </div>
         
+        {/* Navigation Buttons */}
         <div className="flex justify-between mt-8">
           <Button
             variant="outline"

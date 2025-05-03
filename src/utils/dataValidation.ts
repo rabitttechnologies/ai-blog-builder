@@ -1,90 +1,94 @@
-
-/**
- * Checks if the data is valid based on the specified type
- * @param data The data to validate
- * @param type The expected data type
- * @returns boolean indicating whether the data is valid
- */
-export const isValidData = (data: any, type?: string): boolean => {
-  if (data === null || data === undefined) return false;
-  if (type === 'array') return Array.isArray(data) && data.length > 0;
-  if (type === 'object') return typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0;
-  if (type === 'string') return typeof data === 'string' && data.trim() !== '';
-  if (type === 'number') return typeof data === 'number' && !isNaN(data);
-  if (Array.isArray(data)) return data.length > 0;
-  if (typeof data === 'object' && data !== null) return Object.keys(data).length > 0;
-  return !!data;
-};
-
-/**
- * Safely access nested properties in an object without causing errors
- * @param obj The object to access
- * @param path The path to the property (e.g., 'data.items.0.name') or a string key
- * @param defaultValue The default value to return if the path doesn't exist
- * @returns The value at the path or the default value
- */
-export const safeGet = (obj: any, path: string | number, defaultValue: any = undefined): any => {
-  if (obj === null || obj === undefined) return defaultValue;
-  
-  // Handle direct property access for simple keys
-  if (typeof path === 'string' && !path.includes('.')) {
-    return obj[path] !== undefined ? obj[path] : defaultValue;
-  }
-
-  // Handle numeric index
-  if (typeof path === 'number') {
-    return Array.isArray(obj) && obj[path] !== undefined ? obj[path] : defaultValue;
-  }
-  
-  // Handle dot notation paths
-  const keys = path.split('.');
-  let result = obj;
-  
-  for (const key of keys) {
-    if (result === undefined || result === null) {
-      return defaultValue;
-    }
-    
-    // Handle array index in path (e.g., items.0.name)
-    if (/^\d+$/.test(key) && Array.isArray(result)) {
-      const index = parseInt(key, 10);
-      result = index < result.length ? result[index] : undefined;
-    } else {
-      result = result[key];
-    }
-  }
-  
-  return result !== undefined ? result : defaultValue;
-};
-
-/**
- * Safely filter an array, returning an empty array if the input is not valid
- * @param array The array to filter
- * @param predicate The filter function
- * @returns Filtered array or empty array if input is invalid
- */
-export const safeFilter = <T>(array: T[] | undefined | null, predicate: (item: T) => boolean): T[] => {
-  if (!array || !Array.isArray(array)) return [];
-  return array.filter(predicate);
-};
-
-/**
- * Safely maps an array, returning an empty array if the input is not valid
- * @param array The array to map
- * @param mapper The mapping function
- * @returns Mapped array or empty array if input is invalid
- */
-export const safeMap = <T, R>(array: T[] | undefined | null, mapper: (item: T, index: number) => R): R[] => {
-  if (!array || !Array.isArray(array)) return [];
-  return array.map(mapper);
-};
-
-/**
- * Mapping of search section headings to their data keys
- */
+// Headings and data mappings for the search results
 export const headingMappings = {
-  'Top in SERP': { key: 'organicResults', type: 'array' },
-  'Hot Keyword Ideas': { key: 'relatedQueries', type: 'array' },
-  'Popular Right Now': { key: 'peopleAlsoAsk', type: 'array' },
-  'Other Keyword Ideas': { keys: ['paidResults', 'suggestedResults'], type: 'array' }
+  'Top in SERP': {
+    keys: ['References'],
+    type: 'array'
+  },
+  'Hot Keyword Ideas': {
+    key: 'historicalSearchData',
+    type: 'array'
+  },
+  'Popular Right Now': {
+    key: 'additionalData.questions',
+    type: 'array',
+    optional: true
+  },
+  'Related Terms': {
+    key: 'additionalData.relatedTerms',
+    type: 'array',
+    optional: true
+  }
 };
+
+// Safe accessor function to get nested properties
+export function safeGet(obj: any, path: string, defaultValue: any = null): any {
+  const keys = path.split('.');
+  return keys.reduce((acc, key) => {
+    if (acc === null || acc === undefined) return defaultValue;
+    return acc[key] !== undefined ? acc[key] : defaultValue;
+  }, obj);
+}
+
+// Data validation function
+export function isValidData(data: any, type: string): boolean {
+  if (data === undefined || data === null) return false;
+  
+  if (type === 'array') {
+    return Array.isArray(data) && data.length > 0;
+  }
+  
+  if (type === 'object') {
+    return typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0;
+  }
+  
+  return true;
+}
+
+// Function to extract keywords from historical search data
+export function extractKeywords(data: any): any[] {
+  if (!data || !Array.isArray(data.historicalSearchData)) {
+    return [];
+  }
+  
+  return data.historicalSearchData.map(item => ({
+    text: item.text,
+    keywordMetrics: item.keywordMetrics || {},
+    closeVariants: Array.isArray(item.closeVariants) ? item.closeVariants : []
+  })).filter(item => item.text);
+}
+
+// Function to extract references from the response
+export function extractReferences(data: any): Array<{title: string, url: string}> {
+  if (!data) return [];
+  
+  let refs = [];
+  
+  // Handle direct references array
+  if (Array.isArray(data.References)) {
+    refs = data.References;
+  }
+  // Handle references in the response object
+  else if (Array.isArray(data.references)) {
+    refs = data.references;
+  }
+  // Try to parse references if it's a string
+  else if (typeof data.references === 'string' || typeof data.References === 'string') {
+    const refsStr = data.references || data.References;
+    try {
+      const parsedRefs = JSON.parse(refsStr);
+      if (Array.isArray(parsedRefs)) {
+        refs = parsedRefs;
+      }
+    } catch (e) {
+      console.error('Failed to parse references:', e);
+    }
+  }
+  
+  // Ensure each reference has title and url
+  return refs
+    .filter(ref => ref && typeof ref === 'object' && ref.title && ref.url)
+    .map(ref => ({
+      title: ref.title,
+      url: ref.url
+    }));
+}
