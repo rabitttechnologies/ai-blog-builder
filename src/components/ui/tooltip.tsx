@@ -34,25 +34,36 @@ type TooltipProps = {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   delayDuration?: number;
+  disableHoverableContent?: boolean;
 };
 
+// Fix the Tooltip component to properly handle content and children
 const Tooltip = ({
   content,
   children,
   side = "top",
   align = "center",
   delayDuration = 200,
-}: TooltipProps) => (
-  <TooltipProvider>
-    <TooltipRoot delayDuration={delayDuration}>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      {content && (
+  disableHoverableContent = false,
+}: TooltipProps) => {
+  // Don't render the tooltip if there's no content
+  if (!content) {
+    return <>{children}</>; 
+  }
+
+  return (
+    <TooltipProvider>
+      <TooltipRoot delayDuration={delayDuration} disableHoverableContent={disableHoverableContent}>
+        <TooltipTrigger asChild>
+          {/* Wrap children in a fragment to ensure single child */}
+          {React.isValidElement(children) ? children : <span>{children}</span>}
+        </TooltipTrigger>
         <TooltipContent side={side} align={align}>
           {content}
         </TooltipContent>
-      )}
-    </TooltipRoot>
-  </TooltipProvider>
-);
+      </TooltipRoot>
+    </TooltipProvider>
+  );
+};
 
 export { Tooltip, TooltipContent, TooltipProvider, TooltipRoot, TooltipTrigger };

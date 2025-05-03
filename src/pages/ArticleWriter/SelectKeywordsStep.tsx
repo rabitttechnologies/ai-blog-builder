@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -11,7 +10,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { 
-  TooltipProvider, Tooltip, TooltipTrigger, TooltipContent
+  Tooltip
 } from '@/components/ui/tooltip';
 import {
   RadioGroup, RadioGroupItem
@@ -653,19 +652,15 @@ const SelectKeywordsStep = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center cursor-help">
-                                    {keyword.keywordMetrics?.avgMonthlySearches || 'N/A'}
-                                    <InfoIcon className="ml-1 h-4 w-4" />
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  {renderMonthlyVolumes(keyword.keywordMetrics?.monthlySearchVolumes)}
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            {/* Fix for tooltip issue - ensure it has one child element */}
+                            <Tooltip
+                              content={renderMonthlyVolumes(keyword.keywordMetrics?.monthlySearchVolumes)}
+                            >
+                              <div className="flex items-center cursor-help">
+                                {keyword.keywordMetrics?.avgMonthlySearches || 'N/A'}
+                                <InfoIcon className="ml-1 h-4 w-4" />
+                              </div>
+                            </Tooltip>
                           </TableCell>
                           <TableCell>
                             {formatCompetition(keyword.keywordMetrics?.competition)}
