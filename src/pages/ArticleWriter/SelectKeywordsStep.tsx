@@ -663,7 +663,8 @@ const SelectKeywordsStep = () => {
                                 <TooltipContent>
                                   {renderMonthlyVolumes(keyword.keywordMetrics?.monthlySearchVolumes)}
                                 </TooltipContent>
-                              </TooltipProvider>
+                              </Tooltip>
+                            </TooltipProvider>
                           </TableCell>
                           <TableCell>
                             {formatCompetition(keyword.keywordMetrics?.competition)}
