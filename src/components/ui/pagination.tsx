@@ -1,10 +1,11 @@
+
 import * as React from "react"
 import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
 
-import { Button, ButtonProps } from "@/components/ui/Button"
+import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 
 export interface PaginationProps extends React.HTMLAttributes<HTMLDivElement> {
