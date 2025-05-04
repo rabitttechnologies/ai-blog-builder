@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/textarea';
+import Textarea from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { WritingStyle } from '@/context/articleWriter/ArticleWriterContext';
 import WritingStyleSelector from './WritingStyleSelector';
