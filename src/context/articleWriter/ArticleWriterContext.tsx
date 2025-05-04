@@ -1,5 +1,11 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { 
+  WritingStyle, 
+  ArticlePointOfView, 
+  HeadingsOption, 
+  headingsOptions 
+} from '@/types/articleWriter';
 
 // Define the possible content types
 export type ContentType = 'Blog Post' | 'News Article' | 'How to Guide' | 'Comparison Blog' | 'Technical Article' | 'Product Reviews';
@@ -39,7 +45,7 @@ export interface KeywordSelectResponse {
   additionalKeyword: string[];
   references: { title: string; url: string }[];
   researchType: string;
-  titlesAndShortDescription?: any[];
+  titlesandShortDescription?: any[];
   additionalData?: any;
 }
 
@@ -80,6 +86,15 @@ export interface GeneratedArticle {
   date: string;
 }
 
+// New fields for title description step
+export interface TitleDescriptionFormState {
+  headingsCount: HeadingsOption | null;
+  writingStyle: WritingStyle | null;
+  pointOfView: ArticlePointOfView;
+  expertGuidance: string;
+  saveExpertGuidance: boolean;
+}
+
 // Article writer context interface
 interface ArticleWriterContextType {
   currentStep: number;
@@ -94,6 +109,13 @@ interface ArticleWriterContextType {
   setTitleDescriptionOptions: (options: TitleDescription[]) => void;
   selectedTitleDescription: TitleDescription | null;
   setSelectedTitleDescription: (titleDesc: TitleDescription | null) => void;
+  // New title description form fields
+  titleDescriptionForm: TitleDescriptionFormState;
+  updateTitleDescriptionForm: (updates: Partial<TitleDescriptionFormState>) => void;
+  savedWritingStyles: WritingStyle[];
+  addWritingStyle: (style: WritingStyle) => void;
+  savedExpertGuidance: string[];
+  addExpertGuidance: (guidance: string) => void;
   // Article outline properties
   articleOutlineOptions: ArticleOutline[];
   setArticleOutlineOptions: (options: ArticleOutline[]) => void;
@@ -110,6 +132,9 @@ interface ArticleWriterContextType {
   updateSelectedKeyword: (keyword: string, isSelected: boolean) => void;
   resetArticleWriter: () => void;
   resetWorkflow: () => void; // Alias for resetArticleWriter
+  // Loading state
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 // Create the context
@@ -125,6 +150,7 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   const [workflowId] = useState<string>(generateId());
   
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // Form data for keyword research
   const [keywordForm, setKeywordForm] = useState<KeywordFormData>({
@@ -145,6 +171,21 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   const [titleDescriptionOptions, setTitleDescriptionOptions] = useState<TitleDescription[]>([]);
   const [selectedTitleDescription, setSelectedTitleDescription] = useState<TitleDescription | null>(null);
   
+  // New title description form fields
+  const [titleDescriptionForm, setTitleDescriptionForm] = useState<TitleDescriptionFormState>({
+    headingsCount: null,
+    writingStyle: null,
+    pointOfView: 'writer',
+    expertGuidance: '',
+    saveExpertGuidance: false
+  });
+  
+  // Saved writing styles
+  const [savedWritingStyles, setSavedWritingStyles] = useState<WritingStyle[]>([]);
+  
+  // Saved expert guidance
+  const [savedExpertGuidance, setSavedExpertGuidance] = useState<string[]>([]);
+  
   // Article outline state
   const [articleOutlineOptions, setArticleOutlineOptions] = useState<ArticleOutline[]>([]);
   const [selectedOutline, setSelectedOutline] = useState<ArticleOutline | null>(null);
@@ -152,9 +193,59 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   // Generated article state
   const [generatedArticle, setGeneratedArticle] = useState<GeneratedArticle | null>(null);
   
+  // Load saved writing styles and expert guidance from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedStyles = localStorage.getItem('savedWritingStyles');
+      if (savedStyles) {
+        setSavedWritingStyles(JSON.parse(savedStyles));
+      }
+      
+      const savedGuidance = localStorage.getItem('savedExpertGuidance');
+      if (savedGuidance) {
+        setSavedExpertGuidance(JSON.parse(savedGuidance));
+      }
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  }, []);
+  
   // Update keyword form data
   const updateKeywordForm = (updates: Partial<KeywordFormData>) => {
     setKeywordForm(prev => ({ ...prev, ...updates }));
+  };
+  
+  // Update title description form data
+  const updateTitleDescriptionForm = (updates: Partial<TitleDescriptionFormState>) => {
+    setTitleDescriptionForm(prev => ({ ...prev, ...updates }));
+  };
+  
+  // Add a new writing style
+  const addWritingStyle = (style: WritingStyle) => {
+    setSavedWritingStyles(prev => {
+      const updated = [...prev, style];
+      try {
+        localStorage.setItem('savedWritingStyles', JSON.stringify(updated));
+      } catch (error) {
+        console.error('Error saving writing styles:', error);
+      }
+      return updated;
+    });
+  };
+  
+  // Add a new expert guidance
+  const addExpertGuidance = (guidance: string) => {
+    if (guidance && !savedExpertGuidance.includes(guidance)) {
+      setSavedExpertGuidance(prev => {
+        const updated = [...prev, guidance];
+        try {
+          localStorage.setItem('savedExpertGuidance', JSON.stringify(updated));
+        } catch (error) {
+          console.error('Error saving expert guidance:', error);
+        }
+        return updated;
+      });
+    }
   };
   
   // Update selected keyword
@@ -189,9 +280,17 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setSelectedKeywords([]);
     setTitleDescriptionOptions([]);
     setSelectedTitleDescription(null);
+    setTitleDescriptionForm({
+      headingsCount: null,
+      writingStyle: null,
+      pointOfView: 'writer',
+      expertGuidance: '',
+      saveExpertGuidance: false
+    });
     setArticleOutlineOptions([]);
     setSelectedOutline(null);
     setGeneratedArticle(null);
+    setIsLoading(false);
   };
   
   // Alias for resetArticleWriter
@@ -210,6 +309,12 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setTitleDescriptionOptions,
     selectedTitleDescription,
     setSelectedTitleDescription,
+    titleDescriptionForm,
+    updateTitleDescriptionForm,
+    savedWritingStyles,
+    addWritingStyle,
+    savedExpertGuidance,
+    addExpertGuidance,
     articleOutlineOptions,
     setArticleOutlineOptions,
     selectedOutline,
@@ -222,7 +327,9 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setKeywordSelectResponse,
     updateSelectedKeyword,
     resetArticleWriter,
-    resetWorkflow
+    resetWorkflow,
+    isLoading,
+    setIsLoading
   };
   
   return (
