@@ -1,16 +1,18 @@
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'outline' | 'ghost' | 'primary' | 'secondary';
   size?: 'sm' | 'md' | 'lg' | 'icon';
   fullWidth?: boolean;
   isLoading?: boolean;
   rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  asChild?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   children,
   className = '',
   variant = 'default',
@@ -19,8 +21,10 @@ export const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   disabled,
   rightIcon,
+  leftIcon,
+  asChild = false,
   ...props
-}) => {
+}, ref) => {
   // Normalize variant names
   let normalizedVariant = variant;
   if (variant === 'primary') normalizedVariant = 'default';
@@ -50,20 +54,27 @@ export const Button: React.FC<ButtonProps> = ({
   // Combine all classes
   const allClasses = `${baseClasses} ${sizeClasses[size]} ${variantClasses[normalizedVariant as keyof typeof variantClasses]} ${widthClass} ${className}`;
 
+  // If asChild is true, we'd typically use a component like Slot from radix-ui
+  // Since we don't have that, we'll just render the button with all props
+  
   return (
     <button 
       className={allClasses} 
       disabled={disabled || isLoading} 
+      ref={ref}
       {...props}
     >
       {isLoading && (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       )}
+      {leftIcon && <span className="mr-2">{leftIcon}</span>}
       {children}
       {rightIcon && <span className="ml-2">{rightIcon}</span>}
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 // Export the buttonVariants helper for other components that need it
 export const buttonVariants = ({
