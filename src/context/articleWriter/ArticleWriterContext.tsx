@@ -193,6 +193,27 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   // Generated article state
   const [generatedArticle, setGeneratedArticle] = useState<GeneratedArticle | null>(null);
   
+  // Process selected keyword response to extract title descriptions
+  useEffect(() => {
+    if (keywordSelectResponse && 
+        keywordSelectResponse.titlesandShortDescription && 
+        Array.isArray(keywordSelectResponse.titlesandShortDescription) && 
+        keywordSelectResponse.titlesandShortDescription.length > 0 && 
+        (!titleDescriptionOptions || titleDescriptionOptions.length === 0)) {
+      
+      console.log("ArticleWriterContext - Processing title descriptions from keyword response");
+      
+      // Convert titlesandShortDescription to the format expected by the app
+      const formattedOptions = keywordSelectResponse.titlesandShortDescription.map((item, index) => ({
+        id: `title-${index}`,
+        title: item.title,
+        description: item.description
+      }));
+      
+      setTitleDescriptionOptions(formattedOptions);
+    }
+  }, [keywordSelectResponse, titleDescriptionOptions]);
+  
   // Load saved writing styles and expert guidance from localStorage on mount
   useEffect(() => {
     try {
@@ -266,6 +287,32 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   };
   
+  // Custom setter for keywordSelectResponse to ensure proper data handling
+  const setKeywordSelectResponseWithProcess = (response: KeywordSelectResponse | null) => {
+    console.log("Setting keywordSelectResponse:", response);
+    
+    // Set the response in state
+    setKeywordSelectResponse(response);
+    
+    // If response has title descriptions, process them
+    if (response && 
+        response.titlesandShortDescription && 
+        Array.isArray(response.titlesandShortDescription) && 
+        response.titlesandShortDescription.length > 0) {
+      
+      // Format the title descriptions
+      const formattedOptions = response.titlesandShortDescription.map((item, index) => ({
+        id: `title-${index}`,
+        title: item.title,
+        description: item.description
+      }));
+      
+      // Update the title description options in state
+      setTitleDescriptionOptions(formattedOptions);
+      console.log("Title description options set:", formattedOptions);
+    }
+  };
+  
   // Reset the article writer state
   const resetArticleWriter = () => {
     setCurrentStep(1);
@@ -324,7 +371,7 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setCurrentStep,
     updateKeywordForm,
     setKeywordResponse,
-    setKeywordSelectResponse,
+    setKeywordSelectResponse: setKeywordSelectResponseWithProcess,
     updateSelectedKeyword,
     resetArticleWriter,
     resetWorkflow,

@@ -18,6 +18,8 @@ const TitleDescriptionStep: React.FC<TitleDescriptionStepProps> = ({
   onClose,
   onCreateBlog
 }) => {
+  console.log("TitleDescriptionStep - Rendering with data:", data);
+  
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center mb-4">
@@ -30,7 +32,7 @@ const TitleDescriptionStep: React.FC<TitleDescriptionStepProps> = ({
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Keywords
         </Button>
-        <h2 className="text-2xl font-semibold">Blog Title Options</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold">Blog Title Options</h2>
       </div>
       
       <TitleDescriptionResults

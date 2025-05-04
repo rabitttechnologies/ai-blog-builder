@@ -29,6 +29,8 @@ const TitleDescriptionStep = () => {
     setCurrentStep,
     selectedTitleDescription,
     setSelectedTitleDescription,
+    titleDescriptionOptions,
+    setTitleDescriptionOptions,
     titleDescriptionForm,
     updateTitleDescriptionForm,
     savedWritingStyles,
@@ -42,20 +44,45 @@ const TitleDescriptionStep = () => {
   const [activeTab, setActiveTab] = useState('titles');
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   
+  // Process keyword response data and prepare title descriptions
   useEffect(() => {
     // Update current step
     setCurrentStep(3);
     
+    console.log("TitleDescriptionStep - keywordSelectResponse:", keywordSelectResponse);
+    
     // Check if we have the required data
-    if (!keywordSelectResponse || !keywordSelectResponse.titlesandShortDescription) {
+    if (!keywordSelectResponse) {
       toast({
         title: "Missing Data",
-        description: "No title options found. Please go back and select keywords first.",
+        description: "No keyword data found. Please go back and select keywords first.",
         variant: "destructive"
       });
       navigate('/article-writer/select-keywords');
+      return;
     }
-  }, [setCurrentStep, keywordSelectResponse, toast, navigate]);
+    
+    // Format and set title description options if they aren't already set
+    if (keywordSelectResponse && (!titleDescriptionOptions || titleDescriptionOptions.length === 0)) {
+      if (keywordSelectResponse.titlesandShortDescription && 
+          Array.isArray(keywordSelectResponse.titlesandShortDescription) && 
+          keywordSelectResponse.titlesandShortDescription.length > 0) {
+        
+        console.log("Setting title description options from keywordSelectResponse");
+        
+        const formattedOptions = titleDescriptionService.formatTitleDescriptions(keywordSelectResponse);
+        setTitleDescriptionOptions(formattedOptions);
+      } else {
+        console.error("No title options found in keywordSelectResponse:", keywordSelectResponse);
+        toast({
+          title: "Missing Data",
+          description: "No title options found. Please go back and select keywords first.",
+          variant: "destructive"
+        });
+        navigate('/article-writer/select-keywords');
+      }
+    }
+  }, [setCurrentStep, keywordSelectResponse, titleDescriptionOptions, setTitleDescriptionOptions, toast, navigate]);
   
   // Handle title selection
   const handleSelectTitle = (title: string, description: string) => {
@@ -172,12 +199,12 @@ const TitleDescriptionStep = () => {
         additionalData: keywordSelectResponse.additionalData || {}
       };
       
-      console.log('Submitting payload:', payload);
+      console.log('Submitting title description payload:', payload);
       
       // Call the webhook service
       const response = await titleDescriptionService.submitTitleDescriptionSelection(payload);
       
-      console.log('Webhook response:', response);
+      console.log('Title description webhook response:', response);
       
       // Navigate to outline page
       navigate('/article-writer/outline');
@@ -201,16 +228,15 @@ const TitleDescriptionStep = () => {
     return <LoadingOverlay message="Generating your article outline..." subMessage="This may take up to a minute" />;
   }
   
-  if (!keywordSelectResponse || !keywordSelectResponse.titlesandShortDescription) {
+  // Early return if no title options are available
+  if (!titleDescriptionOptions || titleDescriptionOptions.length === 0) {
     return (
       <DashboardLayout>
         <div className="container max-w-4xl py-8">
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
-            <p className="mb-4">No title options found. Please go back and select keywords first.</p>
-            <Button onClick={() => navigate('/article-writer/select-keywords')}>
-              Go Back to Keywords
-            </Button>
+            <h2 className="text-2xl font-bold mb-4">Loading Title Options</h2>
+            <p className="mb-4">We're preparing title options for your article. Please wait...</p>
+            <LoadingOverlay message="Loading title options..." />
           </div>
         </div>
       </DashboardLayout>
@@ -226,7 +252,9 @@ const TitleDescriptionStep = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Select Title and Description</h1>
           <p className="text-gray-600">
-            Choose a compelling title and description for your article about <span className="font-medium">{keywordSelectResponse.mainKeyword}</span>.
+            Choose a compelling title and description for your article about <span className="font-medium">
+              {keywordSelectResponse?.mainKeyword || 'your topic'}
+            </span>.
           </p>
         </div>
         
@@ -238,9 +266,9 @@ const TitleDescriptionStep = () => {
           
           <TabsContent value="titles" className="pt-6 space-y-6">
             <div className="space-y-4">
-              {keywordSelectResponse.titlesandShortDescription?.map((item, index) => (
+              {titleDescriptionOptions.map((item, index) => (
                 <Card 
-                  key={index}
+                  key={item.id || index}
                   className={`p-4 transition-colors cursor-pointer border-2 hover:border-primary/60 ${
                     selectedTitleDescription?.title === item.title 
                       ? 'border-primary bg-primary/5' 

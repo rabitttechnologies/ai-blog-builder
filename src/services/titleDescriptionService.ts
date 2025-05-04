@@ -37,6 +37,22 @@ const titleDescriptionService = {
       console.error('Error submitting title description selection:', error);
       throw error;
     }
+  },
+  
+  // Format title descriptions from selected keyword response
+  formatTitleDescriptions(data: any) {
+    // Check if data exists and has the expected titlesandShortDescription property
+    if (data && Array.isArray(data.titlesandShortDescription)) {
+      // Map the data to the expected format
+      return data.titlesandShortDescription.map((item, index) => ({
+        id: `title-${index}`,
+        title: item.title,
+        description: item.description
+      }));
+    }
+    
+    // Return empty array if no data or invalid format
+    return [];
   }
 };
 
