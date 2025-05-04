@@ -73,14 +73,9 @@ const TitleDescriptionStep = () => {
   
   // Handle writing style creation
   const handleCreateStyle = (style: Omit<WritingStyle, 'id'>) => {
-    // Create new style and get the result
     const newStyle = addSavedWritingStyle(style);
-    
-    // If we have a valid new style, select it
-    if (newStyle && newStyle.id) {
-      setSelectedStyleId(newStyle.id);
-      updateTitleDescriptionFormData({ writingStyle: newStyle.description });
-    }
+    setSelectedStyleId(newStyle.id);
+    updateTitleDescriptionFormData({ writingStyle: newStyle.description });
   };
   
   // Handle back button

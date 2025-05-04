@@ -1,109 +1,76 @@
+import * as React from "react"
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 
-import React from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import type { ButtonProps } from '@/components/ui/Button';
+import { Button, ButtonProps } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
 
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  className?: string;
-  siblingCount?: number;
+export interface PaginationProps extends React.HTMLAttributes<HTMLDivElement> {
+  pageCount: number
+  currentPage: number
+  onPageChange: (page: number) => void
 }
 
-export function Pagination({
+export const Pagination = ({
+  pageCount,
   currentPage,
-  totalPages,
   onPageChange,
-  className = '',
-  siblingCount = 1,
-}: PaginationProps) {
-  // Generate page numbers logic
-  const getPageNumbers = () => {
-    const pages = [];
-    
-    // Always show first page
-    pages.push(1);
-    
-    // Current page and siblings
-    const startPage = Math.max(2, currentPage - siblingCount);
-    const endPage = Math.min(totalPages - 1, currentPage + siblingCount);
-    
-    // Add ellipsis after first page if needed
-    if (startPage > 2) {
-      pages.push(-1); // -1 represents ellipsis
-    }
-    
-    // Add sibling pages
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    
-    // Add ellipsis before last page if needed
-    if (endPage < totalPages - 1) {
-      pages.push(-2); // -2 represents ellipsis
-    }
-    
-    // Always show last page if there is more than one page
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-    
-    return pages;
-  };
-  
-  const pageNumbers = getPageNumbers();
-  
-  // Render pagination UI
+  className,
+  ...props
+}: PaginationProps) => {
+  const canPreviousPage = currentPage > 1
+  const canNextPage = currentPage < pageCount
+
   return (
-    <nav className={`flex items-center justify-center space-x-1 ${className}`}>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        <span className="sr-only">Previous page</span>
-      </Button>
-      
-      {pageNumbers.map((pageNumber, index) => {
-        // Render ellipsis
-        if (pageNumber < 0) {
-          return (
-            <span
-              key={`ellipsis-${index}`}
-              className="flex items-center justify-center h-9 w-9"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </span>
-          );
-        }
-        
-        // Render page number
-        return (
-          <Button
-            key={pageNumber}
-            variant={pageNumber === currentPage ? "default" : "outline"}
-            size="sm"
-            onClick={() => onPageChange(pageNumber)}
-            className={`h-9 w-9 p-0`}
-          >
-            {pageNumber}
-          </Button>
-        );
-      })}
-      
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronRight className="h-4 w-4" />
-        <span className="sr-only">Next page</span>
-      </Button>
-    </nav>
-  );
+    <div
+      className={cn("flex items-center justify-between", className)}
+      {...props}
+    >
+      <div className="flex-1 text-sm text-muted-foreground">
+        {currentPage} of {pageCount}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+        >
+          <span className="sr-only">Go to first page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={!canPreviousPage}
+        >
+          <span className="sr-only">Go to previous page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="md"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={!canNextPage}
+        >
+          <span className="sr-only">Go to next page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline" 
+          size="md"
+          onClick={() => onPageChange(pageCount)}
+          disabled={currentPage === pageCount}
+        >
+          <span className="sr-only">Go to last page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
 }

@@ -1,17 +1,15 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import Textarea from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import React from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { WritingStyle } from '@/context/articleWriter/ArticleWriterContext';
 import WritingStyleSelector from './WritingStyleSelector';
-import WritingStyleCreator from './WritingStyleCreator';
 
 interface WritingStyleFormProps {
   styles: WritingStyle[];
-  selectedStyleId: string | undefined;
+  selectedStyleId?: string;
   customStyle: string;
-  onSelectStyle: (id: string) => void;
+  onSelectStyle: (styleId: string) => void;
   onCustomStyleChange: (value: string) => void;
   onCreateStyle: (style: Omit<WritingStyle, 'id'>) => void;
   disabled?: boolean;
@@ -26,59 +24,45 @@ const WritingStyleForm: React.FC<WritingStyleFormProps> = ({
   onCreateStyle,
   disabled = false
 }) => {
-  const [isCreating, setIsCreating] = useState(false);
-
+  // Get the selected style if there is one
+  const selectedStyle = selectedStyleId 
+    ? styles.find(style => style.id === selectedStyleId) 
+    : undefined;
+  
   return (
     <div className="space-y-4">
-      {styles.length > 0 && (
-        <div className="space-y-2">
-          <WritingStyleSelector
-            styles={styles}
-            selectedStyleId={selectedStyleId}
-            onSelect={onSelectStyle}
-            disabled={disabled}
-          />
-          <div className="text-xs text-gray-500">
-            Or write your own style below
-          </div>
-        </div>
-      )}
+      <WritingStyleSelector
+        styles={styles}
+        selectedStyleId={selectedStyleId}
+        customStyle={customStyle}
+        onSelectStyle={onSelectStyle}
+        onCustomStyleChange={onCustomStyleChange}
+        onCreateStyle={onCreateStyle}
+        disabled={disabled}
+      />
       
-      {!isCreating ? (
-        <div className="space-y-4">
-          <Textarea
-            placeholder="Write the tone and style for your article..."
-            value={customStyle}
-            onChange={(e) => onCustomStyleChange(e.target.value)}
-            className="min-h-[100px]"
-            disabled={disabled}
-          />
-          
-          {customStyle && !selectedStyleId && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreating(true)}
-              className="flex items-center"
-              disabled={disabled}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Save as Writing Style
-            </Button>
-          )}
-        </div>
-      ) : (
-        <WritingStyleCreator
-          description={customStyle}
-          onCancel={() => setIsCreating(false)}
-          onSave={(name) => {
-            onCreateStyle({ name, description: customStyle });
-            setIsCreating(false);
+      <div className="space-y-2">
+        <Label htmlFor="writing-style">
+          {selectedStyle ? "Selected Style" : "Define Writing Style"}
+        </Label>
+        <Textarea
+          id="writing-style"
+          placeholder="Describe your preferred tone, style, and voice for this article..."
+          value={selectedStyle ? selectedStyle.description : customStyle}
+          onChange={(e) => {
+            if (!selectedStyle) {
+              onCustomStyleChange(e.target.value);
+            }
           }}
-          disabled={disabled}
+          className="min-h-[120px]"
+          disabled={disabled || !!selectedStyle}
         />
-      )}
+        {selectedStyle && (
+          <p className="text-sm text-muted-foreground">
+            Using saved style: "{selectedStyle.name}". To customize, clear the selection above.
+          </p>
+        )}
+      </div>
     </div>
   );
 };

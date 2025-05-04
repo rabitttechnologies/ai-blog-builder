@@ -21,20 +21,25 @@ const PointOfViewSelector: React.FC<PointOfViewSelectorProps> = ({
   onChange,
   disabled = false
 }) => {
-  // Using a basic select implementation for simplicity
   return (
-    <select 
-      value={value} 
-      onChange={(e) => onChange(e.target.value as PointOfView)}
+    <Select
+      value={value}
+      onValueChange={(val) => onChange(val as PointOfView)}
       disabled={disabled}
-      className="w-full border border-gray-300 rounded-md p-2"
     >
-      {pointOfViewOptions.map(option => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select article point of view" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {pointOfViewOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 };
 
