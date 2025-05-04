@@ -4,297 +4,259 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { useArticleWriter, TitleDescriptionOption, WritingStyle } from '@/context/articleWriter/ArticleWriterContext';
+import { useArticleWriter, TitleDescription } from '@/context/articleWriter/ArticleWriterContext';
 import { Card } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import HeadingCountSelector from '@/components/articleWriter/title-description/HeadingCountSelector';
-import PointOfViewSelector from '@/components/articleWriter/title-description/PointOfViewSelector';
-import WritingStyleForm from '@/components/articleWriter/title-description/WritingStyleForm';
-import ExpertGuidanceInput from '@/components/articleWriter/title-description/ExpertGuidanceInput';
-import TitleSelectionCard from '@/components/articleWriter/title-description/TitleSelectionCard';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+// Mock data for title and description options
+const mockTitleOptions: TitleDescription[] = [
+  {
+    id: '1',
+    title: 'Sustainable Gardening: 10 Eco-Friendly Tips for a Greener Garden',
+    description: 'Learn how to create an environmentally friendly garden with our top sustainable gardening tips. Reduce water usage, avoid chemicals, and support local ecosystems.'
+  },
+  {
+    id: '2',
+    title: 'The Ultimate Guide to Sustainable Gardening Practices',
+    description: 'Discover comprehensive sustainable gardening techniques to transform your garden into an eco-friendly haven while saving money and protecting the environment.'
+  },
+  {
+    id: '3',
+    title: 'How to Create a Sustainable Garden: Expert Tips and Techniques',
+    description: 'Expert gardeners share their best sustainable gardening practices to help you build an eco-friendly outdoor space that thrives while minimizing environmental impact.'
+  },
+  {
+    id: '4',
+    title: 'Sustainable Gardening 101: Beginners Guide to Eco-Friendly Growing',
+    description: 'Start your sustainable gardening journey with these simple, effective techniques for beginners. Learn the basics of creating an environmentally responsible garden space.'
+  },
+  {
+    id: '5',
+    title: 'Transforming Your Yard: Modern Sustainable Gardening Approaches',
+    description: 'Explore cutting-edge sustainable gardening methods to modernize your outdoor space while promoting biodiversity and reducing your carbon footprint.'
+  }
+];
 
 const TitleDescriptionStep = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const {
     keywordForm,
-    keywordSelectResponse,
     setCurrentStep,
-    titleDescriptionFormData,
-    updateTitleDescriptionFormData,
-    savedWritingStyles,
-    addSavedWritingStyle,
-    isLoading,
-    setIsLoading,
-    submitTitleDescriptionForm
+    titleDescriptionOptions,
+    setTitleDescriptionOptions,
+    selectedTitleDescription,
+    setSelectedTitleDescription
   } = useArticleWriter();
   
-  const [activeTab, setActiveTab] = useState('select-title');
-  const [selectedStyleId, setSelectedStyleId] = useState<string | undefined>(undefined);
+  const [customTitle, setCustomTitle] = useState('');
+  const [customDescription, setCustomDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('select');
   
   useEffect(() => {
     // Update current step
     setCurrentStep(3);
     
-    // Redirect if no keyword response
-    if (!keywordSelectResponse) {
-      toast({
-        title: "No keyword data",
-        description: "Please complete the keyword selection step first.",
-        variant: "destructive"
-      });
-      navigate('/article-writer/select-keywords');
+    // If we don't have real options yet, set mock options
+    if (titleDescriptionOptions.length === 0) {
+      setTitleDescriptionOptions(mockTitleOptions);
     }
-  }, [setCurrentStep, keywordSelectResponse, toast, navigate]);
+  }, [setCurrentStep, titleDescriptionOptions, setTitleDescriptionOptions]);
   
-  // Handle title selection
-  const handleSelectTitle = (title: TitleDescriptionOption) => {
-    updateTitleDescriptionFormData({ selectedTitle: title });
-  };
-  
-  // Handle writing style selection
-  const handleSelectWritingStyle = (styleId: string) => {
-    setSelectedStyleId(styleId);
+  const handleGenerateMore = () => {
+    setIsLoading(true);
     
-    // Find the selected style
-    const style = savedWritingStyles.find(s => s.id === styleId);
-    if (style) {
-      updateTitleDescriptionFormData({ writingStyle: style.description });
-    }
+    // In a real implementation, this would call an API endpoint
+    // For this demo, we'll just simulate a delay and show the same options
+    setTimeout(() => {
+      toast({
+        title: "New titles generated",
+        description: "Here are some fresh title and description options for your article."
+      });
+      setIsLoading(false);
+    }, 1500);
   };
   
-  // Handle custom writing style change
-  const handleCustomStyleChange = (value: string) => {
-    setSelectedStyleId(undefined);
-    updateTitleDescriptionFormData({ writingStyle: value });
+  const handleSelect = (item: TitleDescription) => {
+    setSelectedTitleDescription(item);
+    
+    // Update custom fields as well for easier editing
+    setCustomTitle(item.title);
+    setCustomDescription(item.description);
+    
+    // Switch to custom tab
+    setActiveTab('custom');
   };
   
-  // Handle writing style creation
-  const handleCreateStyle = (style: Omit<WritingStyle, 'id'>) => {
-    const newStyle = addSavedWritingStyle(style);
-    setSelectedStyleId(newStyle.id);
-    updateTitleDescriptionFormData({ writingStyle: newStyle.description });
-  };
-  
-  // Handle back button
   const handleBack = () => {
     navigate('/article-writer/select-keywords');
   };
   
-  // Handle continue button
-  const handleContinue = async () => {
-    // Validate form data
-    if (!titleDescriptionFormData.selectedTitle) {
-      toast({
-        title: "Please select a title",
-        description: "You need to select a title and description for your article.",
-        variant: "destructive"
-      });
-      setActiveTab('select-title');
-      return;
-    }
-    
-    if (!titleDescriptionFormData.writingStyle) {
-      toast({
-        title: "Please define a writing style",
-        description: "You need to select or create a writing style for your article.",
-        variant: "destructive"
-      });
-      setActiveTab('configure-article');
-      return;
-    }
-    
-    try {
-      setIsLoading(true);
-      const result = await submitTitleDescriptionForm();
-      
-      // If successful, navigate to the next step
-      if (result) {
-        navigate('/article-writer/outline');
+  const handleContinue = () => {
+    // If on custom tab, use the custom values
+    if (activeTab === 'custom') {
+      if (!customTitle.trim() || !customDescription.trim()) {
+        toast({
+          title: "Missing information",
+          description: "Please provide both a title and description.",
+          variant: "destructive"
+        });
+        return;
       }
-    } catch (error: any) {
+      
+      const customOption: TitleDescription = {
+        id: 'custom',
+        title: customTitle,
+        description: customDescription
+      };
+      
+      setSelectedTitleDescription(customOption);
+    } else if (!selectedTitleDescription) {
+      // If on select tab but nothing selected, show error
       toast({
-        title: "Error",
-        description: error.message || "An error occurred while submitting the form.",
+        title: "No selection made",
+        description: "Please select a title and description or create your own.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+    
+    navigate('/article-writer/outline');
   };
-  
-  if (!keywordSelectResponse) {
-    return null; // Will redirect in useEffect
-  }
-  
-  const titlesAndDescriptions = keywordSelectResponse.titlesandShortDescription || [];
   
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Select Title and Configure Article - Article Writer AI</title>
+        <title>Select Title and Description - Article Writer AI</title>
       </Helmet>
       <div className="container max-w-4xl py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Select Title and Configure Article</h1>
+          <h1 className="text-3xl font-bold mb-2">Select Title and Description</h1>
           <p className="text-gray-600">
-            Choose a title and configure the settings for your article about <span className="font-medium">{keywordForm.keyword}</span>.
+            Choose a compelling title and description for your article about <span className="font-medium">{keywordForm.keyword}</span>.
           </p>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="select-title">1. Select Title</TabsTrigger>
-            <TabsTrigger value="configure-article">2. Configure Article</TabsTrigger>
+            <TabsTrigger value="select">Select from AI suggestions</TabsTrigger>
+            <TabsTrigger value="custom">Create custom</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="select-title" className="pt-6">
-            <div className="mb-4">
-              <p className="text-sm text-gray-500 mb-4">
+          <TabsContent value="select" className="pt-6">
+            <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <p className="text-sm text-gray-500">
                 Select one of the AI-generated title and description suggestions below.
               </p>
-              
-              <div className="space-y-4">
-                {titlesAndDescriptions.map((title, index) => (
-                  <TitleSelectionCard
-                    key={index}
-                    title={title}
-                    isSelected={titleDescriptionFormData.selectedTitle?.title === title.title}
-                    onSelect={() => handleSelectTitle(title)}
-                    disabled={isLoading}
-                  />
-                ))}
-                
-                {titlesAndDescriptions.length === 0 && (
-                  <Card className="p-6 text-center">
-                    <p className="text-gray-500">No title options available.</p>
-                  </Card>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-between mt-8">
               <Button
                 variant="outline"
-                onClick={handleBack}
-                className="flex items-center"
+                size="sm"
+                onClick={handleGenerateMore}
                 disabled={isLoading}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Back
-              </Button>
-              <Button
-                onClick={() => setActiveTab('configure-article')}
-                className="flex items-center"
-                disabled={!titleDescriptionFormData.selectedTitle || isLoading}
-              >
-                Next Step
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="configure-article" className="pt-6">
-            <div className="space-y-8">
-              {/* Selected title display */}
-              {titleDescriptionFormData.selectedTitle && (
-                <Card className="p-4 border-primary/20 bg-primary/5">
-                  <h3 className="font-bold text-lg mb-2">{titleDescriptionFormData.selectedTitle.title}</h3>
-                  <p className="text-gray-600 text-sm">{titleDescriptionFormData.selectedTitle.description}</p>
-                </Card>
-              )}
-              
-              {/* Number of Headings */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Number of Headings</h3>
-                <p className="text-sm text-gray-500">
-                  Select how many headings you want in your article. This will determine the length and depth of the content.
-                </p>
-                <HeadingCountSelector
-                  value={titleDescriptionFormData.headingCount}
-                  onChange={(value) => updateTitleDescriptionFormData({ headingCount: value })}
-                  disabled={isLoading}
-                />
-              </div>
-              
-              {/* Writing Style */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Writing Style</h3>
-                <p className="text-sm text-gray-500">
-                  Define the tone and style for your article or select from your saved styles.
-                </p>
-                <WritingStyleForm
-                  styles={savedWritingStyles}
-                  selectedStyleId={selectedStyleId}
-                  customStyle={titleDescriptionFormData.writingStyle}
-                  onSelectStyle={handleSelectWritingStyle}
-                  onCustomStyleChange={handleCustomStyleChange}
-                  onCreateStyle={handleCreateStyle}
-                  disabled={isLoading}
-                />
-              </div>
-              
-              {/* Article Point of View */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Article Point of View</h3>
-                <p className="text-sm text-gray-500">
-                  Choose the perspective from which the article will be written.
-                </p>
-                <PointOfViewSelector
-                  value={titleDescriptionFormData.pointOfView}
-                  onChange={(value) => updateTitleDescriptionFormData({ pointOfView: value })}
-                  disabled={isLoading}
-                />
-              </div>
-              
-              {/* Expert Guidance */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Expert Guidance (Optional)</h3>
-                <p className="text-sm text-gray-500">
-                  Provide any specific instructions or guidance for the AI when writing your article.
-                </p>
-                <ExpertGuidanceInput
-                  value={titleDescriptionFormData.expertGuidance}
-                  onChange={(value) => updateTitleDescriptionFormData({ expertGuidance: value })}
-                  saveForFuture={titleDescriptionFormData.saveWritingStyle}
-                  onSaveForFutureChange={(value) => updateTitleDescriptionFormData({ saveWritingStyle: value })}
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={() => setActiveTab('select-title')}
-                className="flex items-center"
-                disabled={isLoading}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Back
-              </Button>
-              <Button
-                onClick={handleContinue}
-                className="flex items-center"
-                disabled={isLoading || !titleDescriptionFormData.writingStyle}
+                className="shrink-0"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
                   </>
                 ) : (
                   <>
-                    Continue
-                    <ChevronRight className="ml-1 h-4 w-4" />
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate More
                   </>
                 )}
               </Button>
             </div>
+            
+            <div className="space-y-4">
+              {titleDescriptionOptions.map((item) => (
+                <Card 
+                  key={item.id}
+                  className={`p-4 transition-colors cursor-pointer border-2 hover:border-primary/60 ${
+                    selectedTitleDescription?.id === item.id 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-transparent'
+                  }`}
+                  onClick={() => handleSelect(item)}
+                >
+                  <div className="flex">
+                    <div className="flex-grow">
+                      <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+                      <p className="text-gray-600 text-sm">{item.description}</p>
+                    </div>
+                    {selectedTitleDescription?.id === item.id && (
+                      <div className="flex items-center">
+                        <div className="bg-primary text-white rounded-full p-1">
+                          <Check className="h-4 w-4" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+              
+              {titleDescriptionOptions.length === 0 && (
+                <div className="text-center py-12 border rounded-lg">
+                  <p className="text-gray-500">No title options generated yet.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="custom" className="pt-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="custom-title" className="text-base">Custom Title</Label>
+                <Input
+                  id="custom-title"
+                  placeholder="Enter your article title"
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  className="h-12"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="custom-description" className="text-base">Custom Description</Label>
+                <Textarea
+                  id="custom-description"
+                  placeholder="Enter a brief description of your article"
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  rows={4}
+                />
+                <p className="text-sm text-gray-500">
+                  This will be used as the meta description for SEO purposes and as an introduction to your article.
+                </p>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
+        
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="flex items-center"
+          >
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back
+          </Button>
+          <Button
+            onClick={handleContinue}
+            className="flex items-center"
+          >
+            Continue
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </DashboardLayout>
   );
