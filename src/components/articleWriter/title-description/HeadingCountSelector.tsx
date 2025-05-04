@@ -1,14 +1,8 @@
 
 import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { HeadingCount, HeadingCountOption, headingCountOptions } from '@/context/articleWriter/ArticleWriterContext';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { HeadingCount, headingCountOptions } from '@/context/articleWriter/ArticleWriterContext';
 
 interface HeadingCountSelectorProps {
   value: HeadingCount;
@@ -22,27 +16,25 @@ const HeadingCountSelector: React.FC<HeadingCountSelectorProps> = ({
   disabled = false
 }) => {
   return (
-    <Select
+    <RadioGroup
       value={value}
       onValueChange={(val) => onChange(val as HeadingCount)}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
       disabled={disabled}
     >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select number of headings" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {headingCountOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              <div className="flex flex-col">
-                <span>{option.label}</span>
-                <span className="text-xs text-muted-foreground">{option.wordCount}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+      {headingCountOptions.map((option) => (
+        <div key={option.value} className="flex items-center space-x-2">
+          <RadioGroupItem value={option.value} id={`heading-count-${option.value}`} />
+          <Label 
+            htmlFor={`heading-count-${option.value}`}
+            className="flex flex-col cursor-pointer"
+          >
+            <span className="font-medium">{option.label}</span>
+            <span className="text-xs text-gray-500">{option.wordCount}</span>
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
   );
 };
 

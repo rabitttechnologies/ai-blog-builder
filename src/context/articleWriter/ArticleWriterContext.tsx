@@ -130,7 +130,7 @@ interface ArticleWriterContextType {
   updateTitleDescriptionFormData: (updates: Partial<TitleDescriptionFormData>) => void;
   // Saved writing styles
   savedWritingStyles: WritingStyle[];
-  addSavedWritingStyle: (style: Omit<WritingStyle, 'id'>) => void;
+  addSavedWritingStyle: (style: Omit<WritingStyle, 'id'>) => WritingStyle;
   // Article outline properties
   articleOutlineOptions: ArticleOutline[];
   setArticleOutlineOptions: (options: ArticleOutline[]) => void;
@@ -263,7 +263,7 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   };
   
   // Add a new saved writing style
-  const addSavedWritingStyle = (style: Omit<WritingStyle, 'id'>) => {
+  const addSavedWritingStyle = (style: Omit<WritingStyle, 'id'>): WritingStyle => {
     const newStyle: WritingStyle = {
       ...style,
       id: generateId(),

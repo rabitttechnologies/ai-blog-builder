@@ -1,65 +1,81 @@
 
-import * as React from "react"
-import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
+import React from 'react';
 
-import { cn } from "@/lib/utils"
+interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  value?: string;
+  onValueChange?: (value: string) => void;
+  disabled?: boolean;
+}
 
-const RadioGroup = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, ...props }, ref) => {
+export const RadioGroup: React.FC<RadioGroupProps> = ({ 
+  children,
+  className = '',
+  value,
+  onValueChange,
+  disabled = false,
+  ...props
+}) => {
+  const handleItemClick = (itemValue: string) => {
+    if (!disabled && onValueChange) {
+      onValueChange(itemValue);
+    }
+  };
+
+  // Clone children to pass necessary props
+  const enhancedChildren = React.Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child as React.ReactElement<any>, {
+        isSelected: value === (child.props as any).value,
+        onClick: () => handleItemClick((child.props as any).value),
+        disabled
+      });
+    }
+    return child;
+  });
+
   return (
-    <RadioGroupPrimitive.Root
-      className={cn("grid gap-2", className)}
-      {...props}
-      ref={ref}
-    />
-  )
-})
-RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
-
-const RadioGroupItem = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
->(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
+    <div 
+      role="radiogroup" 
+      className={`${className}`} 
+      aria-disabled={disabled}
       {...props}
     >
-      <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <div className="h-2.5 w-2.5 rounded-full bg-current" />
-      </RadioGroupPrimitive.Indicator>
-    </RadioGroupPrimitive.Item>
-  )
-})
-RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName
-
-// Simple Radio component for standalone use
-const Radio = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> & {
-    name?: string;
-  }
->(({ className, name, ...props }, ref) => {
-  // Create a simple wrapper around RadioGroupItem for standalone use
-  return (
-    <RadioGroupPrimitive.Root name={name} defaultValue={props.value}>
-      <RadioGroupItem
-        ref={ref}
-        className={cn(
-          "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
-        {...props}
-      />
-    </RadioGroupPrimitive.Root>
+      {enhancedChildren}
+    </div>
   );
-});
-Radio.displayName = "Radio";
+};
 
-export { RadioGroup, RadioGroupItem, Radio }
+interface RadioGroupItemProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  value: string;
+  id?: string;
+  isSelected?: boolean;
+  onClick?: () => void;
+}
+
+export const RadioGroupItem: React.FC<RadioGroupItemProps> = ({
+  value,
+  id,
+  isSelected = false,
+  onClick,
+  disabled = false,
+  className = '',
+  ...props
+}) => {
+  const radioClasses = `h-4 w-4 rounded-full border border-gray-300 ${isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`;
+  
+  return (
+    <div 
+      className={radioClasses}
+      role="radio"
+      aria-checked={isSelected}
+      onClick={disabled ? undefined : onClick}
+      {...props}
+    >
+      {isSelected && (
+        <div className="flex items-center justify-center h-full w-full">
+          <div className="h-1.5 w-1.5 rounded-full bg-white" />
+        </div>
+      )}
+    </div>
+  );
+};

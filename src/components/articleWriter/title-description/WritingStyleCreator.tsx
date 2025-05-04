@@ -1,101 +1,76 @@
 
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { PlusCircle } from 'lucide-react';
-import { WritingStyle } from '@/context/articleWriter/ArticleWriterContext';
+import { Label } from '@/components/ui/label';
+import { Check, X } from 'lucide-react';
 
 interface WritingStyleCreatorProps {
-  onSave: (style: Omit<WritingStyle, 'id'>) => void;
+  description: string;
+  onSave: (name: string) => void;
+  onCancel: () => void;
   disabled?: boolean;
 }
 
 const WritingStyleCreator: React.FC<WritingStyleCreatorProps> = ({
+  description,
   onSave,
+  onCancel,
   disabled = false
 }) => {
-  const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-
-  const handleSave = () => {
-    if (name.trim() && description.trim()) {
-      onSave({ name, description });
-      setOpen(false);
-      setName('');
-      setDescription('');
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) {
+      onSave(name.trim());
     }
   };
-
+  
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
+    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-md bg-gray-50">
+      <div>
+        <Label htmlFor="style-name">Style Name</Label>
+        <Input
+          id="style-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="E.g., Professional, Casual, Technical..."
+          required
           disabled={disabled}
-          className="gap-2"
+          className="mt-1"
+        />
+      </div>
+      
+      <div className="text-xs text-gray-500">
+        <span className="font-medium">Style Description:</span>
+        <p className="mt-1">{description}</p>
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Button
+          type="submit"
+          size="sm"
+          className="flex items-center"
+          disabled={!name.trim() || disabled}
         >
-          <PlusCircle className="h-4 w-4" />
-          Create Writing Style
+          <Check className="h-4 w-4 mr-1" />
+          Save Style
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create a New Writing Style</DialogTitle>
-          <DialogDescription>
-            Define a new writing style that you can reuse later.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="style-name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="style-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="col-span-3"
-              placeholder="Name your writing style"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="style-description" className="text-right">
-              Description
-            </Label>
-            <Textarea
-              id="style-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="col-span-3"
-              placeholder="Describe the tone, voice, and style you want for your article"
-              rows={5}
-              required
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={!name.trim() || !description.trim()}>
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          className="flex items-center"
+          disabled={disabled}
+        >
+          <X className="h-4 w-4 mr-1" />
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 };
 

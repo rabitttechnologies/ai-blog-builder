@@ -2,7 +2,6 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 
 interface ExpertGuidanceInputProps {
   value: string;
@@ -29,10 +28,11 @@ const ExpertGuidanceInput: React.FC<ExpertGuidanceInputProps> = ({
         disabled={disabled}
       />
       <div className="flex items-center space-x-2">
-        <Switch
+        <input
+          type="checkbox"
           id="save-guidance"
           checked={saveForFuture}
-          onCheckedChange={onSaveForFutureChange}
+          onChange={(e) => onSaveForFutureChange(e.target.checked)}
           disabled={disabled}
         />
         <Label htmlFor="save-guidance" className="cursor-pointer">

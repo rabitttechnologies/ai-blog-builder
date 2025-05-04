@@ -1,90 +1,51 @@
 
-import React, { forwardRef } from "react";
-import { cn } from "@/lib/utils";
-import { cva } from "class-variance-authority";
-import { Slot } from "@radix-ui/react-slot";
+import React from 'react';
 
-// Define proper types for our button variants and sizes
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link";
-export type ButtonSize = "sm" | "md" | "lg" | "icon";
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  isLoading?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  fullWidth?: boolean;
-  asChild?: boolean;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode;
 }
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-full font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-[0.98]",
-  {
-    variants: {
-      variant: {
-        primary: "bg-primary text-primary-foreground hover:shadow-lg hover:shadow-primary/20",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        outline: "border border-border bg-transparent hover:bg-secondary",
-        ghost: "bg-transparent hover:bg-secondary",
-        link: "bg-transparent underline-offset-4 hover:underline text-primary"
-      },
-      size: {
-        sm: "text-xs h-8 px-3 py-1 min-w-[80px] max-w-[200px]",
-        md: "text-sm h-10 px-4 py-2 min-w-[100px] max-w-[220px]",
-        lg: "text-base h-12 px-6 py-3 min-w-[120px] max-w-[240px]",
-        icon: "h-8 w-8 p-0" // Icon size variant
-      },
-      fullWidth: {
-        true: "w-full",
-      }
-    },
-    defaultVariants: {
-      variant: "primary",
-      size: "md",
-      fullWidth: false,
-    }
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'default',
+  size = 'md',
+  children,
+  className = '',
+  ...props
+}) => {
+  let variantClasses = '';
+  let sizeClasses = '';
+  
+  // Variant styles
+  switch (variant) {
+    case 'outline':
+      variantClasses = 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+      break;
+    case 'ghost':
+      variantClasses = 'bg-transparent text-gray-700 hover:bg-gray-100';
+      break;
+    default:
+      variantClasses = 'bg-blue-600 text-white hover:bg-blue-700';
   }
-);
-
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ 
-    children, 
-    className, 
-    variant = "primary", 
-    size = "md", 
-    isLoading = false, 
-    leftIcon,
-    rightIcon,
-    fullWidth = false,
-    asChild = false,
-    disabled,
-    ...props 
-  }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    
-    return (
-      <Comp
-        ref={ref}
-        className={cn(
-          buttonVariants({ variant, size, fullWidth }),
-          (disabled || isLoading) && "opacity-70 pointer-events-none",
-          className
-        )}
-        disabled={disabled || isLoading}
-        {...props}
-      >
-        {isLoading && (
-          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        )}
-        {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
-        {children}
-        {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
-      </Comp>
-    );
+  
+  // Size styles
+  switch (size) {
+    case 'sm':
+      sizeClasses = 'py-1 px-3 text-sm';
+      break;
+    case 'lg':
+      sizeClasses = 'py-3 px-6 text-lg';
+      break;
+    default:
+      sizeClasses = 'py-2 px-4 text-base';
   }
-);
-
-Button.displayName = "Button";
-
-export { Button, buttonVariants };
+  
+  const buttonClasses = `font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses} ${sizeClasses} ${className}`;
+  
+  return (
+    <button className={buttonClasses} {...props}>
+      {children}
+    </button>
+  );
+};

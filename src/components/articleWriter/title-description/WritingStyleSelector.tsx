@@ -1,68 +1,54 @@
 
 import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { WritingStyle } from '@/context/articleWriter/ArticleWriterContext';
-import WritingStyleCreator from './WritingStyleCreator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 interface WritingStyleSelectorProps {
   styles: WritingStyle[];
-  selectedStyleId?: string;
-  customStyle: string;
-  onSelectStyle: (styleId: string) => void;
-  onCustomStyleChange: (value: string) => void;
-  onCreateStyle: (style: Omit<WritingStyle, 'id'>) => void;
+  selectedStyleId: string | undefined;
+  onSelect: (id: string) => void;
   disabled?: boolean;
 }
 
 const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
   styles,
   selectedStyleId,
-  customStyle,
-  onSelectStyle,
-  onCustomStyleChange,
-  onCreateStyle,
+  onSelect,
   disabled = false
 }) => {
-  // If we have saved styles, show them in a dropdown
-  if (styles.length > 0) {
-    return (
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-grow">
-          <Select
-            value={selectedStyleId || ''}
-            onValueChange={onSelectStyle}
-            disabled={disabled}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a writing style" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Saved Styles</SelectLabel>
-                {styles.map((style) => (
-                  <SelectItem key={style.id} value={style.id}>
-                    {style.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <WritingStyleCreator onSave={onCreateStyle} disabled={disabled} />
-      </div>
-    );
+  if (styles.length === 0) {
+    return null;
   }
 
-  // If no saved styles, just show the create button
-  return <WritingStyleCreator onSave={onCreateStyle} disabled={disabled} />;
+  return (
+    <div className="p-4 border rounded-md bg-gray-50">
+      <h4 className="font-medium text-sm mb-3">Saved Writing Styles</h4>
+      <RadioGroup 
+        value={selectedStyleId}
+        onValueChange={onSelect}
+        className="space-y-2"
+        disabled={disabled}
+      >
+        {styles.map((style) => (
+          <div key={style.id} className="flex items-start space-x-2">
+            <RadioGroupItem 
+              value={style.id} 
+              id={`style-${style.id}`} 
+              className="mt-1"
+            />
+            <Label 
+              htmlFor={`style-${style.id}`}
+              className="flex flex-col cursor-pointer"
+            >
+              <span className="font-medium">{style.name}</span>
+              <span className="text-xs text-gray-600">{style.description}</span>
+            </Label>
+          </div>
+        ))}
+      </RadioGroup>
+    </div>
+  );
 };
 
 export default WritingStyleSelector;

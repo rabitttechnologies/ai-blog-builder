@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { CheckCircle } from 'lucide-react';
 import { TitleDescriptionOption } from '@/context/articleWriter/ArticleWriterContext';
 
 interface TitleSelectionCardProps {
@@ -19,25 +20,33 @@ const TitleSelectionCard: React.FC<TitleSelectionCardProps> = ({
 }) => {
   return (
     <Card 
-      className={`p-4 transition-colors cursor-pointer border-2 hover:border-primary/60 ${
+      className={`p-4 transition-all ${
         isSelected 
-          ? 'border-primary bg-primary/5' 
-          : 'border-transparent'
-      } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
-      onClick={() => !disabled && onSelect()}
+          ? 'border-primary bg-primary/5 shadow-md' 
+          : 'hover:border-gray-300 hover:bg-gray-50'
+      }`}
     >
-      <div className="flex">
-        <div className="flex-grow">
-          <h3 className="font-bold text-lg mb-2">{title.title}</h3>
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold mb-2">{title.title}</h3>
           <p className="text-gray-600 text-sm">{title.description}</p>
         </div>
-        {isSelected && (
-          <div className="flex items-center">
-            <div className="bg-primary text-white rounded-full p-1">
-              <Check className="h-4 w-4" />
+        <div className="ml-4 flex-shrink-0">
+          {isSelected ? (
+            <div className="rounded-full bg-primary/10 p-2 text-primary">
+              <CheckCircle className="h-5 w-5" />
             </div>
-          </div>
-        )}
+          ) : (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={onSelect}
+              disabled={disabled}
+            >
+              Select
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
