@@ -71,3 +71,6 @@ export const CardFooter: React.FC<CardProps> = ({
     </div>
   );
 };
+
+// Make sure all exports are included
+export { Card as default };

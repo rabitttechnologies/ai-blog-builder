@@ -21,7 +21,11 @@ export const Select: React.FC<SelectProps> = ({
     }
   };
   
-  return <select onChange={handleChange} {...props}>{children}</select>;
+  return <select 
+    onChange={handleChange} 
+    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    {...props}
+  >{children}</select>;
 };
 
 interface SelectContentProps {
@@ -29,8 +33,8 @@ interface SelectContentProps {
   className?: string;
 }
 
-export const SelectContent: React.FC<SelectContentProps> = ({ children, className }) => {
-  return <div className={className}>{children}</div>;
+export const SelectContent: React.FC<SelectContentProps> = ({ children, className = '' }) => {
+  return <div className={`flex flex-col py-1 ${className}`}>{children}</div>;
 };
 
 interface SelectGroupProps {
@@ -38,27 +42,29 @@ interface SelectGroupProps {
   className?: string;
 }
 
-export const SelectGroup: React.FC<SelectGroupProps> = ({ children, className }) => {
-  return <div className={className}>{children}</div>;
+export const SelectGroup: React.FC<SelectGroupProps> = ({ children, className = '' }) => {
+  return <div className={`flex flex-col gap-1 p-1 ${className}`}>{children}</div>;
 };
 
 interface SelectItemProps {
   children: React.ReactNode;
   value: string;
   className?: string;
+  disabled?: boolean;
 }
 
-export const SelectItem: React.FC<SelectItemProps> = ({ children, value, className }) => {
-  return <option value={value} className={className}>{children}</option>;
+export const SelectItem: React.FC<SelectItemProps> = ({ children, value, className = '', disabled }) => {
+  return <option value={value} className={className} disabled={disabled}>{children}</option>;
 };
 
 interface SelectTriggerProps {
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }
 
-export const SelectTrigger: React.FC<SelectTriggerProps> = ({ children, className }) => {
-  return <div className={className}>{children}</div>;
+export const SelectTrigger: React.FC<SelectTriggerProps> = ({ children, className = '', id }) => {
+  return <div id={id} className={`flex items-center justify-between ${className}`}>{children}</div>;
 };
 
 interface SelectValueProps {
@@ -66,6 +72,6 @@ interface SelectValueProps {
   className?: string;
 }
 
-export const SelectValue: React.FC<SelectValueProps> = ({ placeholder, className }) => {
-  return <span className={className}>{placeholder}</span>;
+export const SelectValue: React.FC<SelectValueProps> = ({ placeholder, className = '' }) => {
+  return <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${className}`}>{placeholder}</span>;
 };
