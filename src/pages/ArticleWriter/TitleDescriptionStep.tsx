@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -64,13 +63,16 @@ const TitleDescriptionStep = () => {
     
     // Format and set title description options if they aren't already set
     if (keywordSelectResponse && (!titleDescriptionOptions || titleDescriptionOptions.length === 0)) {
-      if (keywordSelectResponse.titlesandShortDescription && 
-          Array.isArray(keywordSelectResponse.titlesandShortDescription) && 
-          keywordSelectResponse.titlesandShortDescription.length > 0) {
+      // Handle both direct object and array-wrapped response
+      const normalizedResponse = Array.isArray(keywordSelectResponse) ? keywordSelectResponse[0] : keywordSelectResponse;
+      
+      if (normalizedResponse.titlesandShortDescription && 
+          Array.isArray(normalizedResponse.titlesandShortDescription) && 
+          normalizedResponse.titlesandShortDescription.length > 0) {
         
         console.log("Setting title description options from keywordSelectResponse");
         
-        const formattedOptions = titleDescriptionService.formatTitleDescriptions(keywordSelectResponse);
+        const formattedOptions = titleDescriptionService.formatTitleDescriptions(normalizedResponse);
         setTitleDescriptionOptions(formattedOptions);
       } else {
         console.error("No title options found in keywordSelectResponse:", keywordSelectResponse);

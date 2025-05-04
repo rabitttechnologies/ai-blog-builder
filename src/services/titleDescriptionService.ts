@@ -23,13 +23,19 @@ const titleDescriptionService = {
       const data = await response.json();
       console.log('Title Description Webhook Response:', data);
       
-      // Handle the response structure - it might be wrapped in an array
+      // Handle the response structure - normalize it to always use the object format
       let responseData;
       
-      if (Array.isArray(data) && data.length > 0) {
-        responseData = data[0];
+      if (Array.isArray(data)) {
+        console.log('Response is an array, extracting first item');
+        responseData = data.length > 0 ? data[0] : null;
       } else {
+        console.log('Response is an object');
         responseData = data;
+      }
+      
+      if (!responseData) {
+        throw new Error('Invalid or empty response data');
       }
       
       return responseData as TitleDescriptionResponse;
@@ -41,10 +47,17 @@ const titleDescriptionService = {
   
   // Format title descriptions from selected keyword response
   formatTitleDescriptions(data: any) {
-    // Check if data exists and has the expected titlesandShortDescription property
-    if (data && Array.isArray(data.titlesandShortDescription)) {
+    console.log('Formatting title descriptions from data:', data);
+    
+    // Check if data is an array and extract first item if needed
+    const normalizedData = Array.isArray(data) ? data[0] : data;
+    
+    // Check if normalized data exists and has the expected titlesandShortDescription property
+    if (normalizedData && Array.isArray(normalizedData.titlesandShortDescription)) {
+      console.log('Found title descriptions array with length:', normalizedData.titlesandShortDescription.length);
+      
       // Map the data to the expected format
-      return data.titlesandShortDescription.map((item, index) => ({
+      return normalizedData.titlesandShortDescription.map((item, index) => ({
         id: `title-${index}`,
         title: item.title,
         description: item.description
@@ -52,6 +65,7 @@ const titleDescriptionService = {
     }
     
     // Return empty array if no data or invalid format
+    console.warn('No valid titlesandShortDescription array found in data');
     return [];
   }
 };

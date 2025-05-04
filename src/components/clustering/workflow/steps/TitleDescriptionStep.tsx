@@ -20,9 +20,14 @@ const TitleDescriptionStep: React.FC<TitleDescriptionStepProps> = ({
 }) => {
   console.log("TitleDescriptionStep - Rendering with data:", data);
   
+  // Normalize data if it's wrapped in an array
+  const normalizedData = Array.isArray(data) ? data[0] : data;
+  
+  console.log("TitleDescriptionStep - Using normalized data:", normalizedData);
+  
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-4 flex-wrap gap-2">
         <Button 
           variant="outline" 
           size="sm" 
@@ -36,7 +41,7 @@ const TitleDescriptionStep: React.FC<TitleDescriptionStepProps> = ({
       </div>
       
       <TitleDescriptionResults
-        data={data}
+        data={normalizedData}
         onUpdateItem={() => {}}
         onCreateBlog={onCreateBlog}
         onClose={onClose}

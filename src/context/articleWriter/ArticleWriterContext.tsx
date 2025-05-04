@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   WritingStyle, 
@@ -288,20 +287,28 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   };
   
   // Custom setter for keywordSelectResponse to ensure proper data handling
-  const setKeywordSelectResponseWithProcess = (response: KeywordSelectResponse | null) => {
+  const setKeywordSelectResponseWithProcess = (response: KeywordSelectResponse | KeywordSelectResponse[] | null) => {
     console.log("Setting keywordSelectResponse:", response);
     
-    // Set the response in state
-    setKeywordSelectResponse(response);
+    if (!response) {
+      setKeywordSelectResponse(null);
+      return;
+    }
     
-    // If response has title descriptions, process them
-    if (response && 
-        response.titlesandShortDescription && 
-        Array.isArray(response.titlesandShortDescription) && 
-        response.titlesandShortDescription.length > 0) {
+    // Normalize the response: if it's an array, extract the first item
+    const normalizedResponse = Array.isArray(response) ? response[0] : response;
+    
+    // Set the normalized response in state
+    setKeywordSelectResponse(normalizedResponse);
+    
+    // If normalized response has title descriptions, process them
+    if (normalizedResponse && 
+        normalizedResponse.titlesandShortDescription && 
+        Array.isArray(normalizedResponse.titlesandShortDescription) && 
+        normalizedResponse.titlesandShortDescription.length > 0) {
       
       // Format the title descriptions
-      const formattedOptions = response.titlesandShortDescription.map((item, index) => ({
+      const formattedOptions = normalizedResponse.titlesandShortDescription.map((item, index) => ({
         id: `title-${index}`,
         title: item.title,
         description: item.description
@@ -310,6 +317,8 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
       // Update the title description options in state
       setTitleDescriptionOptions(formattedOptions);
       console.log("Title description options set:", formattedOptions);
+    } else {
+      console.warn("No title descriptions found in the response:", normalizedResponse);
     }
   };
   
