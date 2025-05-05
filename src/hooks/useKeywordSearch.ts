@@ -65,13 +65,19 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
         }
       }, 120000); // 2 minutes
 
+      console.log('Submitting search with payload:', payload);
+      
       const response = await fetch('https://n8n.agiagentworld.com/webhook/googlesearchresponse', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Origin': window.location.origin,
+          'Accept': 'application/json'
         },
         body: JSON.stringify(payload),
-        signal: abortControllerRef.current.signal
+        signal: abortControllerRef.current.signal,
+        mode: 'cors',
+        credentials: 'omit'
       });
 
       clearTimeout(timeoutId);
@@ -85,11 +91,14 @@ export const useKeywordSearch = ({ getSessionId, generateWorkflowId, userId, onC
       
       // Process successful response - filtering out null values
       if (responseData) {
+        // If response is an array, use the first item
+        const dataToProcess = Array.isArray(responseData) ? responseData[0] : responseData;
+        
         // Only include fields that have non-null values
         const filteredData = Object.fromEntries(
-          Object.entries(responseData[0]).filter(([_, value]) => value !== null)
+          Object.entries(dataToProcess).filter(([_, value]) => value !== null)
         );
-        console.log(filteredData);
+        console.log("Filtered data:", filteredData);
         onComplete({
           ...filteredData,
           keyword: formData.keyword,
