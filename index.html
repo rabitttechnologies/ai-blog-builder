@@ -32,11 +32,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Preload critical auth-related JavaScript -->
-    <link rel="preload" href="/src/context/auth/authUtils.ts" as="script" crossorigin>
-    <link rel="preload" href="/src/components/auth/LoginForm.tsx" as="script" crossorigin>
-    
-    <!-- Expanded critical CSS for above-the-fold content -->
+    <!-- Critical CSS for above-the-fold content -->
     <style>
       /* Critical CSS for above-the-fold content */
       body {
@@ -171,13 +167,11 @@
       }
     </style>
 
-    <!-- Load the rest of the CSS with preload strategy -->
-    <link rel="preload" href="/src/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="/src/index.css"></noscript>
+    <!-- Load the rest of the CSS with defer strategy instead of preload -->
+    <link rel="stylesheet" href="/src/index.css">
     
-    <!-- Preload Inter font files for faster rendering -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+    <!-- Load Inter font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   </head>
 
   <body>

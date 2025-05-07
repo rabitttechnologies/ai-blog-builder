@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import AuthLayout from './AuthLayout';
 import Header from './Header';
 import Footer from './Footer';
 

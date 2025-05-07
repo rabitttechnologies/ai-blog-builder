@@ -41,7 +41,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           handleLogout={handleLogout}
         />
         {/* Main content */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 p-6">
           {children || <Outlet />}
         </main>
       </div>
