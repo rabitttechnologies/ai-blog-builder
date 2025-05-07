@@ -1,6 +1,8 @@
 
 import React from 'react';
-import CustomizationSection from './CustomizationSection';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 interface SimpleCustomizationOptionsProps {
   humanized: boolean;
@@ -20,28 +22,39 @@ const SimpleCustomizationOptions: React.FC<SimpleCustomizationOptionsProps> = ({
   onExpertQuotesChange
 }) => {
   return (
-    <>
-      <CustomizationSection
-        title="Generate Humanized Article"
-        description="Make the article sound more natural and human-written"
-        isEnabled={humanized}
-        onToggle={onHumanizedChange}
-      />
+    <div className="space-y-4 rounded-lg border p-4">
+      <h3 className="text-lg font-medium mb-2">Basic Options</h3>
       
-      <CustomizationSection
-        title="Generate Comparison Table"
-        description="Include tables comparing different aspects of your topic"
-        isEnabled={comparison}
-        onToggle={onComparisonChange}
-      />
-      
-      <CustomizationSection
-        title="Include Expert Quotes"
-        description="Add quotes from industry experts to add credibility"
-        isEnabled={expertQuotes}
-        onToggle={onExpertQuotesChange}
-      />
-    </>
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="font-medium">Generate Humanised Article</Label>
+            <p className="text-sm text-muted-foreground">Create content with a more conversational tone</p>
+          </div>
+          <Switch checked={humanized} onCheckedChange={onHumanizedChange} />
+        </div>
+        
+        <Separator />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="font-medium">Generate Comparison Table</Label>
+            <p className="text-sm text-muted-foreground">Include a comparison table in your article</p>
+          </div>
+          <Switch checked={comparison} onCheckedChange={onComparisonChange} />
+        </div>
+        
+        <Separator />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="font-medium">Include Expert Quotes</Label>
+            <p className="text-sm text-muted-foreground">Add expert opinions and citations</p>
+          </div>
+          <Switch checked={expertQuotes} onCheckedChange={onExpertQuotesChange} />
+        </div>
+      </div>
+    </div>
   );
 };
 

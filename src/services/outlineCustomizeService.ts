@@ -1,6 +1,4 @@
 
-import { useAuth } from '@/context/auth';
-
 // Service for outline and customization webhook calls
 const outlineCustomizeService = {
   // Submit the outline and customization selection to the webhook

@@ -24,18 +24,18 @@ const ImagesCustomization: React.FC<ImagesCustomizationProps> = ({
   return (
     <CustomizationSection
       title="Include Images in Article"
-      description="Add images to enhance your article's visual appeal"
+      description="Add images to enhance your article"
       isEnabled={isEnabled}
       onToggle={onToggle}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Image Type</Label>
+          <Label htmlFor="image-type">Image Type</Label>
           <Select 
             value={imageType || ''} 
             onValueChange={(value) => onTypeChange(value as 'Copyright Image' | 'Non-Copyright')}
           >
-            <SelectTrigger>
+            <SelectTrigger id="image-type">
               <SelectValue placeholder="Select image type" />
             </SelectTrigger>
             <SelectContent>
@@ -46,19 +46,17 @@ const ImagesCustomization: React.FC<ImagesCustomizationProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label>Number of Images</Label>
+          <Label htmlFor="image-count">Number of Images</Label>
           <Select 
             value={imageCount.toString()} 
             onValueChange={(value) => onCountChange(parseInt(value))}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select number of images" />
+            <SelectTrigger id="image-count">
+              <SelectValue placeholder="Select count" />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({length: 7}, (_, i) => i + 1).map((num) => (
-                <SelectItem key={num} value={num.toString()}>
-                  {num} {num === 1 ? 'image' : 'images'}
-                </SelectItem>
+              {Array.from({ length: 7 }, (_, i) => i + 1).map((num) => (
+                <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
               ))}
             </SelectContent>
           </Select>

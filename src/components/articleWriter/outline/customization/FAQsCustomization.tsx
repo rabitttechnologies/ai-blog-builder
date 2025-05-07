@@ -20,27 +20,28 @@ const FAQsCustomization: React.FC<FAQsCustomizationProps> = ({
   return (
     <CustomizationSection
       title="Generate FAQs"
-      description="Add frequently asked questions to improve SEO"
+      description="Add frequently asked questions to your article"
       isEnabled={isEnabled}
       onToggle={onToggle}
     >
       <div className="space-y-2">
-        <Label>Number of Questions</Label>
+        <Label htmlFor="faq-count">Number of FAQs</Label>
         <Select 
           value={faqCount.toString()} 
           onValueChange={(value) => onCountChange(parseInt(value))}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select number of questions" />
+          <SelectTrigger id="faq-count">
+            <SelectValue placeholder="Select count" />
           </SelectTrigger>
           <SelectContent>
-            {Array.from({length: 10}, (_, i) => i + 1).map((num) => (
-              <SelectItem key={num} value={num.toString()}>
-                {num} {num === 1 ? 'question' : 'questions'}
-              </SelectItem>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+              <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          FAQs can help with SEO and provide valuable information to your readers.
+        </p>
       </div>
     </CustomizationSection>
   );

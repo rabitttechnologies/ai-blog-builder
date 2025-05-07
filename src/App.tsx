@@ -9,6 +9,7 @@ import GuestLayout from './components/layout/GuestLayout';
 import NotFound from './pages/NotFound';
 import EnhancedOutlineStep from './pages/ArticleWriter/EnhancedOutlineStep';
 import TitleDescriptionStep from './pages/ArticleWriter/TitleDescriptionStep';
+import GeneratedArticleStep from './pages/ArticleWriter/GeneratedArticleStep';
 
 // Temporary page components until actual pages are implemented
 const Home = () => <div className="p-6">Home Page</div>;
@@ -24,7 +25,6 @@ const Clustering = () => <div className="p-6">Clustering Page</div>;
 const ArticleWriter = () => <div className="p-6">Article Writer Page</div>;
 const KeywordResearch = () => <div className="p-6">Keyword Research Page</div>;
 const SelectKeywords = () => <div className="p-6">Select Keywords Page</div>;
-const GeneratedArticle = () => <div className="p-6">Generated Article Page</div>;
 const Pricing = () => <div className="p-6">Pricing Page</div>;
 const Contact = () => <div className="p-6">Contact Page</div>;
 const About = () => <div className="p-6">About Page</div>;
@@ -67,7 +67,7 @@ function App() {
               <Route path="/article-writer/select-keywords" element={<SelectKeywords />} />
               <Route path="/article-writer/title-description" element={<TitleDescriptionStep />} />
               <Route path="/article-writer/outline" element={<EnhancedOutlineStep />} />
-              <Route path="/article-writer/generated" element={<GeneratedArticle />} />
+              <Route path="/article-writer/generated" element={<GeneratedArticleStep />} />
             </Route>
 
             {/* Admin route */}
@@ -90,7 +90,7 @@ function App() {
   );
 }
 
-function AdminRoute({ children }) {
+function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   
   // Temporary implementation until isAdmin is properly implemented

@@ -15,16 +15,13 @@ interface CoverImageCustomizationProps {
 }
 
 const IMAGE_TYPES = [
-  'Photograph', 'Illustration', 'Anime', 'Fantasy', 'Watercolor', 
-  'Isometric', 'Minimalist', 'Abstract', '3D Render'
+  'Photograph', 'Illustration', 'Anime', 'Fantasy', 'Watercolor', 'Isometric', 
+  'Cartoon', '3D Render', 'Vector', 'Minimalist'
 ];
 
 const IMAGE_SIZES = [
-  { label: 'Standard Blog (1200 × 630)', value: '1200x630' },
-  { label: 'Square (1080 × 1080)', value: '1080x1080' },
-  { label: 'Wide (1920 × 1080)', value: '1920x1080' },
-  { label: 'Pinterest (735 × 1102)', value: '735x1102' },
-  { label: 'Facebook Banner (851 × 315)', value: '851x315' }
+  '1200x628 (Social Media)', '1920x1080 (Full HD)', '1280x720 (HD)', 
+  '800x600 (Standard)', '1080x1080 (Square)', '900x1600 (Pinterest)'
 ];
 
 const CoverImageCustomization: React.FC<CoverImageCustomizationProps> = ({
@@ -42,49 +39,36 @@ const CoverImageCustomization: React.FC<CoverImageCustomizationProps> = ({
       isEnabled={isEnabled}
       onToggle={onToggle}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Image Style</Label>
+          <Label htmlFor="cover-image-type">Image Style</Label>
           <Select 
             value={imageType} 
             onValueChange={onTypeChange}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select image style" />
+            <SelectTrigger id="cover-image-type">
+              <SelectValue placeholder="Select style" />
             </SelectTrigger>
             <SelectContent>
               {IMAGE_TYPES.map((type) => (
-                <SelectItem key={type} value={type.toLowerCase()}>
-                  {type}
-                </SelectItem>
+                <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
-              <SelectItem value="custom">Custom Style</SelectItem>
             </SelectContent>
           </Select>
-          
-          {imageType === 'custom' && (
-            <Input 
-              placeholder="Enter custom image style" 
-              className="mt-2"
-              onChange={(e) => onTypeChange(e.target.value)}
-            />
-          )}
         </div>
         
         <div className="space-y-2">
-          <Label>Image Size</Label>
+          <Label htmlFor="cover-image-size">Image Size</Label>
           <Select 
             value={imageSize} 
             onValueChange={onSizeChange}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select image size" />
+            <SelectTrigger id="cover-image-size">
+              <SelectValue placeholder="Select size" />
             </SelectTrigger>
             <SelectContent>
               {IMAGE_SIZES.map((size) => (
-                <SelectItem key={size.value} value={size.value}>
-                  {size.label}
-                </SelectItem>
+                <SelectItem key={size} value={size}>{size}</SelectItem>
               ))}
             </SelectContent>
           </Select>

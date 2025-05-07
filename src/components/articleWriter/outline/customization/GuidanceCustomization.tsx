@@ -3,10 +3,8 @@ import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/Button';
-import { Check, Save } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PlusCircle, BookmarkPlus } from 'lucide-react';
 import CustomizationSection from './CustomizationSection';
 
 interface GuidanceCustomizationProps {
@@ -15,7 +13,7 @@ interface GuidanceCustomizationProps {
   savedGuidance: string[];
   onToggle: (enabled: boolean) => void;
   onTextChange: (text: string) => void;
-  onSaveGuidance: (text: string) => void;
+  onSaveGuidance: (guidance: string) => void;
 }
 
 const GuidanceCustomization: React.FC<GuidanceCustomizationProps> = ({
@@ -26,87 +24,70 @@ const GuidanceCustomization: React.FC<GuidanceCustomizationProps> = ({
   onTextChange,
   onSaveGuidance
 }) => {
-  const [saveForLater, setSaveForLater] = useState(false);
-  const [selectedSaved, setSelectedSaved] = useState<number | null>(null);
-  
-  const handleSelectSaved = (index: number, text: string) => {
-    setSelectedSaved(index);
-    onTextChange(text);
-  };
-  
+  const [selectedGuidance, setSelectedGuidance] = useState<string>('');
+
   const handleSaveGuidance = () => {
     if (guidanceText.trim()) {
-      onSaveGuidance(guidanceText);
-      setSaveForLater(false);
+      onSaveGuidance(guidanceText.trim());
     }
   };
-  
+
+  const handleSelectGuidance = (value: string) => {
+    setSelectedGuidance(value);
+    onTextChange(value);
+  };
+
   return (
     <CustomizationSection
       title="General Guidance for Writing"
-      description="Add specific instructions for the AI writer"
+      description="Add specific instructions for article creation"
       isEnabled={isEnabled}
       onToggle={onToggle}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Writing Guidance</Label>
-          <Textarea
-            value={guidanceText}
-            onChange={(e) => onTextChange(e.target.value)}
-            placeholder="Enter guidance for the AI writer (e.g., tone, perspective, emphasis)"
-            rows={4}
-          />
-          
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={saveForLater}
-                onCheckedChange={setSaveForLater}
-                id="save-guidance"
-              />
-              <Label htmlFor="save-guidance" className="text-sm cursor-pointer">
-                Save for later use
-              </Label>
-            </div>
-            
-            {saveForLater && (
-              <Button 
-                size="sm" 
-                onClick={handleSaveGuidance}
-                disabled={!guidanceText.trim()}
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-            )}
-          </div>
-        </div>
-        
-        {savedGuidance.length > 0 && (
+        {savedGuidance && savedGuidance.length > 0 && (
           <div className="space-y-2">
-            <Label>Saved Guidance</Label>
-            <ScrollArea className="h-48 rounded-md border p-2">
-              <div className="space-y-2">
+            <Label htmlFor="saved-guidance">Use Saved Guidance</Label>
+            <Select 
+              value={selectedGuidance} 
+              onValueChange={handleSelectGuidance}
+            >
+              <SelectTrigger id="saved-guidance">
+                <SelectValue placeholder="Select saved guidance" />
+              </SelectTrigger>
+              <SelectContent>
                 {savedGuidance.map((guidance, index) => (
-                  <div 
-                    key={index}
-                    className={cn(
-                      "p-2 rounded-md cursor-pointer flex items-center justify-between",
-                      selectedSaved === index ? "bg-primary/10" : "hover:bg-muted"
-                    )}
-                    onClick={() => handleSelectSaved(index, guidance)}
-                  >
-                    <p className="text-sm line-clamp-2">{guidance}</p>
-                    {selectedSaved === index && (
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    )}
-                  </div>
+                  <SelectItem key={index} value={guidance}>
+                    {guidance.length > 50 ? `${guidance.substring(0, 50)}...` : guidance}
+                  </SelectItem>
                 ))}
-              </div>
-            </ScrollArea>
+              </SelectContent>
+            </Select>
           </div>
         )}
+        
+        <div className="space-y-2">
+          <Label htmlFor="guidance-text">Guidance Text</Label>
+          <Textarea
+            id="guidance-text"
+            value={guidanceText}
+            onChange={(e) => onTextChange(e.target.value)}
+            placeholder="Enter guidance for article creation"
+            className="min-h-[150px] resize-y"
+          />
+        </div>
+        
+        <div className="flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleSaveGuidance}
+            disabled={!guidanceText.trim()}
+          >
+            <BookmarkPlus className="h-4 w-4 mr-2" />
+            Save Guidance for Later
+          </Button>
+        </div>
       </div>
     </CustomizationSection>
   );
