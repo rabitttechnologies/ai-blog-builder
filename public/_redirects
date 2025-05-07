@@ -1,7 +1,2 @@
 
-# Netlify redirects file
-# This ensures that all routes are handled by the React Router
-# instead of returning 404 errors
-
-/*    /index.html   200
-
+/* /index.html 200
