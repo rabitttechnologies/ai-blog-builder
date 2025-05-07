@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Download, Copy, Undo } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
+import MarkdownRenderer from '@/components/articleWriter/outline/MarkdownRenderer';
 
 const GeneratedArticleStep = () => {
   const navigate = useNavigate();
@@ -70,11 +71,13 @@ const GeneratedArticleStep = () => {
     // Handle both object format and array format
     if (keywordSelectResponse.titlesandShortDescription) {
       if (Array.isArray(keywordSelectResponse.titlesandShortDescription)) {
-        // If it's an array, take the first item
-        return keywordSelectResponse.titlesandShortDescription[0]?.title || "Your Generated Article";
+        // If it's an array, take the first item - explicitly cast to any to handle nested properties
+        const firstItem = keywordSelectResponse.titlesandShortDescription[0] as any;
+        return firstItem?.title || "Your Generated Article";
       } else {
         // If it's an object with title/description properties
-        return keywordSelectResponse.titlesandShortDescription.title || "Your Generated Article";
+        const titleDesc = keywordSelectResponse.titlesandShortDescription as { title?: string, description?: string };
+        return titleDesc.title || "Your Generated Article";
       }
     }
     return "Your Generated Article";
@@ -86,11 +89,13 @@ const GeneratedArticleStep = () => {
     // Handle both object format and array format
     if (keywordSelectResponse.titlesandShortDescription) {
       if (Array.isArray(keywordSelectResponse.titlesandShortDescription)) {
-        // If it's an array, take the first item
-        return keywordSelectResponse.titlesandShortDescription[0]?.description || "Article description will appear here.";
+        // If it's an array, take the first item - explicitly cast to any to handle nested properties
+        const firstItem = keywordSelectResponse.titlesandShortDescription[0] as any;
+        return firstItem?.description || "Article description will appear here.";
       } else {
         // If it's an object with title/description properties
-        return keywordSelectResponse.titlesandShortDescription.description || "Article description will appear here.";
+        const titleDesc = keywordSelectResponse.titlesandShortDescription as { title?: string, description?: string };
+        return titleDesc.description || "Article description will appear here.";
       }
     }
     return "Article description will appear here.";
