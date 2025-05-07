@@ -1,12 +1,13 @@
+
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardNavbar from "./DashboardNavbar";
 import DashboardSidebar from "./DashboardSidebar";
 import DashboardMobileMenu from "./DashboardMobileMenu";
 
-type DashboardLayoutProps = {
-  children: React.ReactNode;
+export type DashboardLayoutProps = {
+  children?: React.ReactNode;
 };
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
@@ -41,7 +42,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         />
         {/* Main content */}
         <main className="flex-1 min-w-0">
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>

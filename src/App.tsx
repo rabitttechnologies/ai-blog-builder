@@ -1,11 +1,6 @@
 
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate
-} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/auth';
 import { LanguageProvider } from './context/language/LanguageContext';
 import { ArticleWriterProvider } from './context/articleWriter/ArticleWriterContext';
@@ -36,7 +31,7 @@ function App() {
               </Route>
 
               {/* Protected routes */}
-              <Route element={<DashboardLayout />}>
+              <Route element={<DashboardLayout>Dashboard Pages</DashboardLayout>}>
                 <Route path="/" element={<div>Home Page</div>} />
                 <Route path="/profile" element={<div>Profile Page</div>} />
                 <Route path="/update-password" element={<div>Update Password Page</div>} />
