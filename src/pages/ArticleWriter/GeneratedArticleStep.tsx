@@ -63,6 +63,39 @@ const GeneratedArticleStep = () => {
     navigate('/article-writer');
   };
 
+  // Get title and description safely from the response
+  const getTitle = () => {
+    if (!keywordSelectResponse) return "Your Generated Article";
+    
+    // Handle both object format and array format
+    if (keywordSelectResponse.titlesandShortDescription) {
+      if (Array.isArray(keywordSelectResponse.titlesandShortDescription)) {
+        // If it's an array, take the first item
+        return keywordSelectResponse.titlesandShortDescription[0]?.title || "Your Generated Article";
+      } else {
+        // If it's an object with title/description properties
+        return keywordSelectResponse.titlesandShortDescription.title || "Your Generated Article";
+      }
+    }
+    return "Your Generated Article";
+  };
+  
+  const getDescription = () => {
+    if (!keywordSelectResponse) return "Article description will appear here.";
+    
+    // Handle both object format and array format
+    if (keywordSelectResponse.titlesandShortDescription) {
+      if (Array.isArray(keywordSelectResponse.titlesandShortDescription)) {
+        // If it's an array, take the first item
+        return keywordSelectResponse.titlesandShortDescription[0]?.description || "Article description will appear here.";
+      } else {
+        // If it's an object with title/description properties
+        return keywordSelectResponse.titlesandShortDescription.description || "Article description will appear here.";
+      }
+    }
+    return "Article description will appear here.";
+  };
+
   return (
     <DashboardLayout>
       <Helmet>
@@ -92,9 +125,9 @@ const GeneratedArticleStep = () => {
         
         <Card className="mb-8 p-6">
           <div className="prose max-w-none">
-            <h2>{keywordSelectResponse?.titlesandShortDescription?.title || "Your Generated Article"}</h2>
+            <h2>{getTitle()}</h2>
             
-            <p className="lead">{keywordSelectResponse?.titlesandShortDescription?.description || "Article description will appear here."}</p>
+            <p className="lead">{getDescription()}</p>
             
             <div className="py-4">
               <p>Your generated article content will appear here. The content is currently being processed and will be displayed once it's ready.</p>
