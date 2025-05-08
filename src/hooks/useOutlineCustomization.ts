@@ -53,13 +53,16 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     try {
       console.log('Initializing outlines from response:', keywordSelectResponse);
       
-      // Check if there's articleoutline directly in the response
-      if (keywordSelectResponse.articleoutline && 
-          Array.isArray(keywordSelectResponse.articleoutline) && 
-          keywordSelectResponse.articleoutline.length > 0) {
+      // Create a normalized response object for consistent processing
+      let normalizedResponse = keywordSelectResponse;
+      
+      // If the response directly contains articleoutline, use it
+      if (normalizedResponse.articleoutline && 
+          Array.isArray(normalizedResponse.articleoutline) && 
+          normalizedResponse.articleoutline.length > 0) {
         
-        console.log('Found article outlines in response:', keywordSelectResponse.articleoutline);
-        const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
+        console.log('Found article outlines in response:', normalizedResponse.articleoutline);
+        const parsedOutlines = formatOutlineOptions(normalizedResponse);
         if (parsedOutlines.length > 0) {
           setOutlines(parsedOutlines);
           
@@ -74,6 +77,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         }
       }
       
+      // If we've reached this point, no outline data was found in the direct response
       console.warn('No article outlines found in response:', keywordSelectResponse);
     } catch (error) {
       console.error('Error initializing outlines:', error);
@@ -181,6 +185,10 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         saveGeneralGuidance(customization.generalGuidance);
       }
       
+      // Handle case sensitivity differences in API response fields
+      const titlesAndShortDescription = keywordSelectResponse.titlesAndShortDescription || 
+                                       keywordSelectResponse.titlesandShortDescription || {};
+                                       
       // Prepare payload
       const payload: ArticleCustomizationPayload = {
         workflowId: keywordSelectResponse.workflowId || '',
@@ -194,7 +202,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         additionalKeyword: keywordSelectResponse.additionalKeyword || [],
         references: keywordSelectResponse.references || [],
         researchType: keywordSelectResponse.researchType || 'AI Agent Search',
-        titlesAndShortDescription: keywordSelectResponse.titlesAndShortDescription || {},
+        titlesAndShortDescription: titlesAndShortDescription,
         headingsCount: keywordSelectResponse.numberofheadings || '7-8',
         writingStyle: keywordSelectResponse.writingstyle || 'professional',
         articlePointOfView: keywordSelectResponse.articlepointofview || 'reference',

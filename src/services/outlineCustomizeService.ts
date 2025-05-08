@@ -2,12 +2,19 @@
 import { OutlineOption } from '@/types/outlineCustomize';
 
 export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'] => {
+  if (!outlineText) {
+    return { headings: [] };
+  }
+  
+  // Normalize line breaks to ensure consistent parsing
+  const normalizedText = outlineText.replace(/\\n/g, '\n').trim();
+  
   // Parse headings from the markdown outline
-  const headingRegex = /^(#{1,6})\s+(.+)$/gm;
+  const headingRegex = /^(#{1,6})\s+(.+?)(?:\s+\*\(.*?\)\*)?$/gm;
   const headings = [];
   let match;
   
-  while ((match = headingRegex.exec(outlineText)) !== null) {
+  while ((match = headingRegex.exec(normalizedText)) !== null) {
     headings.push({
       level: match[1].length,
       title: match[2].trim()
