@@ -49,7 +49,7 @@ export const formatOutlineOptions = (outlineArray: any[]): OutlineOption[] => {
   
   outlineArray.forEach((item, index) => {
     // Check for outline1
-    if (item.outline1) {
+    if (item && typeof item === 'object' && 'outline1' in item) {
       options.push({
         id: `outline-1`,
         content: item.outline1,
@@ -58,7 +58,7 @@ export const formatOutlineOptions = (outlineArray: any[]): OutlineOption[] => {
     }
     
     // Check for outline2
-    if (item.outline2) {
+    if (item && typeof item === 'object' && 'outline2' in item) {
       options.push({
         id: `outline-2`,
         content: item.outline2,
@@ -73,6 +73,8 @@ export const formatOutlineOptions = (outlineArray: any[]): OutlineOption[] => {
 
 export const submitOutlineCustomization = async (payload: any): Promise<any> => {
   try {
+    console.log('Submitting outline customization payload:', payload);
+    
     const response = await fetch('https://n8n.agiagentworld.com/webhook/outlineandcustomise', {
       method: 'POST',
       headers: {
@@ -101,4 +103,3 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     throw error;
   }
 };
-
