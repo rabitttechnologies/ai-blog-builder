@@ -78,7 +78,7 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
               </Button>
               <Button 
                 onClick={onSelect}
-                variant={isSelected ? "secondary" : "default"}
+                variant={isSelected ? "secondary" : "primary"}
               >
                 {isSelected ? "Selected" : "Use This Outline"}
               </Button>
