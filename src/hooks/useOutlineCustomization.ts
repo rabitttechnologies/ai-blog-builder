@@ -42,77 +42,66 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     includeGeneralGuidance: false
   });
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
+  const [titleDescriptionData, setTitleDescriptionData] = useState<any>(null);
+  
+  // Update title description data when it changes in the keywordSelectResponse
+  useEffect(() => {
+    if (keywordSelectResponse && keywordSelectResponse?.executionId !== titleDescriptionData?.executionId) {
+      console.log('Updating title description data from keyword select response');
+      setTitleDescriptionData(keywordSelectResponse);
+    }
+  }, [keywordSelectResponse, titleDescriptionData]);
 
-  // Enhanced initialize outlines function with better error handling and data normalization
+  // Enhanced initialize outlines function with improved error handling
   const initializeOutlines = useCallback(() => {
-    if (!keywordSelectResponse) {
-      console.log('No keyword select response available');
-      return;
+    console.log('Initializing outlines...');
+    
+    // Try to directly use title description data (if available) which should have the outlines
+    if (titleDescriptionData?.articleoutline) {
+      console.log('Found articleoutline in cached title description data');
+      const parsedOutlines = formatOutlineOptions(titleDescriptionData);
+      
+      if (parsedOutlines && parsedOutlines.length > 0) {
+        console.log('Setting outlines from cached title description data:', parsedOutlines);
+        setOutlines(parsedOutlines);
+        return;
+      }
     }
     
-    try {
-      console.log('Initializing outlines from keyword select response:', keywordSelectResponse);
+    // If we get to this point, try to use the keyword select response directly
+    if (keywordSelectResponse) {
+      console.log('Trying to extract outlines from keyword select response:', keywordSelectResponse);
       
-      // First, check if we have the latest response from the webhook
-      // This will be in the current keywordSelectResponse object
-      
-      // Added extensive debugging
-      if (keywordSelectResponse.articleoutline) {
-        console.log('Found articleoutline directly in response:', keywordSelectResponse.articleoutline);
-        
-        if (Array.isArray(keywordSelectResponse.articleoutline) && keywordSelectResponse.articleoutline.length > 0) {
-          console.log('Processing article outlines...', keywordSelectResponse.articleoutline);
-          const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
-          
-          if (parsedOutlines && parsedOutlines.length > 0) {
-            console.log('Setting outlines from parsed outlines:', parsedOutlines);
-            setOutlines(parsedOutlines);
-            return;
-          }
-        }
-      } else {
-        // Try looking for article outlines in the executionId property
-        if (keywordSelectResponse.executionId && keywordSelectResponse.articleoutline) {
-          console.log('Found articleoutline in executionId data:', keywordSelectResponse.articleoutline);
-          const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
-          
-          if (parsedOutlines && parsedOutlines.length > 0) {
-            console.log('Setting outlines from executionId data:', parsedOutlines);
-            setOutlines(parsedOutlines);
-            return;
-          }
-        }
-      }
-      
-      // If we still don't have outlines, check if we're dealing with a nested response
-      if (keywordSelectResponse.data && keywordSelectResponse.data.articleoutline) {
-        console.log('Found articleoutline in nested data property:', keywordSelectResponse.data.articleoutline);
-        const parsedOutlines = formatOutlineOptions(keywordSelectResponse.data);
+      // Special case: If keywordSelectResponse is a title description response (it has articleoutline)
+      if (keywordSelectResponse?.articleoutline) {
+        console.log('Found articleoutline directly in keyword select response');
+        const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
         
         if (parsedOutlines && parsedOutlines.length > 0) {
-          console.log('Setting outlines from nested data:', parsedOutlines);
+          console.log('Setting outlines from keyword select response:', parsedOutlines);
           setOutlines(parsedOutlines);
           return;
         }
       }
       
-      console.warn('No article outlines found in any response format. Adding debug info:', {
+      // Debug message if no outlines found
+      console.warn('No article outlines found in any response. Debug info:', {
+        hasTitleDescriptionData: Boolean(titleDescriptionData),
+        titleDescExecutionId: titleDescriptionData?.executionId,
+        keywordSelectExecutionId: keywordSelectResponse?.executionId,
         hasArticleOutline: Boolean(keywordSelectResponse?.articleoutline),
-        executionId: keywordSelectResponse?.executionId,
-        hasNestedData: Boolean(keywordSelectResponse?.data),
       });
-    } catch (error) {
-      console.error('Error initializing outlines:', error);
-      setError('Failed to parse outline options.');
+    } else {
+      console.warn('No keyword select response available');
     }
-  }, [keywordSelectResponse]);
+  }, [keywordSelectResponse, titleDescriptionData]);
 
-  // Monitor keywordSelectResponse changes to update outlines
+  // Initialize outlines when necessary data is available
   useEffect(() => {
-    if (keywordSelectResponse) {
+    if (keywordSelectResponse || titleDescriptionData) {
       initializeOutlines();
     }
-  }, [keywordSelectResponse, initializeOutlines]);
+  }, [keywordSelectResponse, titleDescriptionData, initializeOutlines]);
 
   // Start editing an outline
   const startEditingOutline = (outline: OutlineOption) => {
@@ -207,49 +196,52 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         saveGeneralGuidance(customization.generalGuidance);
       }
       
+      // Choose the best source for title/description
+      const source = titleDescriptionData || keywordSelectResponse;
+      
       // Handle case sensitivity differences in API response fields
-      const titlesAndShortDescription = keywordSelectResponse.titlesAndShortDescription || 
-                                       keywordSelectResponse.titlesandShortDescription || {};
-                                       
+      const titlesAndShortDescription = source.titlesandShortDescription || 
+                                        source.titlesAndShortDescription || {};
+      
       // Prepare payload
       const payload: ArticleCustomizationPayload = {
-        workflowId: keywordSelectResponse.workflowId || '',
+        workflowId: source.workflowId || '',
         userId: user.id,
         sessionId: getSessionId(),
-        originalKeyword: keywordSelectResponse.originalKeyword || '',
-        country: keywordSelectResponse.country || 'US',
-        language: keywordSelectResponse.language || 'en',
-        typeOfContent: keywordSelectResponse.typeOfContent || 'Blog Post',
-        mainKeyword: keywordSelectResponse.mainKeyword || '',
-        additionalKeyword: keywordSelectResponse.additionalKeyword || [],
-        references: keywordSelectResponse.references || [],
-        researchType: keywordSelectResponse.researchType || 'AI Agent Search',
+        originalKeyword: source.originalKeyword || '',
+        country: source.country || 'US',
+        language: source.language || 'en',
+        typeOfContent: source.typeOfContent || 'Blog Post',
+        mainKeyword: source.mainKeyword || '',
+        additionalKeyword: source.additionalKeyword || [],
+        references: source.references || [],
+        researchType: source.researchType || 'AI Agent Search',
         titlesAndShortDescription: titlesAndShortDescription,
-        headingsCount: keywordSelectResponse.numberofheadings || '7-8',
-        writingStyle: keywordSelectResponse.writingstyle || 'professional',
-        articlePointOfView: keywordSelectResponse.articlepointofview || 'reference',
-        expertGuidance: keywordSelectResponse.expertGuidance || undefined,
+        headingsCount: source.numberofheadings || source.headingsCount || '7-8',
+        writingStyle: source.writingstyle || source.writingStyle || 'professional',
+        articlePointOfView: source.articlepointofview || source.articlePointOfView || 'reference',
+        expertGuidance: source.expertGuidance || undefined,
         articleOutline: selectedOutline.content,
         editedArticlePrompt: selectedOutline.content, // Same as article outline initially
-        generateHumanisedArticle: customization.generateHumanisedArticle || null,
-        generateComparisonTable: customization.generateComparisonTable || null,
-        includeExpertQuotes: customization.includeExpertQuotes || null,
-        includeImagesInArticle: customization.includeImagesInArticle || null,
+        generateHumanisedArticle: customization.generateHumanisedArticle || false,
+        generateComparisonTable: customization.generateComparisonTable || false,
+        includeExpertQuotes: customization.includeExpertQuotes || false,
+        includeImagesInArticle: customization.includeImagesInArticle || false,
         imageType: customization.imageType,
         imageCount: customization.imageCount,
-        includeInternalLinks: customization.includeInternalLinks || null,
+        includeInternalLinks: customization.includeInternalLinks || false,
         internalLinkCount: customization.internalLinkCount,
         internalLinks: customization.internalLinks,
-        includeExternalLinks: customization.includeExternalLinks || null,
+        includeExternalLinks: customization.includeExternalLinks || false,
         externalLinkCount: customization.externalLinkCount,
-        generateCoverImage: customization.generateCoverImage || null,
+        generateCoverImage: customization.generateCoverImage || false,
         coverImageType: customization.coverImageType,
         coverImageSize: customization.coverImageSize,
-        includeCta: customization.includeCta || null,
+        includeCta: customization.includeCta || false,
         ctaText: customization.ctaText,
-        generateFaqs: customization.generateFaqs || null,
+        generateFaqs: customization.generateFaqs || false,
         faqCount: customization.faqCount,
-        includeGeneralGuidance: customization.includeGeneralGuidance || null,
+        includeGeneralGuidance: customization.includeGeneralGuidance || false,
         generalGuidance: customization.generalGuidance,
         additionalData: {}
       };
@@ -280,7 +272,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     } finally {
       setLoading(false);
     }
-  }, [selectedOutline, keywordSelectResponse, user, customization, toast, getSessionId]);
+  }, [selectedOutline, keywordSelectResponse, titleDescriptionData, user, customization, toast, getSessionId]);
 
   return {
     loading,
@@ -292,6 +284,8 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     editedOutlineContent,
     customization,
     customizationResponse,
+    titleDescriptionData,
+    setTitleDescriptionData,
     initializeOutlines,
     startEditingOutline,
     cancelEditingOutline,

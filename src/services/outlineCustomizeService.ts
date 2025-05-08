@@ -7,6 +7,7 @@ export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'
   }
   
   // Normalize line breaks to ensure consistent parsing
+  // Replace literal "\n" strings with actual line breaks
   const normalizedText = outlineText.replace(/\\n/g, '\n').trim();
   
   // Parse headings from the markdown outline
@@ -45,7 +46,7 @@ export const getSavedGeneralGuidance = (): string[] => {
   }
 };
 
-// Enhanced outline formatting function to handle different response structures
+// Enhanced outline formatting function with improved handling of different response structures
 export const formatOutlineOptions = (response: any): OutlineOption[] => {
   if (!response) {
     console.warn('No response data provided');
@@ -57,12 +58,14 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
   // Create array to store the formatted options
   const options: OutlineOption[] = [];
   
-  // Handle case where articleoutline is directly in the response
-  if (response.articleoutline && Array.isArray(response.articleoutline) && response.articleoutline.length > 0) {
+  // Direct articleoutline access - most common pattern in title description response
+  if (response.articleoutline && Array.isArray(response.articleoutline)) {
     console.log('Found articleoutline array in response:', response.articleoutline);
     
+    // Process each item in the articleoutline array
     response.articleoutline.forEach((item: any, index: number) => {
-      if (item?.outline1) {
+      // Extract outline1
+      if (typeof item?.outline1 === 'string') {
         options.push({
           id: `outline-1`,
           content: item.outline1,
@@ -70,7 +73,8 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
         });
       }
       
-      if (item?.outline2) {
+      // Extract outline2
+      if (typeof item?.outline2 === 'string') {
         options.push({
           id: `outline-2`,
           content: item.outline2,

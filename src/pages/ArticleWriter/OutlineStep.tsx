@@ -36,7 +36,7 @@ const OutlineStep = () => {
   const [activeTab, setActiveTab] = useState('select');
   const [isGenerating, setIsGenerating] = useState(false);
   
-  // Use our custom hook for outline customization
+  // Use our custom hook for outline customization, passing both responses
   const {
     loading,
     error,
@@ -47,6 +47,8 @@ const OutlineStep = () => {
     editedOutlineContent,
     customization,
     customizationResponse,
+    titleDescriptionData,
+    setTitleDescriptionData,
     initializeOutlines,
     startEditingOutline,
     cancelEditingOutline,
@@ -76,11 +78,14 @@ const OutlineStep = () => {
       return;
     }
     
-    // Initialize outlines from keywordSelectResponse
-    if (keywordSelectResponse) {
-      console.log('Initializing outlines from keyword select response:', keywordSelectResponse);
-      initializeOutlines();
+    // If titleDescriptionData was received directly from webhook response, use it
+    if (keywordSelectResponse?.articleoutline) {
+      console.log('Setting titleDescriptionData from keywordSelectResponse');
+      setTitleDescriptionData(keywordSelectResponse);
     }
+    
+    // Initialize outlines from the best available source
+    initializeOutlines();
     
     // Pre-populate custom title if selected title description is available
     if (selectedTitleDescription) {
@@ -92,6 +97,7 @@ const OutlineStep = () => {
     navigate, 
     initializeOutlines,
     keywordSelectResponse,
+    setTitleDescriptionData,
     toast
   ]);
   

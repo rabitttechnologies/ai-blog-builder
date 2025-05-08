@@ -64,8 +64,11 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
                   outline.parsed.headings.map((heading, idx) => (
                     <div 
                       key={idx} 
-                      className={`pl-${heading.level * 4} ${heading.level === 1 ? 'font-bold text-base' : heading.level === 2 ? 'font-semibold text-sm' : 'text-sm'}`}
-                      style={{paddingLeft: `${(heading.level - 1) * 16}px`}}
+                      className="text-sm"
+                      style={{
+                        paddingLeft: `${(heading.level - 1) * 16}px`,
+                        fontWeight: heading.level === 2 ? 600 : heading.level === 1 ? 700 : 400
+                      }}
                     >
                       {heading.title}
                     </div>
@@ -84,7 +87,7 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
               </Button>
               <Button 
                 onClick={onSelect}
-                variant={isSelected ? "secondary" : "primary"}
+                variant={isSelected ? "secondary" : "default"}
               >
                 {isSelected ? "Selected" : "Use This Outline"}
               </Button>
