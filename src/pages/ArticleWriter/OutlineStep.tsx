@@ -17,6 +17,7 @@ import OutlineDisplay from '@/components/articleWriter/OutlineDisplay';
 import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
 import { OutlineOption } from '@/types/outlineCustomize';
 import { parseArticleOutline } from '@/services/outlineCustomizeService';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 const OutlineStep = () => {
   const navigate = useNavigate();
@@ -27,7 +28,9 @@ const OutlineStep = () => {
     selectedTitleDescription,
     setCurrentStep,
     generatedArticle,
-    setGeneratedArticle
+    setGeneratedArticle,
+    isLoading,
+    setIsLoading
   } = useArticleWriter();
   
   const [activeTab, setActiveTab] = useState('select');
@@ -64,12 +67,20 @@ const OutlineStep = () => {
     
     // If we don't have a title description, go back
     if (!selectedTitleDescription) {
+      toast({
+        title: "Missing Data",
+        description: "Please select a title and description first.",
+        variant: "destructive"
+      });
       navigate('/article-writer/title-description');
       return;
     }
     
     // Initialize outlines from keywordSelectResponse
-    initializeOutlines();
+    if (keywordSelectResponse) {
+      console.log('Initializing outlines from keyword select response:', keywordSelectResponse);
+      initializeOutlines();
+    }
     
     // Pre-populate custom title if selected title description is available
     if (selectedTitleDescription) {
@@ -80,7 +91,8 @@ const OutlineStep = () => {
     selectedTitleDescription, 
     navigate, 
     initializeOutlines,
-    keywordSelectResponse
+    keywordSelectResponse,
+    toast
   ]);
   
   // Handle errors
@@ -133,9 +145,10 @@ const OutlineStep = () => {
   const handleGenerateOutline = () => {
     setIsGenerating(true);
     
-    // Simulate loading for demo purposes
+    // Refresh outlines
+    initializeOutlines();
+    
     setTimeout(() => {
-      initializeOutlines();
       toast({
         title: "Outline generated",
         description: "Article outlines have been refreshed."
@@ -168,6 +181,8 @@ const OutlineStep = () => {
     }
     
     try {
+      setIsLoading(true);
+      
       // Submit outline and customization
       const response = await submitOutlineAndCustomization();
       
@@ -182,8 +197,14 @@ const OutlineStep = () => {
         description: "Failed to process outline. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+  
+  if (isLoading || loading) {
+    return <LoadingOverlay message="Processing your outline..." subMessage="This may take a moment" />;
+  }
   
   return (
     <DashboardLayout>
@@ -194,7 +215,7 @@ const OutlineStep = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Article Outline</h1>
           <p className="text-gray-600">
-            Review and customize the structure of your article about <span className="font-medium">{keywordForm.keyword}</span>.
+            Review and customize the structure of your article about <span className="font-medium">{keywordForm.keyword || selectedTitleDescription?.title}</span>.
           </p>
         </div>
         
@@ -206,10 +227,15 @@ const OutlineStep = () => {
           </TabsList>
           
           <TabsContent value="select" className="pt-6">
-            <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <p className="text-sm text-gray-500">
-                Review the AI-generated outlines or generate new ones.
-              </p>
+            <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">
+                  Review the AI-generated outlines or generate new ones.
+                </p>
+                <p className="text-xs text-gray-400">
+                  Select an outline to use or edit it to better fit your needs.
+                </p>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -231,7 +257,7 @@ const OutlineStep = () => {
               </Button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               {outlines.length > 0 ? (
                 outlines.map((outline) => (
                   <OutlineDisplay
@@ -242,11 +268,12 @@ const OutlineStep = () => {
                     onEdit={() => editingOutlineId === outline.id ? cancelEditingOutline() : startEditingOutline(outline)}
                     onEditChange={updateEditedOutlineContent}
                     onSelect={() => handleSelectOutline(outline)}
+                    isSelected={selectedOutline && selectedOutline.id === outline.id}
                   />
                 ))
               ) : (
                 <div className="text-center py-12 border rounded-lg">
-                  <p className="text-gray-500">No outlines generated yet. Click the "Refresh Outlines" button.</p>
+                  <p className="text-gray-500">No outlines available. Click the "Refresh Outlines" button or create a custom outline.</p>
                 </div>
               )}
             </div>
@@ -282,6 +309,7 @@ const OutlineStep = () => {
               
               <div className="flex justify-end">
                 <Button onClick={updateCustomOutline}>
+                  <Plus className="h-4 w-4 mr-2" />
                   Use Custom Outline
                 </Button>
               </div>
@@ -295,7 +323,14 @@ const OutlineStep = () => {
                   <h3 className="font-bold text-lg mb-4">Selected Outline</h3>
                   <div className="space-y-2 mb-4">
                     {selectedOutline.parsed.headings.map((heading, idx) => (
-                      <div key={idx} className={`pl-${heading.level * 4} ${heading.level === 1 ? 'font-bold text-base' : heading.level === 2 ? 'font-semibold text-sm' : 'text-sm'}`}>
+                      <div 
+                        key={idx} 
+                        className="text-sm"
+                        style={{
+                          paddingLeft: `${(heading.level - 1) * 16}px`,
+                          fontWeight: heading.level === 2 ? 600 : heading.level === 1 ? 700 : 400
+                        }}
+                      >
                         {heading.title}
                       </div>
                     ))}

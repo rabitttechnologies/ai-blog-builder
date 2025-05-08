@@ -44,14 +44,31 @@ export const formatOutlineOptions = (outlineArray: any[]): OutlineOption[] => {
     return [];
   }
 
-  return outlineArray.map((item, index) => {
-    const outlineContent = item.outline1 || item.outline2 || '';
-    return {
-      id: `outline-${index}`,
-      content: outlineContent,
-      parsed: parseArticleOutline(outlineContent)
-    };
+  // Extract outline1 and outline2 from each item in the array
+  const options: OutlineOption[] = [];
+  
+  outlineArray.forEach((item, index) => {
+    // Check for outline1
+    if (item.outline1) {
+      options.push({
+        id: `outline-1`,
+        content: item.outline1,
+        parsed: parseArticleOutline(item.outline1)
+      });
+    }
+    
+    // Check for outline2
+    if (item.outline2) {
+      options.push({
+        id: `outline-2`,
+        content: item.outline2,
+        parsed: parseArticleOutline(item.outline2)
+      });
+    }
   });
+  
+  console.log('Parsed outline options:', options);
+  return options;
 };
 
 export const submitOutlineCustomization = async (payload: any): Promise<any> => {
@@ -84,3 +101,4 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     throw error;
   }
 };
+

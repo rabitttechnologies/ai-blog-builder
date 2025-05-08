@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -45,12 +45,19 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
 
   // Initialize outlines from response
   const initializeOutlines = useCallback(() => {
-    if (!keywordSelectResponse) return;
+    if (!keywordSelectResponse) {
+      console.log('No keyword select response available');
+      return;
+    }
     
     try {
+      console.log('Initializing outlines from response:', keywordSelectResponse);
+      
       // Parse the articleoutline array
       const articleOutlines = keywordSelectResponse.articleoutline;
+      
       if (Array.isArray(articleOutlines) && articleOutlines.length > 0) {
+        console.log('Found article outlines:', articleOutlines);
         const parsedOutlines = formatOutlineOptions(articleOutlines);
         setOutlines(parsedOutlines);
         
@@ -68,6 +75,13 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
       setError('Failed to parse outline options.');
     }
   }, [keywordSelectResponse]);
+
+  // Monitor keywordSelectResponse changes to update outlines
+  useEffect(() => {
+    if (keywordSelectResponse && keywordSelectResponse.articleoutline) {
+      initializeOutlines();
+    }
+  }, [keywordSelectResponse, initializeOutlines]);
 
   // Start editing an outline
   const startEditingOutline = (outline: OutlineOption) => {
