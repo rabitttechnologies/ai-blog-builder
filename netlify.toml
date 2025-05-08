@@ -5,7 +5,7 @@
   publish = "dist"
   command = "npm run build"
 
-# The following redirect is essential for SPA routing
+# The following redirect is for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"

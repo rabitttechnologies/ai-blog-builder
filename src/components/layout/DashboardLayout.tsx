@@ -1,13 +1,12 @@
-
 import React, { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth";
 import DashboardNavbar from "./DashboardNavbar";
 import DashboardSidebar from "./DashboardSidebar";
 import DashboardMobileMenu from "./DashboardMobileMenu";
 
-export type DashboardLayoutProps = {
-  children?: React.ReactNode;
+type DashboardLayoutProps = {
+  children: React.ReactNode;
 };
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
@@ -41,8 +40,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           handleLogout={handleLogout}
         />
         {/* Main content */}
-        <main className="flex-1 min-w-0 p-6">
-          {children || <Outlet />}
+        <main className="flex-1 min-w-0">
+          {children}
         </main>
       </div>
     </div>
