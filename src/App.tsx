@@ -32,8 +32,6 @@ const Terms = () => <div className="p-6">Terms Page</div>;
 const Privacy = () => <div className="p-6">Privacy Page</div>;
 const Unauthorized = () => <div className="p-6">Unauthorized Page</div>;
 const AdminDashboard = () => <div className="p-6">Admin Dashboard</div>;
-// Create a simple KeywordEntryStep component to match the route
-const KeywordEntryStep = () => <div className="p-6">Keyword Entry Step</div>;
 
 function App() {
   return (
@@ -66,7 +64,6 @@ function App() {
               {/* Article Writer Routes */}
               <Route path="/article-writer" element={<ArticleWriter />} />
               <Route path="/article-writer/keyword-research" element={<KeywordResearch />} />
-              <Route path="/article-writer/keyword-entry" element={<KeywordEntryStep />} />
               <Route path="/article-writer/select-keywords" element={<SelectKeywords />} />
               <Route path="/article-writer/title-description" element={<TitleDescriptionStep />} />
               <Route path="/article-writer/outline" element={<EnhancedOutlineStep />} />
