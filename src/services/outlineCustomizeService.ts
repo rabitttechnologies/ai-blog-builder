@@ -38,16 +38,24 @@ export const getSavedGeneralGuidance = (): string[] => {
   }
 };
 
-export const formatOutlineOptions = (outlineArray: any[]): OutlineOption[] => {
-  if (!outlineArray || !Array.isArray(outlineArray)) {
-    console.warn('Invalid outline array:', outlineArray);
+export const formatOutlineOptions = (response: any): OutlineOption[] => {
+  if (!response) {
+    console.warn('No response data provided');
+    return [];
+  }
+  
+  // Check if response contains articleoutline property and it's an array
+  if (!response.articleoutline || !Array.isArray(response.articleoutline) || response.articleoutline.length === 0) {
+    console.warn('No articleoutline array found in response:', response);
     return [];
   }
 
-  // Extract outline1 and outline2 from each item in the array
+  console.log('Formatting article outlines:', response.articleoutline);
+  
+  // Process the articleoutline array
   const options: OutlineOption[] = [];
   
-  outlineArray.forEach((item, index) => {
+  response.articleoutline.forEach((item, index) => {
     // Check for outline1
     if (item && typeof item === 'object' && 'outline1' in item) {
       options.push({

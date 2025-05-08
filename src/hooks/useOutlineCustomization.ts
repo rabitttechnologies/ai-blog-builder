@@ -53,23 +53,28 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     try {
       console.log('Initializing outlines from response:', keywordSelectResponse);
       
-      // Parse the articleoutline array
-      const articleOutlines = keywordSelectResponse.articleoutline;
-      
-      if (Array.isArray(articleOutlines) && articleOutlines.length > 0) {
-        console.log('Found article outlines:', articleOutlines);
-        const parsedOutlines = formatOutlineOptions(articleOutlines);
-        setOutlines(parsedOutlines);
+      // Check if there's articleoutline directly in the response
+      if (keywordSelectResponse.articleoutline && 
+          Array.isArray(keywordSelectResponse.articleoutline) && 
+          keywordSelectResponse.articleoutline.length > 0) {
         
-        // Initialize custom outline with empty content
-        setCustomOutline({
-          id: 'custom',
-          content: '',
-          parsed: { headings: [] }
-        });
-      } else {
-        console.warn('No article outlines found in response:', keywordSelectResponse);
+        console.log('Found article outlines in response:', keywordSelectResponse.articleoutline);
+        const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
+        if (parsedOutlines.length > 0) {
+          setOutlines(parsedOutlines);
+          
+          // Initialize custom outline with empty content
+          setCustomOutline({
+            id: 'custom',
+            content: '',
+            parsed: { headings: [] }
+          });
+          
+          return;
+        }
       }
+      
+      console.warn('No article outlines found in response:', keywordSelectResponse);
     } catch (error) {
       console.error('Error initializing outlines:', error);
       setError('Failed to parse outline options.');
@@ -78,7 +83,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
 
   // Monitor keywordSelectResponse changes to update outlines
   useEffect(() => {
-    if (keywordSelectResponse && keywordSelectResponse.articleoutline) {
+    if (keywordSelectResponse) {
       initializeOutlines();
     }
   }, [keywordSelectResponse, initializeOutlines]);
@@ -189,7 +194,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         additionalKeyword: keywordSelectResponse.additionalKeyword || [],
         references: keywordSelectResponse.references || [],
         researchType: keywordSelectResponse.researchType || 'AI Agent Search',
-        titlesAndShortDescription: keywordSelectResponse.titlesandShortDescription || {},
+        titlesAndShortDescription: keywordSelectResponse.titlesAndShortDescription || {},
         headingsCount: keywordSelectResponse.numberofheadings || '7-8',
         writingStyle: keywordSelectResponse.writingstyle || 'professional',
         articlePointOfView: keywordSelectResponse.articlepointofview || 'reference',
