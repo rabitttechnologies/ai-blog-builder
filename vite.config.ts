@@ -9,8 +9,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    // Add history API fallback to handle client-side routing in development
-    historyApiFallback: true,
+    // Enhanced history API fallback configuration for better SPA routing
+    historyApiFallback: {
+      disableDotRule: true
+    },
   },
   plugins: [
     react(),
