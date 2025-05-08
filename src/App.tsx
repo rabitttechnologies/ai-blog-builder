@@ -10,6 +10,7 @@ import NotFound from './pages/NotFound';
 import EnhancedOutlineStep from './pages/ArticleWriter/EnhancedOutlineStep';
 import TitleDescriptionStep from './pages/ArticleWriter/TitleDescriptionStep';
 import GeneratedArticleStep from './pages/ArticleWriter/GeneratedArticleStep';
+import KeywordEntryStep from './pages/ArticleWriter/KeywordEntryStep';
 
 // Temporary page components until actual pages are implemented
 const Home = () => <div className="p-6">Home Page</div>;
@@ -64,6 +65,7 @@ function App() {
               {/* Article Writer Routes */}
               <Route path="/article-writer" element={<ArticleWriter />} />
               <Route path="/article-writer/keyword-research" element={<KeywordResearch />} />
+              <Route path="/article-writer/keyword-entry" element={<KeywordEntryStep />} />
               <Route path="/article-writer/select-keywords" element={<SelectKeywords />} />
               <Route path="/article-writer/title-description" element={<TitleDescriptionStep />} />
               <Route path="/article-writer/outline" element={<EnhancedOutlineStep />} />
