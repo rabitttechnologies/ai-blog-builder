@@ -7,6 +7,8 @@ import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const KeywordEntryStep = () => {
   const navigate = useNavigate();
@@ -46,6 +48,17 @@ const KeywordEntryStep = () => {
                 Enter a keyword or phrase to generate content ideas.
               </p>
             </div>
+            
+            <div>
+              <Label htmlFor="keyword">Main Keyword</Label>
+              <Input 
+                id="keyword" 
+                placeholder="Enter your main keyword"
+                value={keywordForm.keyword}
+                onChange={(e) => updateKeywordForm({ keyword: e.target.value })}
+                className="w-full mt-1"
+              />
+            </div>
           </div>
         </Card>
 
@@ -61,6 +74,7 @@ const KeywordEntryStep = () => {
           <Button
             onClick={handleContinue}
             className="flex items-center"
+            disabled={!keywordForm.keyword.trim()}
           >
             Continue
             <ChevronRight className="ml-1 h-4 w-4" />

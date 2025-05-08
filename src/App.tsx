@@ -10,6 +10,7 @@ import NotFound from './pages/NotFound';
 import EnhancedOutlineStep from './pages/ArticleWriter/EnhancedOutlineStep';
 import TitleDescriptionStep from './pages/ArticleWriter/TitleDescriptionStep';
 import GeneratedArticleStep from './pages/ArticleWriter/GeneratedArticleStep';
+import KeywordEntryStep from './pages/ArticleWriter/KeywordEntryStep';
 
 // Temporary page components until actual pages are implemented
 const Home = () => <div className="p-6">Home Page</div>;
@@ -32,8 +33,6 @@ const Terms = () => <div className="p-6">Terms Page</div>;
 const Privacy = () => <div className="p-6">Privacy Page</div>;
 const Unauthorized = () => <div className="p-6">Unauthorized Page</div>;
 const AdminDashboard = () => <div className="p-6">Admin Dashboard</div>;
-// Create a simple KeywordEntryStep component to match the route
-const KeywordEntryStep = () => <div className="p-6">Keyword Entry Step</div>;
 
 function App() {
   return (
