@@ -15,9 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import OutlineCustomizeForm from '@/components/articleWriter/OutlineCustomizeForm';
 import OutlineDisplay from '@/components/articleWriter/OutlineDisplay';
 import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
-import { OutlineOption } from '@/types/outlineCustomize';
 import { parseArticleOutline } from '@/services/outlineCustomizeService';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { OutlineOption } from '@/types/outlineCustomize';
 
 const OutlineStep = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const OutlineStep = () => {
   const [activeTab, setActiveTab] = useState('select');
   const [isGenerating, setIsGenerating] = useState(false);
   
-  // Use our custom hook for outline customization, passing both responses
+  // Use our custom hook for outline customization
   const {
     loading,
     error,
@@ -47,8 +47,6 @@ const OutlineStep = () => {
     editedOutlineContent,
     customization,
     customizationResponse,
-    titleDescriptionData,
-    setTitleDescriptionData,
     initializeOutlines,
     startEditingOutline,
     cancelEditingOutline,
@@ -78,27 +76,28 @@ const OutlineStep = () => {
       return;
     }
     
-    // If titleDescriptionData is available in keywordSelectResponse, use it
-    if (keywordSelectResponse) {
-      console.log('Setting titleDescriptionData from keywordSelectResponse');
-      setTitleDescriptionData(keywordSelectResponse);
-    }
-    
-    // Initialize outlines from the best available source
+    // Initialize outlines
     initializeOutlines();
     
     // Pre-populate custom title if selected title description is available
     if (selectedTitleDescription) {
       setCustomTitle(selectedTitleDescription.title);
     }
+    
+    // Log current state to help with debugging
+    console.log('OutlineStep - Current state:', {
+      hasKeywordSelectResponse: !!keywordSelectResponse,
+      keywordSelectExecutionId: keywordSelectResponse?.executionId,
+      hasArticleoutline: !!(keywordSelectResponse?.articleoutline || keywordSelectResponse?.articleOutline)
+    });
+    
   }, [
     setCurrentStep, 
     selectedTitleDescription, 
     navigate, 
     initializeOutlines,
-    keywordSelectResponse,
-    setTitleDescriptionData,
-    toast
+    toast,
+    keywordSelectResponse
   ]);
   
   // Handle errors
@@ -155,10 +154,18 @@ const OutlineStep = () => {
     initializeOutlines();
     
     setTimeout(() => {
-      toast({
-        title: "Outline generated",
-        description: "Article outlines have been refreshed."
-      });
+      if (outlines.length === 0) {
+        toast({
+          title: "No outlines found",
+          description: "No article outlines were found. Please create a custom outline or go back and try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Outline generated",
+          description: "Article outlines have been refreshed."
+        });
+      }
       setIsGenerating(false);
     }, 1500);
   };

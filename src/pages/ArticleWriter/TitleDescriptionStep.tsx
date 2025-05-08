@@ -37,7 +37,8 @@ const TitleDescriptionStep = () => {
     savedExpertGuidance,
     addExpertGuidance,
     isLoading,
-    setIsLoading
+    setIsLoading,
+    setKeywordSelectResponse
   } = useArticleWriter();
   
   const [activeTab, setActiveTab] = useState('titles');
@@ -207,6 +208,10 @@ const TitleDescriptionStep = () => {
       const response = await titleDescriptionService.submitTitleDescriptionSelection(payload);
       
       console.log('Title description webhook response:', response);
+      
+      // Update the keyword select response with the new data that includes the article outline
+      // This is critical to make the outline available to the next step
+      setKeywordSelectResponse(response);
       
       // Navigate to outline page
       navigate('/article-writer/outline');

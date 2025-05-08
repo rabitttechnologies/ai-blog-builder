@@ -46,7 +46,7 @@ export const getSavedGeneralGuidance = (): string[] => {
   }
 };
 
-// Enhanced outline formatting function with improved handling of different response structures
+// Enhanced outline formatting function with direct access to the webhook response data structure
 export const formatOutlineOptions = (response: any): OutlineOption[] => {
   if (!response) {
     console.warn('No response data provided');
@@ -58,15 +58,14 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
   // Create array to store the formatted options
   const options: OutlineOption[] = [];
   
-  // Try different possibilities for the outline data location
-  
-  // 1. Direct articleoutline access (lowercase)
+  // Check if the response has the articleoutline property directly
   if (response.articleoutline && Array.isArray(response.articleoutline)) {
     console.log('Found articleoutline array in response (lowercase):', response.articleoutline);
     
-    // Process array of objects with outline1, outline2 properties
+    // Process each outline item
     response.articleoutline.forEach((item: any, index: number) => {
-      if (typeof item?.outline1 === 'string') {
+      // Process outline1
+      if (item && typeof item.outline1 === 'string') {
         options.push({
           id: `outline-1`,
           content: item.outline1,
@@ -74,7 +73,8 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
         });
       }
       
-      if (typeof item?.outline2 === 'string') {
+      // Process outline2
+      if (item && typeof item.outline2 === 'string') {
         options.push({
           id: `outline-2`,
           content: item.outline2,
@@ -83,26 +83,29 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       }
       
       // Check for any other outline keys
-      Object.keys(item || {}).forEach(key => {
-        if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
-          const outlineNumber = key.replace('outline', '');
-          options.push({
-            id: `outline-${outlineNumber}`,
-            content: item[key],
-            parsed: parseArticleOutline(item[key])
-          });
-        }
-      });
+      if (item) {
+        Object.keys(item).forEach(key => {
+          if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
+            const outlineNumber = key.replace('outline', '');
+            options.push({
+              id: `outline-${outlineNumber}`,
+              content: item[key],
+              parsed: parseArticleOutline(item[key])
+            });
+          }
+        });
+      }
     });
   }
   
-  // 2. Try with uppercase 'articleOutline'
+  // Try with uppercase 'articleOutline' if lowercase didn't work
   else if (response.articleOutline && Array.isArray(response.articleOutline)) {
     console.log('Found articleOutline array in response (uppercase):', response.articleOutline);
     
-    // Process array of objects with outline1, outline2 properties
+    // Process each outline item
     response.articleOutline.forEach((item: any, index: number) => {
-      if (typeof item?.outline1 === 'string') {
+      // Process outline1
+      if (item && typeof item.outline1 === 'string') {
         options.push({
           id: `outline-1`,
           content: item.outline1,
@@ -110,7 +113,8 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
         });
       }
       
-      if (typeof item?.outline2 === 'string') {
+      // Process outline2
+      if (item && typeof item.outline2 === 'string') {
         options.push({
           id: `outline-2`,
           content: item.outline2,
@@ -119,26 +123,28 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       }
       
       // Check for any other outline keys
-      Object.keys(item || {}).forEach(key => {
-        if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
-          const outlineNumber = key.replace('outline', '');
-          options.push({
-            id: `outline-${outlineNumber}`,
-            content: item[key],
-            parsed: parseArticleOutline(item[key])
-          });
-        }
-      });
+      if (item) {
+        Object.keys(item).forEach(key => {
+          if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
+            const outlineNumber = key.replace('outline', '');
+            options.push({
+              id: `outline-${outlineNumber}`,
+              content: item[key],
+              parsed: parseArticleOutline(item[key])
+            });
+          }
+        });
+      }
     });
   }
   
   if (options.length > 0) {
     console.log('Successfully parsed outline options:', options);
     return options;
-  } else {
-    console.warn('No valid article outlines found in response');
-    return [];
   }
+  
+  console.warn('No valid article outlines found in response');
+  return [];
 };
 
 export const submitOutlineCustomization = async (payload: any): Promise<any> => {
