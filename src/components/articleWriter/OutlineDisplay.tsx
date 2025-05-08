@@ -60,15 +60,21 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
                 )}
               </div>
               <div className="space-y-2">
-                {outline.parsed.headings.map((heading, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`pl-${heading.level * 4} ${heading.level === 1 ? 'font-bold text-base' : heading.level === 2 ? 'font-semibold text-sm' : 'text-sm'}`}
-                    style={{paddingLeft: `${(heading.level - 1) * 16}px`}}
-                  >
-                    {heading.title}
+                {outline.parsed.headings.length > 0 ? (
+                  outline.parsed.headings.map((heading, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`pl-${heading.level * 4} ${heading.level === 1 ? 'font-bold text-base' : heading.level === 2 ? 'font-semibold text-sm' : 'text-sm'}`}
+                      style={{paddingLeft: `${(heading.level - 1) * 16}px`}}
+                    >
+                      {heading.title}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500 italic">
+                    No headings found in outline. Click "Edit Outline" to modify.
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="flex justify-end gap-2">

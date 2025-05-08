@@ -45,45 +45,48 @@ export const getSavedGeneralGuidance = (): string[] => {
   }
 };
 
+// Enhanced outline formatting function to handle different response structures
 export const formatOutlineOptions = (response: any): OutlineOption[] => {
   if (!response) {
     console.warn('No response data provided');
     return [];
   }
   
-  // Check if response contains articleoutline property and it's an array
-  if (!response.articleoutline || !Array.isArray(response.articleoutline) || response.articleoutline.length === 0) {
-    console.warn('No articleoutline array found in response:', response);
-    return [];
-  }
-
-  console.log('Formatting article outlines:', response.articleoutline);
+  console.log('Formatting outlines from response:', response);
   
-  // Process the articleoutline array
+  // Create array to store the formatted options
   const options: OutlineOption[] = [];
   
-  response.articleoutline.forEach((item, index) => {
-    // Check for outline1
-    if (item && typeof item === 'object' && 'outline1' in item) {
-      options.push({
-        id: `outline-1`,
-        content: item.outline1,
-        parsed: parseArticleOutline(item.outline1)
-      });
-    }
+  // Handle case where articleoutline is directly in the response
+  if (response.articleoutline && Array.isArray(response.articleoutline) && response.articleoutline.length > 0) {
+    console.log('Found articleoutline array in response:', response.articleoutline);
     
-    // Check for outline2
-    if (item && typeof item === 'object' && 'outline2' in item) {
-      options.push({
-        id: `outline-2`,
-        content: item.outline2,
-        parsed: parseArticleOutline(item.outline2)
-      });
-    }
-  });
+    response.articleoutline.forEach((item: any, index: number) => {
+      if (item?.outline1) {
+        options.push({
+          id: `outline-1`,
+          content: item.outline1,
+          parsed: parseArticleOutline(item.outline1)
+        });
+      }
+      
+      if (item?.outline2) {
+        options.push({
+          id: `outline-2`,
+          content: item.outline2,
+          parsed: parseArticleOutline(item.outline2)
+        });
+      }
+    });
+  }
   
-  console.log('Parsed outline options:', options);
-  return options;
+  if (options.length > 0) {
+    console.log('Successfully parsed outline options:', options);
+    return options;
+  } else {
+    console.warn('No valid article outlines found in response');
+    return [];
+  }
 };
 
 export const submitOutlineCustomization = async (payload: any): Promise<any> => {

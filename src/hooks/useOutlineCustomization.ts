@@ -43,7 +43,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   });
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
 
-  // Initialize outlines from response
+  // Enhanced initialize outlines function with better error handling and data normalization
   const initializeOutlines = useCallback(() => {
     if (!keywordSelectResponse) {
       console.log('No keyword select response available');
@@ -51,34 +51,56 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     }
     
     try {
-      console.log('Initializing outlines from response:', keywordSelectResponse);
+      console.log('Initializing outlines from keyword select response:', keywordSelectResponse);
       
-      // Create a normalized response object for consistent processing
-      let normalizedResponse = keywordSelectResponse;
+      // First, check if we have the latest response from the webhook
+      // This will be in the current keywordSelectResponse object
       
-      // If the response directly contains articleoutline, use it
-      if (normalizedResponse.articleoutline && 
-          Array.isArray(normalizedResponse.articleoutline) && 
-          normalizedResponse.articleoutline.length > 0) {
+      // Added extensive debugging
+      if (keywordSelectResponse.articleoutline) {
+        console.log('Found articleoutline directly in response:', keywordSelectResponse.articleoutline);
         
-        console.log('Found article outlines in response:', normalizedResponse.articleoutline);
-        const parsedOutlines = formatOutlineOptions(normalizedResponse);
-        if (parsedOutlines.length > 0) {
+        if (Array.isArray(keywordSelectResponse.articleoutline) && keywordSelectResponse.articleoutline.length > 0) {
+          console.log('Processing article outlines...', keywordSelectResponse.articleoutline);
+          const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
+          
+          if (parsedOutlines && parsedOutlines.length > 0) {
+            console.log('Setting outlines from parsed outlines:', parsedOutlines);
+            setOutlines(parsedOutlines);
+            return;
+          }
+        }
+      } else {
+        // Try looking for article outlines in the executionId property
+        if (keywordSelectResponse.executionId && keywordSelectResponse.articleoutline) {
+          console.log('Found articleoutline in executionId data:', keywordSelectResponse.articleoutline);
+          const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
+          
+          if (parsedOutlines && parsedOutlines.length > 0) {
+            console.log('Setting outlines from executionId data:', parsedOutlines);
+            setOutlines(parsedOutlines);
+            return;
+          }
+        }
+      }
+      
+      // If we still don't have outlines, check if we're dealing with a nested response
+      if (keywordSelectResponse.data && keywordSelectResponse.data.articleoutline) {
+        console.log('Found articleoutline in nested data property:', keywordSelectResponse.data.articleoutline);
+        const parsedOutlines = formatOutlineOptions(keywordSelectResponse.data);
+        
+        if (parsedOutlines && parsedOutlines.length > 0) {
+          console.log('Setting outlines from nested data:', parsedOutlines);
           setOutlines(parsedOutlines);
-          
-          // Initialize custom outline with empty content
-          setCustomOutline({
-            id: 'custom',
-            content: '',
-            parsed: { headings: [] }
-          });
-          
           return;
         }
       }
       
-      // If we've reached this point, no outline data was found in the direct response
-      console.warn('No article outlines found in response:', keywordSelectResponse);
+      console.warn('No article outlines found in any response format. Adding debug info:', {
+        hasArticleOutline: Boolean(keywordSelectResponse?.articleoutline),
+        executionId: keywordSelectResponse?.executionId,
+        hasNestedData: Boolean(keywordSelectResponse?.data),
+      });
     } catch (error) {
       console.error('Error initializing outlines:', error);
       setError('Failed to parse outline options.');
