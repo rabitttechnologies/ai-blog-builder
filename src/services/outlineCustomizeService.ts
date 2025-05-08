@@ -1,30 +1,6 @@
 
 // Service for outline and customization webhook calls
 const outlineCustomizeService = {
-  // Parse article outline from the response data
-  parseArticleOutline(data: any): Array<{id: string, content: string}> {
-    if (!data || !data.articleoutline || !Array.isArray(data.articleoutline)) {
-      console.warn('No valid article outline data found');
-      return [];
-    }
-    
-    try {
-      return data.articleoutline.map((item, index) => {
-        // Extract the outline content - could be in outline1, outline2 properties
-        const outlineKey = Object.keys(item)[0]; // Get first property (outline1, outline2, etc)
-        const content = item[outlineKey] || '';
-        
-        return {
-          id: `outline-${index + 1}`,
-          content: content
-        };
-      });
-    } catch (error) {
-      console.error('Error parsing article outline:', error);
-      return [];
-    }
-  },
-
   // Submit the outline and customization selection to the webhook
   async submitOutlineCustomization(payload: any): Promise<any> {
     try {
