@@ -44,36 +44,53 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
   const [titleDescriptionData, setTitleDescriptionData] = useState<any>(null);
   
+  // Debug helper for data consistency
+  const logDataState = (source: string) => {
+    console.log(`[${source}] Current state:`, {
+      hasKeywordSelectResponse: !!keywordSelectResponse,
+      keywordSelectExecutionId: keywordSelectResponse?.executionId,
+      hasTitleDescriptionData: !!titleDescriptionData,
+      titleDescExecutionId: titleDescriptionData?.executionId,
+      outlinesCount: outlines.length,
+      hasOutlinesInKeywordSelect: !!(keywordSelectResponse?.articleoutline || keywordSelectResponse?.articleOutline),
+      hasOutlinesInTitleDesc: !!(titleDescriptionData?.articleoutline || titleDescriptionData?.articleOutline),
+    });
+  };
+  
   // Update title description data when it changes in the keywordSelectResponse
   useEffect(() => {
     if (keywordSelectResponse && keywordSelectResponse?.executionId !== titleDescriptionData?.executionId) {
       console.log('Updating title description data from keyword select response');
       setTitleDescriptionData(keywordSelectResponse);
+      logDataState('titleDescUpdate');
     }
   }, [keywordSelectResponse, titleDescriptionData]);
 
   // Enhanced initialize outlines function with improved error handling
   const initializeOutlines = useCallback(() => {
     console.log('Initializing outlines...');
+    logDataState('initializeOutlines');
     
-    // Try to directly use title description data (if available) which should have the outlines
-    if (titleDescriptionData?.articleoutline) {
-      console.log('Found articleoutline in cached title description data');
-      const parsedOutlines = formatOutlineOptions(titleDescriptionData);
-      
-      if (parsedOutlines && parsedOutlines.length > 0) {
-        console.log('Setting outlines from cached title description data:', parsedOutlines);
-        setOutlines(parsedOutlines);
-        return;
+    // First, check the title description data for outlines (this is our preferred source)
+    if (titleDescriptionData) {
+      // Check for articleoutline in either format (lowercase or uppercase)
+      if (titleDescriptionData.articleoutline || titleDescriptionData.articleOutline) {
+        console.log('Found articleoutline in title description data');
+        const parsedOutlines = formatOutlineOptions(titleDescriptionData);
+        
+        if (parsedOutlines && parsedOutlines.length > 0) {
+          console.log('Setting outlines from title description data:', parsedOutlines);
+          setOutlines(parsedOutlines);
+          return;
+        }
       }
     }
     
-    // If we get to this point, try to use the keyword select response directly
+    // If no outlines found in title description data, try the keyword select response
     if (keywordSelectResponse) {
       console.log('Trying to extract outlines from keyword select response:', keywordSelectResponse);
       
-      // Special case: If keywordSelectResponse is a title description response (it has articleoutline)
-      if (keywordSelectResponse?.articleoutline) {
+      if (keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline) {
         console.log('Found articleoutline directly in keyword select response');
         const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
         
@@ -84,12 +101,12 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         }
       }
       
-      // Debug message if no outlines found
-      console.warn('No article outlines found in any response. Debug info:', {
-        hasTitleDescriptionData: Boolean(titleDescriptionData),
+      // Extended debug info
+      console.warn('No article outlines found in any response format. Adding debug info:', {
+        hasTitleDescriptionData: !!titleDescriptionData,
         titleDescExecutionId: titleDescriptionData?.executionId,
         keywordSelectExecutionId: keywordSelectResponse?.executionId,
-        hasArticleOutline: Boolean(keywordSelectResponse?.articleoutline),
+        hasArticleOutline: !!(keywordSelectResponse?.articleoutline || keywordSelectResponse?.articleOutline),
       });
     } else {
       console.warn('No keyword select response available');

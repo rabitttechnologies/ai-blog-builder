@@ -1,9 +1,11 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   WritingStyle, 
   ArticlePointOfView, 
   HeadingsOption, 
-  headingsOptions 
+  headingsOptions,
+  KeywordSelectResponse 
 } from '@/types/articleWriter';
 
 // Define the possible content types
@@ -29,23 +31,6 @@ export interface KeywordResponse {
   historicalSearchData: any[]; // Array of keyword data
   references: any[]; // Array of reference links
   additionalData?: any; // Any additional data
-}
-
-// Response from selected keywords webhook
-export interface KeywordSelectResponse {
-  workflowId: string;
-  userId: string;
-  executionId: string;
-  originalKeyword: string;
-  country: string;
-  language: string;
-  typeOfContent: string;
-  mainKeyword: string;
-  additionalKeyword: string[];
-  references: { title: string; url: string }[];
-  researchType: string;
-  titlesandShortDescription?: any[];
-  additionalData?: any;
 }
 
 // Selected keyword data
@@ -127,7 +112,7 @@ interface ArticleWriterContextType {
   setCurrentStep: (step: number) => void;
   updateKeywordForm: (updates: Partial<KeywordFormData>) => void;
   setKeywordResponse: (response: KeywordResponse | null) => void;
-  setKeywordSelectResponse: (response: KeywordSelectResponse | null) => void;
+  setKeywordSelectResponse: (response: KeywordSelectResponse | KeywordSelectResponse[] | null) => void;
   updateSelectedKeyword: (keyword: string, isSelected: boolean) => void;
   resetArticleWriter: () => void;
   resetWorkflow: () => void; // Alias for resetArticleWriter
@@ -195,21 +180,24 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
   // Process selected keyword response to extract title descriptions
   useEffect(() => {
     if (keywordSelectResponse && 
-        keywordSelectResponse.titlesandShortDescription && 
-        Array.isArray(keywordSelectResponse.titlesandShortDescription) && 
-        keywordSelectResponse.titlesandShortDescription.length > 0 && 
+        (keywordSelectResponse.titlesandShortDescription || keywordSelectResponse.titlesAndShortDescription) && 
         (!titleDescriptionOptions || titleDescriptionOptions.length === 0)) {
       
       console.log("ArticleWriterContext - Processing title descriptions from keyword response");
       
-      // Convert titlesandShortDescription to the format expected by the app
-      const formattedOptions = keywordSelectResponse.titlesandShortDescription.map((item, index) => ({
-        id: `title-${index}`,
-        title: item.title,
-        description: item.description
-      }));
+      // Handle different casing conventions
+      const titlesData = keywordSelectResponse.titlesandShortDescription || keywordSelectResponse.titlesAndShortDescription;
       
-      setTitleDescriptionOptions(formattedOptions);
+      if (Array.isArray(titlesData)) {
+        // Convert titlesandShortDescription to the format expected by the app
+        const formattedOptions = titlesData.map((item, index) => ({
+          id: `title-${index}`,
+          title: item.title,
+          description: item.description
+        }));
+        
+        setTitleDescriptionOptions(formattedOptions);
+      }
     }
   }, [keywordSelectResponse, titleDescriptionOptions]);
   
@@ -302,13 +290,11 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     setKeywordSelectResponse(normalizedResponse);
     
     // If normalized response has title descriptions, process them
-    if (normalizedResponse && 
-        normalizedResponse.titlesandShortDescription && 
-        Array.isArray(normalizedResponse.titlesandShortDescription) && 
-        normalizedResponse.titlesandShortDescription.length > 0) {
+    const titlesData = normalizedResponse.titlesandShortDescription || normalizedResponse.titlesAndShortDescription;
+    if (normalizedResponse && titlesData && Array.isArray(titlesData) && titlesData.length > 0) {
       
       // Format the title descriptions
-      const formattedOptions = normalizedResponse.titlesandShortDescription.map((item, index) => ({
+      const formattedOptions = titlesData.map((item, index) => ({
         id: `title-${index}`,
         title: item.title,
         description: item.description

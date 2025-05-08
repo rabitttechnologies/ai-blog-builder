@@ -78,8 +78,8 @@ const OutlineStep = () => {
       return;
     }
     
-    // If titleDescriptionData was received directly from webhook response, use it
-    if (keywordSelectResponse?.articleoutline) {
+    // If titleDescriptionData is available in keywordSelectResponse, use it
+    if (keywordSelectResponse) {
       console.log('Setting titleDescriptionData from keywordSelectResponse');
       setTitleDescriptionData(keywordSelectResponse);
     }

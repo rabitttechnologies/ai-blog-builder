@@ -75,6 +75,13 @@ export interface TitleDescriptionPayload {
   additionalData?: any;
 }
 
+// Article outline interface
+export interface ArticleOutlineItem {
+  outline1?: string;
+  outline2?: string;
+  [key: string]: string | undefined;
+}
+
 // Title and short description response
 export interface TitleDescriptionResponse {
   workflowId: string;
@@ -99,7 +106,88 @@ export interface TitleDescriptionResponse {
   writingStyle: string;
   articlePointOfView: string;
   expertGuidance?: string;
-  articleOutline: any[];
-  articlePrompt: string;
+  articleoutline?: ArticleOutlineItem[];
+  articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
+  articlePrompt?: string;
   additionalData?: any;
+}
+
+// Response from keyword research webhook
+export interface KeywordResponse {
+  workflowId: string;
+  userId: string;
+  executionId: string;
+  originalKeyword: string;
+  country: string;
+  language: string;
+  contentType: string;
+  historicalSearchData: any[]; // Array of keyword data
+  references: any[]; // Array of reference links
+  additionalData?: any; // Any additional data
+}
+
+// Response from selected keywords webhook
+export interface KeywordSelectResponse {
+  workflowId: string;
+  userId: string;
+  executionId: string;
+  originalKeyword: string;
+  country: string;
+  language: string;
+  typeOfContent: string;
+  mainKeyword: string;
+  additionalKeyword: string[];
+  references: { title: string; url: string }[];
+  researchType: string;
+  titlesandShortDescription?: any[];
+  titlesAndShortDescription?: any[];
+  articleoutline?: ArticleOutlineItem[];
+  articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
+  additionalData?: any;
+}
+
+// Selected keyword data
+export interface SelectedKeyword {
+  keyword: string;
+  isSelected: boolean;
+}
+
+// Title description interface
+export interface TitleDescription {
+  id: string;
+  title: string;
+  description: string;
+}
+
+// Article outline section
+export interface OutlineSection {
+  heading: string;
+  content: string;
+}
+
+// Article outline
+export interface ArticleOutline {
+  id: string;
+  title: string;
+  introduction: string;
+  sections: OutlineSection[];
+  conclusion: string;
+}
+
+// Generated article
+export interface GeneratedArticle {
+  id: string;
+  title: string;
+  content: string;
+  metaDescription: string;
+  date: string;
+}
+
+// New fields for title description step
+export interface TitleDescriptionFormState {
+  headingsCount: HeadingsOption | null;
+  writingStyle: WritingStyle | null;
+  pointOfView: ArticlePointOfView;
+  expertGuidance: string;
+  saveExpertGuidance: boolean;
 }

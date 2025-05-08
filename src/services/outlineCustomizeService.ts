@@ -58,13 +58,14 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
   // Create array to store the formatted options
   const options: OutlineOption[] = [];
   
-  // Direct articleoutline access - most common pattern in title description response
+  // Try different possibilities for the outline data location
+  
+  // 1. Direct articleoutline access (lowercase)
   if (response.articleoutline && Array.isArray(response.articleoutline)) {
-    console.log('Found articleoutline array in response:', response.articleoutline);
+    console.log('Found articleoutline array in response (lowercase):', response.articleoutline);
     
-    // Process each item in the articleoutline array
+    // Process array of objects with outline1, outline2 properties
     response.articleoutline.forEach((item: any, index: number) => {
-      // Extract outline1
       if (typeof item?.outline1 === 'string') {
         options.push({
           id: `outline-1`,
@@ -73,7 +74,6 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
         });
       }
       
-      // Extract outline2
       if (typeof item?.outline2 === 'string') {
         options.push({
           id: `outline-2`,
@@ -81,6 +81,54 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
           parsed: parseArticleOutline(item.outline2)
         });
       }
+      
+      // Check for any other outline keys
+      Object.keys(item || {}).forEach(key => {
+        if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
+          const outlineNumber = key.replace('outline', '');
+          options.push({
+            id: `outline-${outlineNumber}`,
+            content: item[key],
+            parsed: parseArticleOutline(item[key])
+          });
+        }
+      });
+    });
+  }
+  
+  // 2. Try with uppercase 'articleOutline'
+  else if (response.articleOutline && Array.isArray(response.articleOutline)) {
+    console.log('Found articleOutline array in response (uppercase):', response.articleOutline);
+    
+    // Process array of objects with outline1, outline2 properties
+    response.articleOutline.forEach((item: any, index: number) => {
+      if (typeof item?.outline1 === 'string') {
+        options.push({
+          id: `outline-1`,
+          content: item.outline1,
+          parsed: parseArticleOutline(item.outline1)
+        });
+      }
+      
+      if (typeof item?.outline2 === 'string') {
+        options.push({
+          id: `outline-2`,
+          content: item.outline2,
+          parsed: parseArticleOutline(item.outline2)
+        });
+      }
+      
+      // Check for any other outline keys
+      Object.keys(item || {}).forEach(key => {
+        if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
+          const outlineNumber = key.replace('outline', '');
+          options.push({
+            id: `outline-${outlineNumber}`,
+            content: item[key],
+            parsed: parseArticleOutline(item[key])
+          });
+        }
+      });
     });
   }
   
