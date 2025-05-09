@@ -7,15 +7,34 @@ import { headingsOptions, HeadingsOption } from '@/types/articleWriter';
 interface HeadingsCountSelectorProps {
   value: string | null;
   onChange: (value: string) => void;
+  selectedHeadings?: HeadingsOption;
+  onSelect?: (headings: HeadingsOption) => void;
 }
 
-const HeadingsCountSelector: React.FC<HeadingsCountSelectorProps> = ({ value, onChange }) => {
+const HeadingsCountSelector: React.FC<HeadingsCountSelectorProps> = ({ 
+  value, 
+  onChange,
+  selectedHeadings,
+  onSelect 
+}) => {
+  // Handle both older and newer prop patterns
+  const handleChange = (val: string) => {
+    onChange(val);
+    
+    if (onSelect) {
+      const selected = headingsOptions.find(option => option.id === val);
+      if (selected) {
+        onSelect(selected);
+      }
+    }
+  };
+
   return (
     <div className="space-y-3">
       <Label className="text-base font-medium">Number of Headings</Label>
       <RadioGroup
-        value={value || ''}
-        onValueChange={onChange}
+        value={selectedHeadings?.id || value || ''}
+        onValueChange={handleChange}
         className="grid grid-cols-1 gap-3 pt-2 md:grid-cols-2 lg:grid-cols-3"
       >
         {headingsOptions.map((option) => (

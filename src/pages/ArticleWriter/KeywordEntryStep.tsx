@@ -119,7 +119,13 @@ const KeywordEntryStep = () => {
       setError(null);
       
       // Update form values in context
-      updateKeywordForm(values);
+      updateKeywordForm({
+        keyword: values.keyword,
+        country: values.country,
+        language: values.language,
+        contentType: values.contentType as any
+      });
+      
       setCurrentStep(1);
       
       // Prepare payload
@@ -152,14 +158,26 @@ const KeywordEntryStep = () => {
         throw new Error(`Server responded with status: ${response.status}`);
       }
       
-      const responseData = await response.json();
-      console.log("Keyword research response:", responseData);
+      const responseText = await response.text();
       
-      // Store the response in context
-      setKeywordResponse(responseData);
+      // Check if response is empty
+      if (!responseText) {
+        throw new Error("Server returned an empty response");
+      }
       
-      // Navigate to the next step
-      navigate('/article-writer/select-keywords');
+      try {
+        const responseData = JSON.parse(responseText);
+        console.log("Keyword research response:", responseData);
+        
+        // Store the response in context
+        setKeywordResponse(responseData);
+        
+        // Navigate to the next step
+        navigate('/article-writer/select-keywords');
+      } catch (jsonError) {
+        console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
+        throw new Error("Invalid response format from server");
+      }
       
     } catch (err: any) {
       if (err.name === 'AbortError') {

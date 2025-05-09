@@ -145,11 +145,11 @@ export interface KeywordSelectResponse {
   titlesandShortDescription?: {
     title: string;
     description: string;
-  };
+  } | any[];
   titlesAndShortDescription?: {
     title: string;
     description: string;
-  };
+  } | any[];
   articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
   promptforbody?: string;  // Added field for prompt for body
@@ -157,6 +157,7 @@ export interface KeywordSelectResponse {
   key_takeaways?: string;  // Added field for key_takeaways
   generatedArticle?: string; // Added field for the generated article content
   additionalData?: any;
+  title?: string; // Added to fix errors in GeneratedArticleStep
 }
 
 // Selected keyword data
