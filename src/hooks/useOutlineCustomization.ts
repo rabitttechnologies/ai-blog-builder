@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { KeywordSelectResponse, TitleDescriptionResponse } from '@/types/articleWriter';
+import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
 
 interface UseOutlineCustomizationProps {
@@ -29,8 +29,9 @@ export const useOutlineCustomization = ({
     parsed: { headings: [] }
   });
   
-  // The currently selected outline
+  // The currently selected outline and its index
   const [selectedOutline, setSelectedOutline] = useState<OutlineOption | null>(null);
+  const [selectedOutlineIndex, setSelectedOutlineIndex] = useState<number | null>(null);
   
   // Which outline is being edited, if any
   const [editingOutlineId, setEditingOutlineId] = useState<string>('');
@@ -108,10 +109,11 @@ export const useOutlineCustomization = ({
         // Auto-select first outline if none selected
         if (parsedOutlines.length > 0 && !selectedOutline) {
           setSelectedOutline(parsedOutlines[0]);
+          setSelectedOutlineIndex(0);
         }
       }
     }
-  }, [keywordSelectResponse]);
+  }, [keywordSelectResponse, selectedOutline]);
   
   // Update a customization option
   const updateCustomizationOption = (key: keyof ArticleOutlineCustomization, value: any) => {
@@ -231,6 +233,12 @@ export const useOutlineCustomization = ({
     }
   };
   
+  // Alias for the submit function to match expected name in OutlineStep
+  const submitOutlineAndCustomizations = submitOutlineAndCustomization;
+  
+  // We're using outlines array and expose it as outlineOptions to match the naming expected in OutlineStep
+  const outlineOptions = outlines;
+  
   return {
     loading,
     error,
@@ -239,12 +247,17 @@ export const useOutlineCustomization = ({
     selectedOutline,
     editingOutlineId,
     customizationOptions,
+    // Properties to match what OutlineStep expects
+    outlineOptions,
+    selectedOutlineIndex,
+    setSelectedOutlineIndex,
     setOutlines,
     setCustomOutline,
     setSelectedOutline,
     setEditingOutlineId,
     updateCustomizationOption,
     submitOutlineAndCustomization,
+    submitOutlineAndCustomizations,
     parseOutline
   };
 };

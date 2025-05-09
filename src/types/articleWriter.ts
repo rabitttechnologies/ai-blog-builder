@@ -158,6 +158,12 @@ export interface KeywordSelectResponse {
   generatedArticle?: string; // Added field for the generated article content
   additionalData?: any;
   title?: string; // Added to fix errors in GeneratedArticleStep
+  
+  // Additional properties needed from TitleDescriptionResponse
+  headingsCount?: string;
+  writingStyle?: string;
+  articlePointOfView?: string;
+  expertGuidance?: string;
 }
 
 // Selected keyword data
