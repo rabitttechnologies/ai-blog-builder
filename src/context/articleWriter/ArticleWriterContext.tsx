@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   WritingStyle, 
@@ -9,7 +8,7 @@ import {
 } from '@/types/articleWriter';
 
 // Define the possible content types
-export type ContentType = 'Blog Post' | 'News Article' | 'How to Guide' | 'Comparison Blog' | 'Technical Article' | 'Product Reviews';
+export type ContentType = 'Blog Post' | 'News Article' | 'How to Guide' | 'Comparison Blog' | 'Technical Article' | 'Product Reviews' | string;
 
 // Form data for keyword research
 export interface KeywordFormData {

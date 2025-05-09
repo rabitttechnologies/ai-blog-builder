@@ -142,13 +142,20 @@ export interface KeywordSelectResponse {
   additionalKeyword: string[];
   references: { title: string; url: string }[];
   researchType: string;
-  titlesandShortDescription?: any[];
-  titlesAndShortDescription?: any[];
+  titlesandShortDescription?: {
+    title: string;
+    description: string;
+  };
+  titlesAndShortDescription?: {
+    title: string;
+    description: string;
+  };
   articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
   promptforbody?: string;  // Added field for prompt for body
   Introduction?: string;   // Added field for Introduction
   key_takeaways?: string;  // Added field for key_takeaways
+  generatedArticle?: string; // Added field for the generated article content
   additionalData?: any;
 }
 

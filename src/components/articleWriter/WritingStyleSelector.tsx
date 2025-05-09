@@ -10,33 +10,48 @@ import { WritingStyle } from '@/types/articleWriter';
 import { PlusCircle, Save, X } from 'lucide-react';
 
 interface WritingStyleSelectorProps {
-  savedStyles: WritingStyle[];
-  selectedStyle: WritingStyle | null;
-  onSelectStyle: (style: WritingStyle | null) => void;
-  onAddStyle: (style: WritingStyle) => void;
+  value: string | null;
+  onChange: (value: string) => void;
 }
 
 const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
-  savedStyles,
-  selectedStyle,
-  onSelectStyle,
-  onAddStyle
+  value,
+  onChange
 }) => {
+  // Sample writing styles
+  const savedStyles = [
+    {
+      id: 'professional',
+      name: 'Professional',
+      description: 'Formal, authoritative, structured content with industry-specific terminology.',
+      isSaved: true
+    },
+    {
+      id: 'conversational',
+      name: 'Conversational',
+      description: 'Friendly, approachable tone that engages readers like a conversation.',
+      isSaved: true
+    },
+    {
+      id: 'informative',
+      name: 'Informative',
+      description: 'Educational, fact-focused content that prioritizes knowledge transfer.',
+      isSaved: true
+    }
+  ];
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [styleName, setStyleName] = useState('');
   const [styleDescription, setStyleDescription] = useState('');
   
   const handleCreateStyle = () => {
     if (styleName.trim() && styleDescription.trim()) {
-      const newStyle: WritingStyle = {
-        id: `style-${Date.now()}`,
-        name: styleName.trim(),
-        description: styleDescription.trim(),
-        isSaved: true
-      };
+      // Create a new style ID
+      const newStyleId = `style-${Date.now()}`;
       
-      onAddStyle(newStyle);
-      onSelectStyle(newStyle);
+      // Call onChange with the new style ID
+      onChange(newStyleId);
+      
       setDialogOpen(false);
       resetForm();
     }
@@ -48,7 +63,6 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
   };
   
   const handleCustomStyle = () => {
-    onSelectStyle(null);
     setDialogOpen(true);
   };
   
@@ -68,11 +82,8 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
       
       {savedStyles.length > 0 ? (
         <RadioGroup
-          value={selectedStyle?.id || ''}
-          onValueChange={(value) => {
-            const style = savedStyles.find(s => s.id === value);
-            onSelectStyle(style || null);
-          }}
+          value={value || ''}
+          onValueChange={onChange}
           className="grid grid-cols-1 gap-3 pt-2"
         >
           {savedStyles.map((style) => (

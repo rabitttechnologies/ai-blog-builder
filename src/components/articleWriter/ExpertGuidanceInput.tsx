@@ -1,66 +1,86 @@
 
-import React from 'react';
-import { Label } from '@/components/ui/label';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ExpertGuidanceInputProps {
   value: string;
-  onChange: (value: string) => void;
-  saveForLater: boolean;
-  onToggleSave: (value: boolean) => void;
-  savedGuidance: string[];
-  onSelectSaved: (guidance: string) => void;
+  onChange: (value: string, shouldSave?: boolean) => void;
 }
 
-const ExpertGuidanceInput: React.FC<ExpertGuidanceInputProps> = ({
-  value,
-  onChange,
-  saveForLater,
-  onToggleSave,
-  savedGuidance,
-  onSelectSaved
-}) => {
+const ExpertGuidanceInput: React.FC<ExpertGuidanceInputProps> = ({ value, onChange }) => {
+  // For demo purposes, some example guidance templates
+  const exampleGuidance = [
+    {
+      id: 'beginner-friendly',
+      title: 'Beginner Friendly',
+      content: 'Keep the article beginner-friendly. Avoid jargon and technical terms without explanation. Include clear definitions for industry-specific concepts.'
+    },
+    {
+      id: 'data-driven',
+      title: 'Data-Driven',
+      content: 'Include statistical data and research findings to support key points. Cite credible sources and include links to studies when possible.'
+    },
+    {
+      id: 'actionable',
+      title: 'Actionable Steps',
+      content: 'Structure the article with clear, actionable steps the reader can follow. Include specific examples for each tip or recommendation.'
+    }
+  ];
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleSelectTemplate = (content: string) => {
+    onChange(content, true);
+    setDialogOpen(false);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-base font-medium">Expert Guidance (Optional)</Label>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="save-guidance"
-            checked={saveForLater}
-            onCheckedChange={onToggleSave}
-          />
-          <Label htmlFor="save-guidance" className="text-sm">Save for Future Use</Label>
-        </div>
-      </div>
-      
+    <div className="space-y-3">
       <Textarea
-        placeholder="Provide specific instructions for the AI to follow when writing your article..."
+        placeholder="Add specific instructions or expert guidance for this article..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        rows={4}
-        className="resize-y min-h-[100px]"
+        className="min-h-[120px]"
       />
-      
-      {savedGuidance.length > 0 && (
-        <div className="space-y-2">
-          <Label className="text-sm">Saved Guidance</Label>
-          <div className="flex flex-wrap gap-2">
-            {savedGuidance.map((guidance, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => onSelectSaved(guidance)}
-                className="inline-block px-3 py-1 text-xs rounded-full bg-secondary/50 hover:bg-secondary transition-colors truncate max-w-[200px]"
-                title={guidance}
-              >
-                {guidance.length > 30 ? `${guidance.substring(0, 30)}...` : guidance}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <Button 
+        type="button" 
+        variant="outline" 
+        size="sm"
+        onClick={() => setDialogOpen(true)}
+        className="mt-2"
+      >
+        Use Template
+      </Button>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Expert Guidance Templates</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px] pr-4">
+            <div className="space-y-4 pt-2">
+              {exampleGuidance.map((template) => (
+                <div 
+                  key={template.id} 
+                  className="border rounded-md p-4 cursor-pointer hover:bg-accent/50"
+                  onClick={() => handleSelectTemplate(template.content)}
+                >
+                  <h3 className="font-medium mb-2">{template.title}</h3>
+                  <p className="text-sm text-muted-foreground">{template.content}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,394 +1,343 @@
 
-import React, { useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from 'react';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/Button';
-import { Plus, X } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { ArticleOutlineCustomization } from '@/types/outlineCustomize';
-import { getSavedGeneralGuidance } from '@/services/outlineCustomizeService';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface OutlineCustomizeFormProps {
-  customization: ArticleOutlineCustomization;
+  customizationOptions: ArticleOutlineCustomization;
   onChange: (field: keyof ArticleOutlineCustomization, value: any) => void;
 }
 
-const OutlineCustomizeForm: React.FC<OutlineCustomizeFormProps> = ({
-  customization,
-  onChange
-}) => {
-  const [savedGuidance] = useState<string[]>(getSavedGeneralGuidance());
+const OutlineCustomizeForm: React.FC<OutlineCustomizeFormProps> = ({ customizationOptions, onChange }) => {
+  const [expandedSections, setExpandedSections] = React.useState<{
+    images: boolean;
+    links: boolean;
+    advanced: boolean;
+  }>({
+    images: false,
+    links: false,
+    advanced: false
+  });
 
-  const handleCheckboxChange = (field: keyof ArticleOutlineCustomization) => {
-    onChange(field, !customization[field]);
-  };
-
-  const renderImageOptions = () => {
-    if (!customization.includeImagesInArticle) return null;
-    
-    return (
-      <div className="ml-6 space-y-4 mt-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="imageType">Image Type</Label>
-            <Select
-              value={customization.imageType || ''}
-              onValueChange={(value) => onChange('imageType', value)}
-            >
-              <SelectTrigger id="imageType">
-                <SelectValue placeholder="Select image type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Copyright Image">Copyright Image</SelectItem>
-                <SelectItem value="Non-Copyright">Non-Copyright</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="imageCount">Number of Images</Label>
-            <Select
-              value={customization.imageCount?.toString() || ''}
-              onValueChange={(value) => onChange('imageCount', parseInt(value))}
-            >
-              <SelectTrigger id="imageCount">
-                <SelectValue placeholder="Select count" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderInternalLinkOptions = () => {
-    if (!customization.includeInternalLinks) return null;
-    
-    return (
-      <div className="ml-6 space-y-4 mt-2">
-        <div>
-          <Label htmlFor="internalLinkCount">Number of Internal Links</Label>
-          <Select
-            value={customization.internalLinkCount?.toString() || ''}
-            onValueChange={(value) => onChange('internalLinkCount', parseInt(value))}
-          >
-            <SelectTrigger id="internalLinkCount">
-              <SelectValue placeholder="Select count" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 30 }, (_, i) => i + 1).map((num) => (
-                <SelectItem key={num} value={num.toString()}>
-                  {num}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {customization.internalLinkCount && customization.internalLinkCount > 0 && (
-          <div className="space-y-2">
-            <Label>Add Internal Links</Label>
-            {Array.from({ length: customization.internalLinkCount }, (_, i) => i).map((index) => (
-              <div key={`internal-link-${index}`} className="flex items-center gap-2">
-                <Input
-                  placeholder={`Internal link ${index + 1}`}
-                  value={customization.internalLinks?.[index] || ''}
-                  onChange={(e) => {
-                    const updatedLinks = [...(customization.internalLinks || [])];
-                    updatedLinks[index] = e.target.value;
-                    onChange('internalLinks', updatedLinks);
-                  }}
-                  className="flex-1"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderExternalLinkOptions = () => {
-    if (!customization.includeExternalLinks) return null;
-    
-    return (
-      <div className="ml-6 space-y-4 mt-2">
-        <div>
-          <Label htmlFor="externalLinkCount">Number of External Links</Label>
-          <Select
-            value={customization.externalLinkCount?.toString() || ''}
-            onValueChange={(value) => onChange('externalLinkCount', parseInt(value))}
-          >
-            <SelectTrigger id="externalLinkCount">
-              <SelectValue placeholder="Select count" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                <SelectItem key={num} value={num.toString()}>
-                  {num}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCoverImageOptions = () => {
-    if (!customization.generateCoverImage) return null;
-    
-    return (
-      <div className="ml-6 space-y-4 mt-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="coverImageType">Image Type</Label>
-            <Select
-              value={customization.coverImageType || ''}
-              onValueChange={(value) => onChange('coverImageType', value)}
-            >
-              <SelectTrigger id="coverImageType">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Anime">Anime</SelectItem>
-                <SelectItem value="Illustration">Illustration</SelectItem>
-                <SelectItem value="Fantasy">Fantasy</SelectItem>
-                <SelectItem value="Watercolour">Watercolour</SelectItem>
-                <SelectItem value="Isometric">Isometric</SelectItem>
-                <SelectItem value="Realistic">Realistic</SelectItem>
-                <SelectItem value="3D Render">3D Render</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="coverImageSize">Image Size</Label>
-            <Select
-              value={customization.coverImageSize || ''}
-              onValueChange={(value) => onChange('coverImageSize', value)}
-            >
-              <SelectTrigger id="coverImageSize">
-                <SelectValue placeholder="Select size" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1200x628">1200x628 (Social Media)</SelectItem>
-                <SelectItem value="1920x1080">1920x1080 (HD)</SelectItem>
-                <SelectItem value="1080x1080">1080x1080 (Square)</SelectItem>
-                <SelectItem value="1080x1350">1080x1350 (Portrait)</SelectItem>
-                <SelectItem value="800x600">800x600 (Standard)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCtaOptions = () => {
-    if (!customization.includeCta) return null;
-    
-    return (
-      <div className="ml-6 mt-2">
-        <Label htmlFor="ctaText">Call-to-Action Text</Label>
-        <Textarea
-          id="ctaText"
-          placeholder="Enter your call-to-action text"
-          value={customization.ctaText || ''}
-          onChange={(e) => onChange('ctaText', e.target.value)}
-          className="mt-1"
-        />
-      </div>
-    );
-  };
-
-  const renderFaqOptions = () => {
-    if (!customization.generateFaqs) return null;
-    
-    return (
-      <div className="ml-6 mt-2">
-        <Label htmlFor="faqCount">Number of FAQs</Label>
-        <Select
-          value={customization.faqCount?.toString() || ''}
-          onValueChange={(value) => onChange('faqCount', parseInt(value))}
-        >
-          <SelectTrigger id="faqCount">
-            <SelectValue placeholder="Select count" />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-              <SelectItem key={num} value={num.toString()}>
-                {num}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  };
-
-  const renderGeneralGuidanceOptions = () => {
-    if (!customization.includeGeneralGuidance) return null;
-    
-    return (
-      <div className="ml-6 mt-2 space-y-2">
-        <Label htmlFor="generalGuidance">General Guidance</Label>
-        <Textarea
-          id="generalGuidance"
-          placeholder="Enter general guidance for writing"
-          value={customization.generalGuidance || ''}
-          onChange={(e) => onChange('generalGuidance', e.target.value)}
-          className="mt-1"
-          rows={4}
-        />
-        
-        {savedGuidance.length > 0 && (
-          <div className="mt-2">
-            <Label>Saved Guidance</Label>
-            <div className="mt-1 space-y-2">
-              {savedGuidance.map((guidance, index) => (
-                <div
-                  key={`saved-guidance-${index}`}
-                  className="p-2 bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200"
-                  onClick={() => onChange('generalGuidance', guidance)}
-                >
-                  {guidance.length > 100 ? guidance.substring(0, 100) + '...' : guidance}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
   return (
-    <div className="space-y-6 pt-4">
-      <h3 className="text-lg font-medium">Customize Options</h3>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="generateHumanisedArticle" 
-            checked={customization.generateHumanisedArticle || false}
-            onCheckedChange={() => handleCheckboxChange('generateHumanisedArticle')}
+    <div className="space-y-5">
+      {/* Basic options */}
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="humanized" className="flex-1 cursor-pointer">Humanized Content</Label>
+          <Switch 
+            id="humanized" 
+            checked={customizationOptions.generateHumanisedArticle || false} 
+            onCheckedChange={value => onChange('generateHumanisedArticle', value)}
           />
-          <Label htmlFor="generateHumanisedArticle">Generate Humanised Article</Label>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="generateComparisonTable" 
-            checked={customization.generateComparisonTable || false}
-            onCheckedChange={() => handleCheckboxChange('generateComparisonTable')}
+        <p className="mt-1 text-xs text-muted-foreground">
+          Make the content sound more natural and conversational
+        </p>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="comparison" className="flex-1 cursor-pointer">Include Comparison Table</Label>
+          <Switch 
+            id="comparison" 
+            checked={customizationOptions.generateComparisonTable || false} 
+            onCheckedChange={value => onChange('generateComparisonTable', value)}
           />
-          <Label htmlFor="generateComparisonTable">Generate Comparison Table</Label>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="includeExpertQuotes" 
-            checked={customization.includeExpertQuotes || false}
-            onCheckedChange={() => handleCheckboxChange('includeExpertQuotes')}
+        <p className="mt-1 text-xs text-muted-foreground">
+          Add a comparison table where relevant
+        </p>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="quotes" className="flex-1 cursor-pointer">Include Expert Quotes</Label>
+          <Switch 
+            id="quotes" 
+            checked={customizationOptions.includeExpertQuotes || false} 
+            onCheckedChange={value => onChange('includeExpertQuotes', value)}
           />
-          <Label htmlFor="includeExpertQuotes">Include Expert Quotes</Label>
         </div>
-        
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="includeImagesInArticle" 
-              checked={customization.includeImagesInArticle || false}
-              onCheckedChange={() => handleCheckboxChange('includeImagesInArticle')}
-            />
-            <Label htmlFor="includeImagesInArticle">Include Images in Article</Label>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Add expert quotes and insights to build authority
+        </p>
+      </div>
+
+      <Separator />
+
+      {/* Images Section */}
+      <div>
+        <button 
+          type="button" 
+          className="flex w-full items-center justify-between py-1 text-left font-medium"
+          onClick={() => toggleSection('images')}
+        >
+          Images Settings
+          {expandedSections.images ? 
+            <ChevronUp className="h-4 w-4" /> : 
+            <ChevronDown className="h-4 w-4" />
+          }
+        </button>
+
+        {expandedSections.images && (
+          <div className="mt-3 space-y-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="images" className="flex-1 cursor-pointer">Include Images</Label>
+                <Switch 
+                  id="images" 
+                  checked={customizationOptions.includeImagesInArticle || false}
+                  onCheckedChange={value => onChange('includeImagesInArticle', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Include relevant images throughout the article
+              </p>
+            </div>
+
+            {customizationOptions.includeImagesInArticle && (
+              <>
+                <div>
+                  <Label htmlFor="image-count">Number of Images</Label>
+                  <Input 
+                    id="image-count" 
+                    type="number" 
+                    min={1} 
+                    max={10} 
+                    className="mt-1"
+                    value={customizationOptions.imageCount || 3}
+                    onChange={e => onChange('imageCount', parseInt(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="image-type">Image Type</Label>
+                  <select 
+                    id="image-type" 
+                    className="w-full border border-input rounded-md mt-1 p-2"
+                    value={customizationOptions.imageType || 'Non-Copyright'}
+                    onChange={e => onChange('imageType', e.target.value as 'Non-Copyright' | 'Copyright Image')}
+                  >
+                    <option value="Non-Copyright">Non-Copyright</option>
+                    <option value="Copyright Image">Copyright Image</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="cover-image" className="flex-1 cursor-pointer">Generate Cover Image</Label>
+                    <Switch 
+                      id="cover-image" 
+                      checked={customizationOptions.generateCoverImage || false}
+                      onCheckedChange={value => onChange('generateCoverImage', value)}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Create a featured image for the article
+                  </p>
+                </div>
+              </>
+            )}
           </div>
-          {renderImageOptions()}
-        </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Links Section */}
+      <div>
+        <button 
+          type="button" 
+          className="flex w-full items-center justify-between py-1 text-left font-medium"
+          onClick={() => toggleSection('links')}
+        >
+          Links Settings
+          {expandedSections.links ? 
+            <ChevronUp className="h-4 w-4" /> : 
+            <ChevronDown className="h-4 w-4" />
+          }
+        </button>
         
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="includeInternalLinks" 
-              checked={customization.includeInternalLinks || false}
-              onCheckedChange={() => handleCheckboxChange('includeInternalLinks')}
-            />
-            <Label htmlFor="includeInternalLinks">Internal Links</Label>
+        {expandedSections.links && (
+          <div className="mt-3 space-y-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="internal-links" className="flex-1 cursor-pointer">Include Internal Links</Label>
+                <Switch 
+                  id="internal-links" 
+                  checked={customizationOptions.includeInternalLinks || false}
+                  onCheckedChange={value => onChange('includeInternalLinks', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add links to other pages on your site
+              </p>
+            </div>
+
+            {customizationOptions.includeInternalLinks && (
+              <>
+                <div>
+                  <Label htmlFor="internal-link-count">Number of Internal Links</Label>
+                  <Input 
+                    id="internal-link-count" 
+                    type="number" 
+                    min={1} 
+                    max={10} 
+                    className="mt-1"
+                    value={customizationOptions.internalLinkCount || 3}
+                    onChange={e => onChange('internalLinkCount', parseInt(e.target.value))}
+                  />
+                </div>
+              </>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="external-links" className="flex-1 cursor-pointer">Include External Links</Label>
+                <Switch 
+                  id="external-links" 
+                  checked={customizationOptions.includeExternalLinks || false}
+                  onCheckedChange={value => onChange('includeExternalLinks', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add links to reputable external resources
+              </p>
+            </div>
+
+            {customizationOptions.includeExternalLinks && (
+              <div>
+                <Label htmlFor="external-link-count">Number of External Links</Label>
+                <Input 
+                  id="external-link-count" 
+                  type="number" 
+                  min={1} 
+                  max={5} 
+                  className="mt-1"
+                  value={customizationOptions.externalLinkCount || 2}
+                  onChange={e => onChange('externalLinkCount', parseInt(e.target.value))}
+                />
+              </div>
+            )}
           </div>
-          {renderInternalLinkOptions()}
-        </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Advanced Settings */}
+      <div>
+        <button 
+          type="button" 
+          className="flex w-full items-center justify-between py-1 text-left font-medium"
+          onClick={() => toggleSection('advanced')}
+        >
+          Advanced Settings
+          {expandedSections.advanced ? 
+            <ChevronUp className="h-4 w-4" /> : 
+            <ChevronDown className="h-4 w-4" />
+          }
+        </button>
         
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="includeExternalLinks" 
-              checked={customization.includeExternalLinks || false}
-              onCheckedChange={() => handleCheckboxChange('includeExternalLinks')}
-            />
-            <Label htmlFor="includeExternalLinks">External Links</Label>
+        {expandedSections.advanced && (
+          <div className="mt-3 space-y-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="faqs" className="flex-1 cursor-pointer">Generate FAQs</Label>
+                <Switch 
+                  id="faqs" 
+                  checked={customizationOptions.generateFaqs || false}
+                  onCheckedChange={value => onChange('generateFaqs', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add frequently asked questions with answers
+              </p>
+            </div>
+
+            {customizationOptions.generateFaqs && (
+              <div>
+                <Label htmlFor="faq-count">Number of FAQs</Label>
+                <Input 
+                  id="faq-count" 
+                  type="number" 
+                  min={1} 
+                  max={10} 
+                  className="mt-1"
+                  value={customizationOptions.faqCount || 3}
+                  onChange={e => onChange('faqCount', parseInt(e.target.value))}
+                />
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cta" className="flex-1 cursor-pointer">Include Call to Action</Label>
+                <Switch 
+                  id="cta" 
+                  checked={customizationOptions.includeCta || false}
+                  onCheckedChange={value => onChange('includeCta', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add a clear call to action at the end
+              </p>
+            </div>
+
+            {customizationOptions.includeCta && (
+              <div>
+                <Label htmlFor="cta-text">CTA Text</Label>
+                <Textarea 
+                  id="cta-text"
+                  placeholder="E.g., Sign up for our newsletter to receive weekly updates..."
+                  className="mt-1"
+                  value={customizationOptions.ctaText || ''}
+                  onChange={e => onChange('ctaText', e.target.value)}
+                />
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="general-guidance" className="flex-1 cursor-pointer">Include General Guidance</Label>
+                <Switch 
+                  id="general-guidance" 
+                  checked={customizationOptions.includeGeneralGuidance || false}
+                  onCheckedChange={value => onChange('includeGeneralGuidance', value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add specific instructions for the article
+              </p>
+            </div>
+
+            {customizationOptions.includeGeneralGuidance && (
+              <div>
+                <Label htmlFor="guidance-text">Guidance Instructions</Label>
+                <Textarea 
+                  id="guidance-text"
+                  placeholder="E.g., Focus on benefits rather than features. Use a conversational tone..."
+                  className="mt-1 min-h-[80px]"
+                  value={customizationOptions.generalGuidance || ''}
+                  onChange={e => onChange('generalGuidance', e.target.value)}
+                />
+              </div>
+            )}
           </div>
-          {renderExternalLinkOptions()}
-        </div>
-        
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="generateCoverImage" 
-              checked={customization.generateCoverImage || false}
-              onCheckedChange={() => handleCheckboxChange('generateCoverImage')}
-            />
-            <Label htmlFor="generateCoverImage">Generate Cover Image</Label>
-          </div>
-          {renderCoverImageOptions()}
-        </div>
-        
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="includeCta" 
-              checked={customization.includeCta || false}
-              onCheckedChange={() => handleCheckboxChange('includeCta')}
-            />
-            <Label htmlFor="includeCta">Include a Call-to-action</Label>
-          </div>
-          {renderCtaOptions()}
-        </div>
-        
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="generateFaqs" 
-              checked={customization.generateFaqs || false}
-              onCheckedChange={() => handleCheckboxChange('generateFaqs')}
-            />
-            <Label htmlFor="generateFaqs">Generate FAQs</Label>
-          </div>
-          {renderFaqOptions()}
-        </div>
-        
-        <div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="includeGeneralGuidance" 
-              checked={customization.includeGeneralGuidance || false}
-              onCheckedChange={() => handleCheckboxChange('includeGeneralGuidance')}
-            />
-            <Label htmlFor="includeGeneralGuidance">General Guidance for writing</Label>
-          </div>
-          {renderGeneralGuidanceOptions()}
-        </div>
+        )}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { headingsOptions } from '@/types/articleWriter';
+import { headingsOptions, HeadingsOption } from '@/types/articleWriter';
 
 interface HeadingsCountSelectorProps {
   value: string | null;

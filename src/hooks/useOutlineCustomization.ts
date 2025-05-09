@@ -43,6 +43,22 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   });
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
   
+  // We need outlineOptions and selectedOutlineIndex for the UI
+  const [outlineOptions, setOutlineOptions] = useState<OutlineOption[]>([]);
+  const [selectedOutlineIndex, setSelectedOutlineIndex] = useState<number | null>(null);
+  const [customizationOptions, setCustomizationOptions] = useState<ArticleOutlineCustomization>({
+    generateHumanisedArticle: false,
+    generateComparisonTable: false,
+    includeExpertQuotes: false,
+    includeImagesInArticle: false,
+    includeInternalLinks: false,
+    includeExternalLinks: false,
+    generateCoverImage: false,
+    includeCta: false,
+    generateFaqs: false,
+    includeGeneralGuidance: false
+  });
+  
   // Add state for the additional fields
   const [promptForBody, setPromptForBody] = useState<string>('');
   const [introduction, setIntroduction] = useState<string>('');
@@ -68,6 +84,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         if (parsedOutlines && parsedOutlines.length > 0) {
           console.log('Setting outlines from keywordSelectResponse:', parsedOutlines);
           setOutlines(parsedOutlines);
+          setOutlineOptions(parsedOutlines);
           
           // Store the additional fields if they exist
           if (keywordSelectResponse.promptforbody) {
@@ -151,6 +168,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
       });
       
       setOutlines(updatedOutlines);
+      setOutlineOptions(updatedOutlines);
       
       const selectedOutline = updatedOutlines.find(o => o.id === outlineId) || null;
       setSelectedOutline(selectedOutline);
@@ -172,6 +190,12 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   // Update customization options
   const updateCustomization = (field: keyof ArticleOutlineCustomization, value: any) => {
     setCustomization(prev => ({ ...prev, [field]: value }));
+    setCustomizationOptions(prev => ({ ...prev, [field]: value }));
+  };
+  
+  // Convenience function for the component
+  const updateCustomizationOption = (field: keyof ArticleOutlineCustomization, value: any) => {
+    updateCustomization(field, value);
   };
 
   // Get session ID for request tracking
@@ -287,6 +311,12 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     introduction, 
     keyTakeaways
   ]);
+  
+  // Convenience functions for the component
+  const submitOutlineAndCustomizations = submitOutlineAndCustomization;
+  
+  // Added parseOutline function for components to use
+  const parseOutline = parseArticleOutline;
 
   return {
     loading,
@@ -301,6 +331,15 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     promptForBody,
     introduction,
     keyTakeaways,
+    // Added these for the component to use
+    outlineOptions,
+    selectedOutlineIndex,
+    customizationOptions,
+    setSelectedOutlineIndex,
+    updateCustomizationOption,
+    submitOutlineAndCustomizations,
+    parseOutline,
+    // Original functions
     initializeOutlines,
     startEditingOutline,
     cancelEditingOutline,

@@ -135,6 +135,16 @@ const OutlineStep = () => {
     }
   };
 
+  const getTitleFromResponse = (): string => {
+    if (keywordSelectResponse?.titlesAndShortDescription?.title) {
+      return keywordSelectResponse.titlesAndShortDescription.title;
+    }
+    if (keywordSelectResponse?.titlesandShortDescription?.title) {
+      return keywordSelectResponse.titlesandShortDescription.title;
+    }
+    return keywordSelectResponse?.mainKeyword || keywordForm.keyword || '';
+  };
+
   return (
     <DashboardLayout>
       <Helmet>
@@ -146,7 +156,7 @@ const OutlineStep = () => {
           <p className="text-gray-600">
             Select and customize your article outline for{" "}
             <span className="font-medium">
-              {keywordSelectResponse?.titlesAndShortDescription?.title || keywordSelectResponse?.mainKeyword || keywordForm.keyword}
+              {getTitleFromResponse()}
             </span>
           </p>
         </div>
@@ -205,7 +215,7 @@ const OutlineStep = () => {
               </CardHeader>
               <CardContent>
                 <OutlineCustomizeForm
-                  options={customizationOptions}
+                  customizationOptions={customizationOptions}
                   onChange={updateCustomizationOption}
                 />
               </CardContent>

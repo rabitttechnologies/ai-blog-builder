@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -118,7 +117,8 @@ const TitleDescriptionStep = () => {
     
     // Also update selected title description if this is the selected one
     if (selectedTitleDescription?.id === id) {
-      setSelectedTitleDescription(prev => prev ? { ...prev, title } : null);
+      const updatedTitleDesc = {...selectedTitleDescription, title};
+      setSelectedTitleDescription(updatedTitleDesc);
     }
   };
   
@@ -153,24 +153,36 @@ const TitleDescriptionStep = () => {
     
     // Also update selected title description if this is the selected one
     if (selectedTitleDescription?.id === id) {
-      setSelectedTitleDescription(prev => prev ? { ...prev, description } : null);
+      const updatedTitleDesc = {...selectedTitleDescription, description};
+      setSelectedTitleDescription(updatedTitleDesc);
     }
   };
   
   // Handle input changes
-  const handleHeadingsChange = (headings: HeadingsOption) => {
-    updateTitleDescriptionForm({ headingsCount: headings });
+  const handleHeadingsChange = (headingsId: string) => {
+    const selectedHeading = headingsOptions.find(h => h.id === headingsId);
+    if (selectedHeading) {
+      updateTitleDescriptionForm({ headingsCount: selectedHeading });
+    }
   };
   
-  const handleWritingStyleChange = (style: any) => {
+  const handleWritingStyleChange = (styleId: string) => {
+    // In a real implementation, you would look up the style
+    // For now, we'll create a placeholder
+    const style: WritingStyle = {
+      id: styleId,
+      name: styleId,
+      description: '',
+      isSaved: false
+    };
     updateTitleDescriptionForm({ writingStyle: style });
   };
   
-  const handlePointOfViewChange = (pov: any) => {
+  const handlePointOfViewChange = (pov: ArticlePointOfView) => {
     updateTitleDescriptionForm({ pointOfView: pov });
   };
   
-  const handleExpertGuidanceChange = (text: string, shouldSave: boolean) => {
+  const handleExpertGuidanceChange = (text: string, shouldSave: boolean = false) => {
     updateTitleDescriptionForm({ 
       expertGuidance: text,
       saveExpertGuidance: shouldSave
@@ -429,8 +441,8 @@ const TitleDescriptionStep = () => {
               <div>
                 <h3 className="text-base font-medium mb-3">Content Length</h3>
                 <HeadingsCountSelector
-                  selectedHeadings={titleDescriptionForm.headingsCount}
-                  onSelect={handleHeadingsChange}
+                  value={titleDescriptionForm.headingsCount?.id || null}
+                  onChange={handleHeadingsChange}
                 />
               </div>
 
@@ -440,8 +452,8 @@ const TitleDescriptionStep = () => {
               <div>
                 <h3 className="text-base font-medium mb-3">Writing Style</h3>
                 <WritingStyleSelector
-                  selectedStyle={titleDescriptionForm.writingStyle}
-                  onSelect={handleWritingStyleChange}
+                  value={titleDescriptionForm.writingStyle?.id || null}
+                  onChange={handleWritingStyleChange}
                 />
               </div>
 
@@ -451,8 +463,8 @@ const TitleDescriptionStep = () => {
               <div>
                 <h3 className="text-base font-medium mb-3">Point of View</h3>
                 <PointOfViewSelector
-                  selected={titleDescriptionForm.pointOfView}
-                  onSelect={handlePointOfViewChange}
+                  value={titleDescriptionForm.pointOfView}
+                  onChange={handlePointOfViewChange}
                 />
               </div>
 
