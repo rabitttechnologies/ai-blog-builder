@@ -12,6 +12,7 @@ import OutlineCustomizeForm from '@/components/articleWriter/OutlineCustomizeFor
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
+import { getTitleFromResponse } from '@/utils/articleUtils';
 
 const OutlineStep = () => {
   const navigate = useNavigate();

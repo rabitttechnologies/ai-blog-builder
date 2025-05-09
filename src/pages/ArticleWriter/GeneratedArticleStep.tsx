@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import '@/styles/article.css';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
+import { getTitleFromResponse } from '@/utils/articleUtils';
 
 const GeneratedArticleStep = () => {
   const navigate = useNavigate();
@@ -72,8 +73,7 @@ const GeneratedArticleStep = () => {
   const handleDownloadArticle = () => {
     if (!article) return;
     
-    const title = keywordSelectResponse?.titlesAndShortDescription?.title || 
-                 'article-' + new Date().toISOString().slice(0, 10);
+    const title = getTitleFromResponse(keywordSelectResponse, 'article-' + new Date().toISOString().slice(0, 10));
                  
     const blob = new Blob([article], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -108,9 +108,7 @@ const GeneratedArticleStep = () => {
           <p className="text-gray-600">
             Your article on{" "}
             <span className="font-medium">
-              {keywordSelectResponse?.titlesAndShortDescription?.title || 
-               keywordSelectResponse?.mainKeyword || 
-               keywordForm.keyword}
+              {getTitleFromResponse(keywordSelectResponse, keywordForm.keyword)}
             </span>{" "}
             has been generated
           </p>

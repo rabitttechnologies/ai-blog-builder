@@ -1,323 +1,236 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@/context/auth';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  ArticleOutlineCustomization, 
-  OutlineOption, 
-  ArticleCustomizationPayload,
-  ArticleCustomizationResponse
-} from '@/types/outlineCustomize';
-import { 
-  formatOutlineOptions, 
-  parseArticleOutline, 
-  saveGeneralGuidance, 
-  submitOutlineCustomization 
-} from '@/services/outlineCustomizeService';
+import { useState, useEffect } from 'react';
+import { KeywordSelectResponse, TitleDescriptionResponse } from '@/types/articleWriter';
+import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
 
-export const useOutlineCustomization = (keywordSelectResponse: any) => {
-  const { user, session } = useAuth();
-  const { toast } = useToast();
+interface UseOutlineCustomizationProps {
+  keywordSelectResponse?: KeywordSelectResponse | null;
+  userId: string;
+  workflowId: string;
+  sessionId: string;
+}
+
+export const useOutlineCustomization = ({ 
+  keywordSelectResponse,
+  userId,
+  workflowId,
+  sessionId
+}: UseOutlineCustomizationProps) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  
+  // The available outline options
   const [outlines, setOutlines] = useState<OutlineOption[]>([]);
+  
+  // A user-defined custom outline
   const [customOutline, setCustomOutline] = useState<OutlineOption>({
     id: 'custom',
     content: '',
     parsed: { headings: [] }
   });
+  
+  // The currently selected outline
   const [selectedOutline, setSelectedOutline] = useState<OutlineOption | null>(null);
-  const [editingOutlineId, setEditingOutlineId] = useState<string | null>(null);
-  const [editedOutlineContent, setEditedOutlineContent] = useState<string>('');
-  const [customization, setCustomization] = useState<ArticleOutlineCustomization>({
-    generateHumanisedArticle: false,
-    generateComparisonTable: false,
-    includeExpertQuotes: false,
-    includeImagesInArticle: false,
-    includeInternalLinks: false,
-    includeExternalLinks: false,
-    generateCoverImage: false,
-    includeCta: false,
-    generateFaqs: false,
-    includeGeneralGuidance: false
-  });
-  const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
   
-  // We need outlineOptions and selectedOutlineIndex for the UI
-  const [outlineOptions, setOutlineOptions] = useState<OutlineOption[]>([]);
-  const [selectedOutlineIndex, setSelectedOutlineIndex] = useState<number | null>(null);
+  // Which outline is being edited, if any
+  const [editingOutlineId, setEditingOutlineId] = useState<string>('');
+  
+  // All customization options for the article
   const [customizationOptions, setCustomizationOptions] = useState<ArticleOutlineCustomization>({
-    generateHumanisedArticle: false,
+    generateHumanisedArticle: true,
     generateComparisonTable: false,
-    includeExpertQuotes: false,
+    includeExpertQuotes: true,
     includeImagesInArticle: false,
+    imageType: 'Non-Copyright',
+    imageCount: 3,
     includeInternalLinks: false,
+    internalLinkCount: 3,
     includeExternalLinks: false,
+    externalLinkCount: 3,
     generateCoverImage: false,
+    coverImageType: 'Featured',
+    coverImageSize: '1200x630',
     includeCta: false,
-    generateFaqs: false,
-    includeGeneralGuidance: false
+    ctaText: 'Learn more about our services',
+    generateFaqs: true,
+    faqCount: 3,
+    includeGeneralGuidance: false,
+    generalGuidance: ''
   });
   
-  // Add state for the additional fields
-  const [promptForBody, setPromptForBody] = useState<string>('');
-  const [introduction, setIntroduction] = useState<string>('');
-  const [keyTakeaways, setKeyTakeaways] = useState<string>('');
-  
-  // Debug logging function
-  const logDebug = (prefix: string, obj: any) => {
-    console.log(`${prefix}:`, obj);
+  // Parse article outline from markdown to structured headings
+  const parseOutline = (content: string): { headings: { level: number; title: string }[] } => {
+    const headings: { level: number; title: string }[] = [];
+    const lines = content.split('\n');
+    
+    lines.forEach(line => {
+      const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        const title = headingMatch[2].trim();
+        headings.push({ level, title });
+      }
+    });
+    
+    return { headings };
   };
   
-  // Initialize outlines from the keyword select response
-  // This is the main function that extracts article outlines from the response
-  const initializeOutlines = useCallback(() => {
-    console.log('Initializing outlines...');
-    
-    if (keywordSelectResponse) {
-      logDebug('Processing keywordSelectResponse', keywordSelectResponse);
-      
-      // Check if the response has articleoutline data
-      if (keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline) {
-        const parsedOutlines = formatOutlineOptions(keywordSelectResponse);
-        
-        if (parsedOutlines && parsedOutlines.length > 0) {
-          console.log('Setting outlines from keywordSelectResponse:', parsedOutlines);
-          setOutlines(parsedOutlines);
-          setOutlineOptions(parsedOutlines);
-          
-          // Store the additional fields if they exist
-          if (keywordSelectResponse.promptforbody) {
-            setPromptForBody(keywordSelectResponse.promptforbody);
-            console.log('Found promptforbody:', keywordSelectResponse.promptforbody);
-          }
-          
-          if (keywordSelectResponse.Introduction) {
-            setIntroduction(keywordSelectResponse.Introduction);
-            console.log('Found Introduction:', keywordSelectResponse.Introduction);
-          }
-          
-          if (keywordSelectResponse.key_takeaways) {
-            setKeyTakeaways(keywordSelectResponse.key_takeaways);
-            console.log('Found key_takeaways:', keywordSelectResponse.key_takeaways);
-          }
-          
-          return;
-        }
-      } else {
-        console.warn('No articleoutline found in keywordSelectResponse:', {
-          hasArticleoutline: !!keywordSelectResponse.articleoutline,
-          hasArticleOutline: !!keywordSelectResponse.articleOutline,
-          executionId: keywordSelectResponse.executionId
-        });
-      }
-    } else {
-      console.warn('No keywordSelectResponse available');
-    }
-  }, [keywordSelectResponse]);
-
-  // Initialize outlines when keywordSelectResponse is available
+  // Initialize outlines from keywordSelectResponse
   useEffect(() => {
     if (keywordSelectResponse) {
-      initializeOutlines();
-    }
-  }, [keywordSelectResponse, initializeOutlines]);
-
-  // Start editing an outline
-  const startEditingOutline = (outline: OutlineOption) => {
-    setEditingOutlineId(outline.id);
-    setEditedOutlineContent(outline.content);
-  };
-
-  // Cancel outline editing
-  const cancelEditingOutline = () => {
-    setEditingOutlineId(null);
-    setEditedOutlineContent('');
-  };
-
-  // Update edited outline content
-  const updateEditedOutlineContent = (content: string) => {
-    setEditedOutlineContent(content);
-  };
-
-  // Save edited outline
-  const saveEditedOutline = (outlineId: string) => {
-    if (outlineId === 'custom') {
-      const parsedOutline = parseArticleOutline(editedOutlineContent);
-      setCustomOutline({
-        id: 'custom',
-        content: editedOutlineContent,
-        parsed: parsedOutline
-      });
-      setSelectedOutline({
-        id: 'custom',
-        content: editedOutlineContent,
-        parsed: parsedOutline
-      });
-    } else {
-      const updatedOutlines = outlines.map(outline => {
-        if (outline.id === outlineId) {
-          const parsedOutline = parseArticleOutline(editedOutlineContent);
+      const outlineData = keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline;
+      
+      if (outlineData && Array.isArray(outlineData)) {
+        // Convert from API format to internal format
+        const parsedOutlines: OutlineOption[] = outlineData.map((item, index) => {
+          // Join all outline fields into a markdown-formatted string
+          const keys = Object.keys(item).filter(key => key.startsWith('outline'));
+          keys.sort(); // Sort to ensure correct order (outline1, outline2, etc.)
+          
+          const content = keys.map(key => {
+            const value = item[key];
+            if (value && typeof value === 'string') {
+              return value;
+            }
+            return '';
+          }).join('\n\n');
+          
+          // Return formatted outline
           return {
-            ...outline,
-            content: editedOutlineContent,
-            parsed: parsedOutline
+            id: `outline-${index}`,
+            content,
+            parsed: parseOutline(content)
           };
+        });
+        
+        setOutlines(parsedOutlines);
+        
+        // Auto-select first outline if none selected
+        if (parsedOutlines.length > 0 && !selectedOutline) {
+          setSelectedOutline(parsedOutlines[0]);
         }
-        return outline;
-      });
-      
-      setOutlines(updatedOutlines);
-      setOutlineOptions(updatedOutlines);
-      
-      const selectedOutline = updatedOutlines.find(o => o.id === outlineId) || null;
-      setSelectedOutline(selectedOutline);
+      }
     }
-    
-    setEditingOutlineId(null);
-    setEditedOutlineContent('');
-  };
-
-  // Select an outline
-  const selectOutline = (outline: OutlineOption) => {
-    if (editingOutlineId === outline.id) {
-      saveEditedOutline(outline.id);
-    } else {
-      setSelectedOutline(outline);
-    }
-  };
-
-  // Update customization options
-  const updateCustomization = (field: keyof ArticleOutlineCustomization, value: any) => {
-    setCustomization(prev => ({ ...prev, [field]: value }));
-    setCustomizationOptions(prev => ({ ...prev, [field]: value }));
+  }, [keywordSelectResponse]);
+  
+  // Update a customization option
+  const updateCustomizationOption = (key: keyof ArticleOutlineCustomization, value: any) => {
+    setCustomizationOptions(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
   
-  // Convenience function for the component
-  const updateCustomizationOption = (field: keyof ArticleOutlineCustomization, value: any) => {
-    updateCustomization(field, value);
-  };
-
-  // Get session ID for request tracking
-  const getSessionId = useCallback(() => {
-    return session?.access_token?.substring(0, 16) || 'anonymous-session';
-  }, [session]);
-
-  // Submit outline and customization
-  const submitOutlineAndCustomization = useCallback(async () => {
-    if (!selectedOutline || !keywordSelectResponse || !user?.id) {
-      toast({
-        title: "Missing Data",
-        description: "Please select an outline and ensure all required data is available.",
-        variant: "destructive"
-      });
-      return null;
+  // Submit outline and customizations to generate article
+  const submitOutlineAndCustomization = async () => {
+    if (!selectedOutline) {
+      throw new Error("Please select an outline before continuing");
     }
-
-    setLoading(true);
-    setError(null);
-
+    
+    if (!keywordSelectResponse) {
+      throw new Error("Missing keyword data");
+    }
+    
     try {
-      // Save general guidance if option is selected and not empty
-      if (customization.includeGeneralGuidance && customization.generalGuidance) {
-        saveGeneralGuidance(customization.generalGuidance);
-      }
+      setLoading(true);
+      setError('');
       
-      // Choose the source for title/description
-      const source = keywordSelectResponse;
-      
-      // Handle case sensitivity differences in API response fields
-      const titlesAndShortDescription = source.titlesAndShortDescription || source.titlesandShortDescription || {};
-      
-      // Prepare payload with the new fields
+      // Prepare payload for customization webhook
       const payload: ArticleCustomizationPayload = {
-        workflowId: source.workflowId || '',
-        userId: user.id,
-        sessionId: getSessionId(),
-        originalKeyword: source.originalKeyword || '',
-        country: source.country || 'US',
-        language: source.language || 'en',
-        typeOfContent: source.typeOfContent || 'Blog Post',
-        mainKeyword: source.mainKeyword || '',
-        additionalKeyword: source.additionalKeyword || [],
-        references: source.references || [],
-        researchType: source.researchType || 'AI Agent Search',
-        titlesAndShortDescription: titlesAndShortDescription,
-        headingsCount: source.headingsCount || source.numberofheadings || '7-8',
-        writingStyle: source.writingStyle || source.writingstyle || 'professional',
-        articlePointOfView: source.articlePointOfView || source.articlepointofview || 'reference',
-        expertGuidance: source.expertGuidance || undefined,
+        workflowId,
+        userId,
+        sessionId,
+        originalKeyword: keywordSelectResponse.originalKeyword,
+        country: keywordSelectResponse.country,
+        language: keywordSelectResponse.language,
+        typeOfContent: keywordSelectResponse.typeOfContent,
+        mainKeyword: keywordSelectResponse.mainKeyword,
+        additionalKeyword: keywordSelectResponse.additionalKeyword,
+        references: keywordSelectResponse.references,
+        researchType: keywordSelectResponse.researchType,
+        titlesAndShortDescription: keywordSelectResponse.titlesAndShortDescription || 
+                                  (keywordSelectResponse.titlesandShortDescription as any) || 
+                                  { title: '', description: '' },
+        headingsCount: keywordSelectResponse.headingsCount || '',
+        writingStyle: keywordSelectResponse.writingStyle || '',
+        articlePointOfView: keywordSelectResponse.articlePointOfView || 'writer',
+        expertGuidance: keywordSelectResponse.expertGuidance,
         articleOutline: selectedOutline.content,
-        editedArticlePrompt: promptForBody || selectedOutline.content, // Use promptforbody if available
-        Introduction: introduction || undefined, // Add Introduction field
-        key_takeaways: keyTakeaways || undefined, // Add key_takeaways field
-        generateHumanisedArticle: customization.generateHumanisedArticle || false,
-        generateComparisonTable: customization.generateComparisonTable || false,
-        includeExpertQuotes: customization.includeExpertQuotes || false,
-        includeImagesInArticle: customization.includeImagesInArticle || false,
-        imageType: customization.imageType,
-        imageCount: customization.imageCount,
-        includeInternalLinks: customization.includeInternalLinks || false,
-        internalLinkCount: customization.internalLinkCount,
-        internalLinks: customization.internalLinks,
-        includeExternalLinks: customization.includeExternalLinks || false,
-        externalLinkCount: customization.externalLinkCount,
-        generateCoverImage: customization.generateCoverImage || false,
-        coverImageType: customization.coverImageType,
-        coverImageSize: customization.coverImageSize,
-        includeCta: customization.includeCta || false,
-        ctaText: customization.ctaText,
-        generateFaqs: customization.generateFaqs || false,
-        faqCount: customization.faqCount,
-        includeGeneralGuidance: customization.includeGeneralGuidance || false,
-        generalGuidance: customization.generalGuidance,
-        additionalData: {}
+        editedArticlePrompt: keywordSelectResponse.promptforbody || '',
+        Introduction: keywordSelectResponse.Introduction,
+        key_takeaways: keywordSelectResponse.key_takeaways,
+        // Customization options
+        generateHumanisedArticle: customizationOptions.generateHumanisedArticle,
+        generateComparisonTable: customizationOptions.generateComparisonTable,
+        includeExpertQuotes: customizationOptions.includeExpertQuotes,
+        includeImagesInArticle: customizationOptions.includeImagesInArticle,
+        imageType: customizationOptions.imageType,
+        imageCount: customizationOptions.imageCount,
+        includeInternalLinks: customizationOptions.includeInternalLinks,
+        internalLinkCount: customizationOptions.internalLinkCount,
+        internalLinks: customizationOptions.internalLinks,
+        includeExternalLinks: customizationOptions.includeExternalLinks,
+        externalLinkCount: customizationOptions.externalLinkCount,
+        generateCoverImage: customizationOptions.generateCoverImage,
+        coverImageType: customizationOptions.coverImageType,
+        coverImageSize: customizationOptions.coverImageSize,
+        includeCta: customizationOptions.includeCta,
+        ctaText: customizationOptions.ctaText,
+        generateFaqs: customizationOptions.generateFaqs,
+        faqCount: customizationOptions.faqCount,
+        includeGeneralGuidance: customizationOptions.includeGeneralGuidance,
+        generalGuidance: customizationOptions.generalGuidance,
+        additionalData: keywordSelectResponse.additionalData
       };
       
-      console.log('Submitting outline and customization:', payload);
+      console.log('Submitting article customization:', payload);
       
-      // Submit to webhook
-      const response = await submitOutlineCustomization(payload);
-      setCustomizationResponse(response);
+      // Add timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-minute timeout
       
-      toast({
-        title: "Success",
-        description: "Outline and customization options submitted successfully.",
+      const response = await fetch('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
       
-      return response;
-    } catch (error: any) {
-      console.error('Error submitting outline and customization:', error);
-      setError(error.message || 'Failed to submit outline and customization');
+      clearTimeout(timeoutId);
       
-      toast({
-        title: "Submission Failed",
-        description: error.message || "An error occurred while submitting your outline and customization.",
-        variant: "destructive"
-      });
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
       
-      return null;
+      const responseText = await response.text();
+      
+      // Check if response is empty
+      if (!responseText) {
+        throw new Error("Server returned an empty response");
+      }
+      
+      try {
+        const responseData = JSON.parse(responseText);
+        console.log("Article customization response:", responseData);
+        return responseData;
+      } catch (jsonError) {
+        console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
+        throw new Error("Invalid response format from server");
+      }
+      
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError(`Failed to generate article: ${err.message}`);
+      }
+      console.error('Error generating article:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, [
-    selectedOutline, 
-    keywordSelectResponse, 
-    user, 
-    customization, 
-    toast, 
-    getSessionId, 
-    promptForBody, 
-    introduction, 
-    keyTakeaways
-  ]);
+  };
   
-  // Convenience functions for the component
-  const submitOutlineAndCustomizations = submitOutlineAndCustomization;
-  
-  // Added parseOutline function for components to use
-  const parseOutline = parseArticleOutline;
-
   return {
     loading,
     error,
@@ -325,28 +238,13 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     customOutline,
     selectedOutline,
     editingOutlineId,
-    editedOutlineContent,
-    customization,
-    customizationResponse,
-    promptForBody,
-    introduction,
-    keyTakeaways,
-    // Added these for the component to use
-    outlineOptions,
-    selectedOutlineIndex,
     customizationOptions,
-    setSelectedOutlineIndex,
+    setOutlines,
+    setCustomOutline,
+    setSelectedOutline,
+    setEditingOutlineId,
     updateCustomizationOption,
-    submitOutlineAndCustomizations,
-    parseOutline,
-    // Original functions
-    initializeOutlines,
-    startEditingOutline,
-    cancelEditingOutline,
-    updateEditedOutlineContent,
-    saveEditedOutline,
-    selectOutline,
-    updateCustomization,
-    submitOutlineAndCustomization
+    submitOutlineAndCustomization,
+    parseOutline
   };
 };

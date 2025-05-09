@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { HeadingsOption, headingsOptions } from '@/types/articleWriter';
+import { HeadingsOption, headingsOptions, WritingStyle, ArticlePointOfView } from '@/types/articleWriter';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
+import { getTitleFromResponse } from '@/utils/articleUtils';
 
 const TitleDescriptionStep = () => {
   const navigate = useNavigate();
@@ -117,8 +118,10 @@ const TitleDescriptionStep = () => {
     
     // Also update selected title description if this is the selected one
     if (selectedTitleDescription?.id === id) {
-      const updatedTitleDesc = {...selectedTitleDescription, title};
-      setSelectedTitleDescription(updatedTitleDesc);
+      setSelectedTitleDescription({
+        ...selectedTitleDescription,
+        title
+      });
     }
   };
   
@@ -153,8 +156,10 @@ const TitleDescriptionStep = () => {
     
     // Also update selected title description if this is the selected one
     if (selectedTitleDescription?.id === id) {
-      const updatedTitleDesc = {...selectedTitleDescription, description};
-      setSelectedTitleDescription(updatedTitleDesc);
+      setSelectedTitleDescription({
+        ...selectedTitleDescription,
+        description
+      });
     }
   };
   
@@ -182,9 +187,15 @@ const TitleDescriptionStep = () => {
     updateTitleDescriptionForm({ pointOfView: pov });
   };
   
-  const handleExpertGuidanceChange = (text: string, shouldSave: boolean = false) => {
+  const handleExpertGuidanceChange = (text: string) => {
     updateTitleDescriptionForm({ 
       expertGuidance: text,
+      saveExpertGuidance: titleDescriptionForm.saveExpertGuidance
+    });
+  };
+
+  const handleSaveExpertGuidanceChange = (shouldSave: boolean) => {
+    updateTitleDescriptionForm({
       saveExpertGuidance: shouldSave
     });
   };
@@ -396,7 +407,7 @@ const TitleDescriptionStep = () => {
           <p className="text-gray-600">
             Choose a title and description for your article about{" "}
             <span className="font-medium">
-              {keywordSelectResponse?.mainKeyword || keywordForm.keyword}
+              {getTitleFromResponse(keywordSelectResponse, keywordForm.keyword)}
             </span>
           </p>
         </div>
@@ -478,9 +489,7 @@ const TitleDescriptionStep = () => {
                     <Switch
                       id="save-guidance"
                       checked={titleDescriptionForm.saveExpertGuidance}
-                      onCheckedChange={(checked) => {
-                        updateTitleDescriptionForm({ saveExpertGuidance: checked });
-                      }}
+                      onCheckedChange={handleSaveExpertGuidanceChange}
                     />
                     <Label htmlFor="save-guidance" className="text-sm">Save for future use</Label>
                   </div>
