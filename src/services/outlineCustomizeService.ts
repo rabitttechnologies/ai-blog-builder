@@ -1,4 +1,3 @@
-
 import { OutlineOption } from '@/types/outlineCustomize';
 
 export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'] => {
@@ -54,6 +53,19 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
   }
   
   console.log('Formatting outlines from response:', response);
+  
+  // Log if the new fields are present
+  if (response.promptforbody) {
+    console.log('Found promptforbody in response:', response.promptforbody);
+  }
+  
+  if (response.Introduction) {
+    console.log('Found Introduction in response:', response.Introduction);
+  }
+  
+  if (response.key_takeaways) {
+    console.log('Found key_takeaways in response:', response.key_takeaways);
+  }
   
   // Create array to store the formatted options
   const options: OutlineOption[] = [];
@@ -150,6 +162,19 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
 export const submitOutlineCustomization = async (payload: any): Promise<any> => {
   try {
     console.log('Submitting outline customization payload:', payload);
+    
+    // Log the presence of new fields in the payload
+    if (payload.editedArticlePrompt) {
+      console.log('Payload contains editedArticlePrompt (promptforbody):', payload.editedArticlePrompt);
+    }
+    
+    if (payload.Introduction) {
+      console.log('Payload contains Introduction:', payload.Introduction);
+    }
+    
+    if (payload.key_takeaways) {
+      console.log('Payload contains key_takeaways:', payload.key_takeaways);
+    }
     
     const response = await fetch('https://n8n.agiagentworld.com/webhook/outlineandcustomise', {
       method: 'POST',

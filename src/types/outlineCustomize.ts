@@ -1,4 +1,3 @@
-
 export interface ArticleOutlineCustomization {
   generateHumanisedArticle: boolean;
   generateComparisonTable: boolean;
@@ -54,7 +53,9 @@ export interface ArticleCustomizationPayload {
   articlePointOfView: string;
   expertGuidance?: string;
   articleOutline: string;
-  editedArticlePrompt: string;
+  editedArticlePrompt: string;  // Will contain promptforbody from title description
+  Introduction?: string;        // Added field for Introduction
+  key_takeaways?: string;       // Added field for key_takeaways
   generateHumanisedArticle: boolean | null;
   generateComparisonTable: boolean | null;
   includeExpertQuotes: boolean | null;
@@ -100,6 +101,8 @@ export interface ArticleCustomizationResponse {
   expertGuidance?: string;
   articleOutline: string;
   editedArticlePrompt: string;
+  Introduction?: string;
+  key_takeaways?: string;
   generateHumanisedArticle: boolean | null;
   generateComparisonTable: boolean | null;
   includeExpertQuotes: boolean | null;

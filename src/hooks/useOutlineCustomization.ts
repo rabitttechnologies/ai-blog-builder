@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +42,11 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   });
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
   
+  // Add new state for the additional fields
+  const [promptForBody, setPromptForBody] = useState<string>('');
+  const [introduction, setIntroduction] = useState<string>('');
+  const [keyTakeaways, setKeyTakeaways] = useState<string>('');
+  
   // Debug logging function
   const logDebug = (prefix: string, obj: any) => {
     console.log(`${prefix}:`, obj);
@@ -63,6 +67,23 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         if (parsedOutlines && parsedOutlines.length > 0) {
           console.log('Setting outlines from keywordSelectResponse:', parsedOutlines);
           setOutlines(parsedOutlines);
+          
+          // Store the additional fields if they exist
+          if (keywordSelectResponse.promptforbody) {
+            setPromptForBody(keywordSelectResponse.promptforbody);
+            console.log('Found promptforbody:', keywordSelectResponse.promptforbody);
+          }
+          
+          if (keywordSelectResponse.Introduction) {
+            setIntroduction(keywordSelectResponse.Introduction);
+            console.log('Found Introduction:', keywordSelectResponse.Introduction);
+          }
+          
+          if (keywordSelectResponse.key_takeaways) {
+            setKeyTakeaways(keywordSelectResponse.key_takeaways);
+            console.log('Found key_takeaways:', keywordSelectResponse.key_takeaways);
+          }
+          
           return;
         }
       } else {
@@ -202,7 +223,9 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
         articlePointOfView: source.articlePointOfView || source.articlepointofview || 'reference',
         expertGuidance: source.expertGuidance || undefined,
         articleOutline: selectedOutline.content,
-        editedArticlePrompt: selectedOutline.content, // Same as article outline initially
+        editedArticlePrompt: promptForBody || selectedOutline.content, // Use promptforbody if available
+        Introduction: introduction || undefined, // Add Introduction field
+        key_takeaways: keyTakeaways || undefined, // Add key_takeaways field
         generateHumanisedArticle: customization.generateHumanisedArticle || false,
         generateComparisonTable: customization.generateComparisonTable || false,
         includeExpertQuotes: customization.includeExpertQuotes || false,
@@ -252,7 +275,17 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     } finally {
       setLoading(false);
     }
-  }, [selectedOutline, keywordSelectResponse, user, customization, toast, getSessionId]);
+  }, [
+    selectedOutline, 
+    keywordSelectResponse, 
+    user, 
+    customization, 
+    toast, 
+    getSessionId, 
+    promptForBody, 
+    introduction, 
+    keyTakeaways
+  ]);
 
   return {
     loading,
@@ -264,6 +297,9 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
     editedOutlineContent,
     customization,
     customizationResponse,
+    promptForBody,
+    introduction,
+    keyTakeaways,
     initializeOutlines,
     startEditingOutline,
     cancelEditingOutline,

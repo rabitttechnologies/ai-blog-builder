@@ -211,7 +211,14 @@ const TitleDescriptionStep = () => {
       
       // Update the keyword select response with the new data that includes the article outline
       // This is critical to make the outline available to the next step
-      setKeywordSelectResponse(response);
+      setKeywordSelectResponse({
+        ...response,
+        // Ensure any field name variations are handled properly
+        articleoutline: response.articleoutline || response.articleOutline,
+        promptforbody: response.promptforbody,
+        Introduction: response.Introduction,
+        key_takeaways: response.key_takeaways
+      });
       
       // Navigate to outline page
       navigate('/article-writer/outline');

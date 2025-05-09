@@ -46,6 +46,19 @@ const titleDescriptionService = {
         throw new Error('Invalid or empty response data');
       }
       
+      // Log the presence of the new fields
+      if (responseData.promptforbody) {
+        console.log('Response contains promptforbody:', responseData.promptforbody);
+      }
+      
+      if (responseData.Introduction) {
+        console.log('Response contains Introduction:', responseData.Introduction);
+      }
+      
+      if (responseData.key_takeaways) {
+        console.log('Response contains key_takeaways:', responseData.key_takeaways);
+      }
+      
       return responseData as TitleDescriptionResponse;
     } catch (error) {
       console.error('Error submitting title description selection:', error);

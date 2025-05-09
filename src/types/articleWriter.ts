@@ -1,4 +1,3 @@
-
 // Article writer types
 
 // Writing style interface
@@ -109,6 +108,9 @@ export interface TitleDescriptionResponse {
   articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
   articlePrompt?: string;
+  promptforbody?: string;  // Added field
+  Introduction?: string;   // Added field
+  key_takeaways?: string;  // Added field
   additionalData?: any;
 }
 
