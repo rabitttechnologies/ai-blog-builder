@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -6,6 +7,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -24,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { Separator } from '@/components/ui/separator';
 import { extractKeywords, extractReferences } from '@/utils/dataValidation';
+import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
 
 // Alert component
 const StatusAlert = ({ 
@@ -103,7 +106,9 @@ const SelectKeywordsStep = () => {
     keywordResponse,
     sessionId,
     workflowId,
-    setKeywordSelectResponse
+    setKeywordSelectResponse,
+    isLoading,
+    setIsLoading
   } = useArticleWriter();
 
   // State for selections
@@ -124,6 +129,10 @@ const SelectKeywordsStep = () => {
     key: string;
     direction: 'ascending' | 'descending';
   } | null>(null);
+  
+  // State for research text inputs
+  const [aiResearchInstructions, setAiResearchInstructions] = useState('');
+  const [yourSourcesInfo, setYourSourcesInfo] = useState('');
 
   // State for UI
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -412,6 +421,7 @@ const SelectKeywordsStep = () => {
     
     setIsSubmitting(true);
     setError(null);
+    setIsLoading(true);
     
     try {
       // Prepare references array combining default and custom
@@ -439,6 +449,9 @@ const SelectKeywordsStep = () => {
         ],
         references: allReferences,
         researchType: selectionState.researchType,
+        researchInstructions: selectionState.researchType === 'AI Agent Search' 
+          ? aiResearchInstructions 
+          : yourSourcesInfo,
         additionalData: keywordResponse?.additionalData || {}
       };
       
@@ -479,6 +492,7 @@ const SelectKeywordsStep = () => {
       console.error('Error submitting selected keywords:', err);
     } finally {
       setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -567,30 +581,15 @@ const SelectKeywordsStep = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
+            {/* Separate Main Keyword and Additional Keywords into two cards */}
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Main and Additional Keywords</CardTitle>
+                <CardTitle>Main Keyword</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Select 1 main keyword and up to 30 additional keywords.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                    <div className="flex-grow">
-                      <div className="flex items-center space-x-2">
-                        <div className="h-4 w-4 rounded-full bg-primary"></div>
-                        <span className="text-sm">Main Keyword</span>
-                      </div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex items-center space-x-2">
-                        <div className="h-4 w-4 rounded border border-primary"></div>
-                        <span className="text-sm">Additional Keywords</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Select 1 main keyword for your article. This will be your primary focus.
+                </p>
                 
                 <div className="overflow-x-auto">
                   <Table>
@@ -602,121 +601,175 @@ const SelectKeywordsStep = () => {
                             <ArrowUpDown className="ml-1 h-4 w-4" />
                           </div>
                         </TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort('volume')}>
-                          <div className="flex items-center">
-                            Search Volume
-                            <ArrowUpDown className="ml-1 h-4 w-4" />
-                          </div>
-                        </TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort('competition')}>
-                          <div className="flex items-center">
-                            Competition
-                            <ArrowUpDown className="ml-1 h-4 w-4" />
-                          </div>
-                        </TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort('difficulty')}>
-                          <div className="flex items-center">
-                            Difficulty
-                            <ArrowUpDown className="ml-1 h-4 w-4" />
-                          </div>
-                        </TableHead>
+                        <TableHead>Search Volume</TableHead>
+                        <TableHead>Competition</TableHead>
+                        <TableHead>Difficulty</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {parsedKeywords.map((keyword, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <RadioGroup value={selectionState.mainKeyword || ""}>
-                                <RadioGroupItem 
-                                  value={keyword.text} 
-                                  id={`main-${index}`}
-                                  checked={selectionState.mainKeyword === keyword.text}
-                                  onClick={() => handleSelectMainKeyword(keyword.text)}
-                                />
-                              </RadioGroup>
-                              <Checkbox 
-                                id={`additional-${index}`}
-                                checked={selectionState.additionalKeywords.includes(keyword.text)}
-                                onCheckedChange={(checked) => 
-                                  handleToggleAdditionalKeyword(keyword.text, checked === true)
-                                }
-                                disabled={selectionState.mainKeyword === keyword.text}
-                              />
-                              <Label 
-                                htmlFor={`additional-${index}`}
-                                className="cursor-pointer"
-                              >
-                                {keyword.text}
-                              </Label>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {/* Fix for tooltip issue - ensure it has one child element */}
-                            <Tooltip
-                              content={renderMonthlyVolumes(keyword.keywordMetrics?.monthlySearchVolumes)}
-                            >
-                              <div className="flex items-center cursor-help">
-                                {keyword.keywordMetrics?.avgMonthlySearches || 'N/A'}
-                                <InfoIcon className="ml-1 h-4 w-4" />
+                      {/* Show all keywords for main keyword selection */}
+                      {allSelectionKeywords.map((keyword, index) => {
+                        // Find the keyword in parsed data for metrics
+                        const keywordData = parsedKeywords.find(k => k.text === keyword);
+                        const isCustom = !keywordData;
+                        
+                        return (
+                          <TableRow key={`main-${index}`}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <RadioGroup value={selectionState.mainKeyword || ""}>
+                                  <RadioGroupItem 
+                                    value={keyword} 
+                                    id={`main-only-${index}`}
+                                    checked={selectionState.mainKeyword === keyword}
+                                    onClick={() => handleSelectMainKeyword(keyword)}
+                                  />
+                                </RadioGroup>
+                                <Label 
+                                  htmlFor={`main-only-${index}`}
+                                  className="cursor-pointer"
+                                >
+                                  {keyword}
+                                  {isCustom && <span className="ml-2 text-xs text-gray-500">(Custom)</span>}
+                                </Label>
                               </div>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell>
-                            {formatCompetition(keyword.keywordMetrics?.competition)}
-                          </TableCell>
-                          <TableCell>
-                            {formatCompetitionIndex(keyword.keywordMetrics?.competitionIndex)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      
-                      {/* Custom Keywords Section */}
-                      {selectionState.customKeywords.map((keyword, index) => (
-                        <TableRow key={`custom-${index}`}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <RadioGroup value={selectionState.mainKeyword || ""}>
-                                <RadioGroupItem 
-                                  value={keyword} 
-                                  id={`custom-main-${index}`}
-                                  checked={selectionState.mainKeyword === keyword}
-                                  onClick={() => handleSelectMainKeyword(keyword)}
-                                />
-                              </RadioGroup>
-                              <Checkbox 
-                                id={`custom-additional-${index}`}
-                                checked={selectionState.additionalKeywords.includes(keyword)}
-                                onCheckedChange={(checked) => 
-                                  handleToggleAdditionalKeyword(keyword, checked === true)
-                                }
-                                disabled={selectionState.mainKeyword === keyword}
-                              />
-                              <Label 
-                                htmlFor={`custom-additional-${index}`}
-                                className="cursor-pointer flex-grow"
-                              >
-                                {keyword}
-                                <span className="ml-2 text-xs text-gray-500">(Custom)</span>
-                              </Label>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleRemoveCustomKeyword(keyword)}
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell colSpan={3}>
-                            <span className="text-gray-500 text-sm italic">Custom keyword</span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? (
+                                <Tooltip content={renderMonthlyVolumes(keywordData.keywordMetrics?.monthlySearchVolumes)}>
+                                  <div className="flex items-center cursor-help">
+                                    {keywordData.keywordMetrics?.avgMonthlySearches || 'N/A'}
+                                    <InfoIcon className="ml-1 h-4 w-4" />
+                                  </div>
+                                </Tooltip>
+                              ) : (
+                                <span className="text-gray-500">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? 
+                                formatCompetition(keywordData.keywordMetrics?.competition) :
+                                <span className="text-gray-500">—</span>
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? 
+                                formatCompetitionIndex(keywordData.keywordMetrics?.competitionIndex) :
+                                <span className="text-gray-500">—</span>
+                              }
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       
                       {/* Empty State */}
-                      {parsedKeywords.length === 0 && selectionState.customKeywords.length === 0 && (
+                      {allSelectionKeywords.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8">
+                            <p>No keywords found. You can add custom keywords below.</p>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Additional Keywords Card */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Additional Keywords</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500 mb-4">
+                  Select up to 30 additional keywords to support your main keyword.
+                </p>
+                
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%] cursor-pointer" onClick={() => handleSort('text')}>
+                          <div className="flex items-center">
+                            Keyword
+                            <ArrowUpDown className="ml-1 h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead>Search Volume</TableHead>
+                        <TableHead>Competition</TableHead>
+                        <TableHead>Difficulty</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {/* Show all keywords for additional keyword selection, except the main keyword */}
+                      {allSelectionKeywords
+                        .filter(keyword => keyword !== selectionState.mainKeyword)
+                        .map((keyword, index) => {
+                        // Find the keyword in parsed data for metrics
+                        const keywordData = parsedKeywords.find(k => k.text === keyword);
+                        const isCustom = !keywordData;
+                        
+                        return (
+                          <TableRow key={`additional-${index}`}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Checkbox 
+                                  id={`additional-only-${index}`}
+                                  checked={selectionState.additionalKeywords.includes(keyword)}
+                                  onCheckedChange={(checked) => 
+                                    handleToggleAdditionalKeyword(keyword, checked === true)
+                                  }
+                                />
+                                <Label 
+                                  htmlFor={`additional-only-${index}`}
+                                  className="cursor-pointer"
+                                >
+                                  {keyword}
+                                  {isCustom && <span className="ml-2 text-xs text-gray-500">(Custom)</span>}
+                                </Label>
+                                {isCustom && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 w-8 p-0 ml-auto"
+                                    onClick={() => handleRemoveCustomKeyword(keyword)}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? (
+                                <Tooltip content={renderMonthlyVolumes(keywordData.keywordMetrics?.monthlySearchVolumes)}>
+                                  <div className="flex items-center cursor-help">
+                                    {keywordData.keywordMetrics?.avgMonthlySearches || 'N/A'}
+                                    <InfoIcon className="ml-1 h-4 w-4" />
+                                  </div>
+                                </Tooltip>
+                              ) : (
+                                <span className="text-gray-500">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? 
+                                formatCompetition(keywordData.keywordMetrics?.competition) :
+                                <span className="text-gray-500">—</span>
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {keywordData ? 
+                                formatCompetitionIndex(keywordData.keywordMetrics?.competitionIndex) :
+                                <span className="text-gray-500">—</span>
+                              }
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      
+                      {/* Empty State */}
+                      {allSelectionKeywords.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={4} className="text-center py-8">
                             <p>No keywords found. You can add custom keywords below.</p>
@@ -868,26 +921,30 @@ const SelectKeywordsStep = () => {
                 >
                   <div className="flex items-start space-x-2">
                     <RadioGroupItem value="AI Agent Search" id="ai-search" />
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-1.5 w-full">
                       <Label htmlFor="ai-search" className="font-medium">
                         AI Agent Search
                       </Label>
-                      <Input
+                      <Textarea
                         placeholder="Enter additional research instructions..."
-                        className="mt-2 text-sm"
+                        className="min-h-[120px] text-sm"
+                        value={aiResearchInstructions}
+                        onChange={(e) => setAiResearchInstructions(e.target.value)}
                       />
                     </div>
                   </div>
                   <div className="flex items-start space-x-2">
                     <RadioGroupItem value="Your Sources" id="your-sources" />
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-1.5 w-full">
                       <Label htmlFor="your-sources" className="flex items-center">
                         Your Sources
                         <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded">BETA</span>
                       </Label>
-                      <Input
+                      <Textarea
                         placeholder="Enter your sources for research..."
-                        className="mt-2 text-sm"
+                        className="min-h-[120px] text-sm"
+                        value={yourSourcesInfo}
+                        onChange={(e) => setYourSourcesInfo(e.target.value)}
                         disabled={selectionState.researchType !== "Your Sources"}
                       />
                     </div>
@@ -917,6 +974,14 @@ const SelectKeywordsStep = () => {
             {!isSubmitting && <ChevronRight className="ml-1 h-4 w-4" />}
           </Button>
         </div>
+        
+        {/* Loading Overlay */}
+        {isLoading && (
+          <ArticleLoadingOverlay 
+            message="We're Creating Title and Short Description" 
+            subMessage="This may take a minute or two"
+          />
+        )}
       </div>
     </DashboardLayout>
   );

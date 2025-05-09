@@ -1,266 +1,329 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
+import { 
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/context/auth';
-import { useArticleWriter, ContentType } from '@/context/articleWriter/ArticleWriterContext';
-import { useKeywordResearch } from '@/hooks/useKeywordResearch';
-import { AlertCircle, Loader } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
+import { Separator } from '@/components/ui/separator';
+import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
+
+// Form schema
+const formSchema = z.object({
+  keyword: z.string().min(1, "Keyword is required").max(100),
+  country: z.string().min(1, "Country is required"),
+  language: z.string().min(1, "Language is required"),
+  contentType: z.string().min(1, "Content type is required"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+// Country options
+const countryOptions = [
+  { label: 'United States', value: 'US' },
+  { label: 'United Kingdom', value: 'GB' },
+  { label: 'Canada', value: 'CA' },
+  { label: 'Australia', value: 'AU' },
+  { label: 'India', value: 'IN' },
+  { label: 'Germany', value: 'DE' },
+  { label: 'France', value: 'FR' },
+  { label: 'Italy', value: 'IT' },
+  { label: 'Spain', value: 'ES' },
+  { label: 'Brazil', value: 'BR' },
+  { label: 'Japan', value: 'JP' },
+];
+
+// Language options
+const languageOptions = [
+  { label: 'English', value: 'en' },
+  { label: 'Spanish', value: 'es' },
+  { label: 'French', value: 'fr' },
+  { label: 'German', value: 'de' },
+  { label: 'Italian', value: 'it' },
+  { label: 'Portuguese', value: 'pt' },
+  { label: 'Japanese', value: 'ja' },
+  { label: 'Hindi', value: 'hi' },
+];
 
 // Content type options
-const contentTypeOptions: ContentType[] = [
-  'Blog Post',
-  'News Article',
-  'How to Guide',
-  'Comparison Blog',
-  'Technical Article',
-  'Product Reviews'
-];
-
-// Sample country data
-const countries = [
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'IN', name: 'India' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'FR', name: 'France' },
-  { code: 'JP', name: 'Japan' },
-];
-
-// Sample language data
-const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'ja', name: 'Japanese' },
+const contentTypeOptions = [
+  { label: 'Blog Post', value: 'Blog Post' },
+  { label: 'News Article', value: 'News Article' },
+  { label: 'How-to Guide', value: 'How to Guide' },
+  { label: 'Comparison Blog', value: 'Comparison Blog' },
+  { label: 'Technical Article', value: 'Technical Article' },
+  { label: 'Product Reviews', value: 'Product Reviews' },
 ];
 
 const KeywordEntryStep = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const {
+  const { 
+    updateKeywordForm, 
+    keywordForm, 
+    setCurrentStep, 
+    setKeywordResponse,
     sessionId,
     workflowId,
-    keywordForm,
-    updateKeywordForm,
-    setKeywordResponse,
-    setCurrentStep,
+    setIsLoading,
+    isLoading
   } = useArticleWriter();
   
-  const { isLoading, timeoutReached, progress, submitKeywordResearch } = useKeywordResearch({
-    userId: user?.id || '',
-    sessionId,
-    workflowId
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize form with existing values from context
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      keyword: keywordForm.keyword,
+      country: keywordForm.country,
+      language: keywordForm.language,
+      contentType: keywordForm.contentType,
+    },
   });
-  
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>(keywordForm.contentType);
-  
-  useEffect(() => {
-    // Update current step
-    setCurrentStep(1);
-  }, [setCurrentStep]);
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validation
-    if (!keywordForm.keyword.trim()) {
-      setValidationError('Please enter a keyword');
-      return;
-    }
-    
-    setValidationError(null);
-    
-    // Submit the form data to API with custom timeout based on keyword complexity
-    // Longer keywords might need more time
-    const timeoutDuration = keywordForm.keyword.length > 30 ? 180000 : 120000; // 3 min for complex, 2 min for simple
-    
-    const response = await submitKeywordResearch(keywordForm, {
-      timeoutDuration,
-      retryAttempts: 1 // Add one retry attempt for network issues
-    });
-    
-    if (response) {
-      setKeywordResponse(response);
+
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Update form values in context
+      updateKeywordForm(values);
+      setCurrentStep(1);
+      
+      // Prepare payload
+      const payload = {
+        keyword: values.keyword,
+        country: values.country,
+        language: values.language,
+        contentType: values.contentType,
+        userId: user?.id || 'anonymous',
+        sessionId: sessionId,
+        workflowId: workflowId,
+      };
+      
+      console.log("Submitting keyword research payload:", payload);
+      
+      // Add timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout
+      
+      const response = await fetch('https://n8n.agiagentworld.com/webhook/keywordresearch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log("Keyword research response:", responseData);
+      
+      // Store the response in context
+      setKeywordResponse(responseData);
       
       // Navigate to the next step
       navigate('/article-writer/select-keywords');
+      
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError(`Failed to submit: ${err.message}`);
+      }
+      console.error('Error submitting keyword:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const handleBack = () => {
-    navigate('/article-writer');
-  };
-  
-  // Determine what message to show during loading based on progress
-  const getLoadingMessage = () => {
-    if (progress < 25) return "Initializing keyword research...";
-    if (progress < 50) return "Analyzing keyword data...";
-    if (progress < 75) return "Gathering related keywords...";
-    return "Finalizing results...";
-  };
-  
+
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Enter a Keyword - Article Writer AI</title>
+        <title>Enter Keyword - Article Writer</title>
       </Helmet>
-      <div className="container max-w-3xl py-8">
+      <div className="container max-w-3xl py-8 mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Enter a Keyword</h1>
           <p className="text-gray-600">
-            Start by entering a main keyword for your article. We'll use this to generate related keywords and content.
+            To start writing your article, enter a keyword and select your preferences.
           </p>
         </div>
         
-        <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {validationError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-red-800">{validationError}</span>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="keyword" className="text-base">Keyword</Label>
-              <Input
-                id="keyword"
-                placeholder="Enter your main keyword (e.g., sustainable gardening)"
-                value={keywordForm.keyword}
-                onChange={(e) => updateKeywordForm({ keyword: e.target.value })}
-                className="h-12"
-                disabled={isLoading}
-              />
-              <p className="text-sm text-gray-500">
-                This will be the primary focus of your article.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="country" className="text-base">Target Users Country</Label>
-                <Select 
-                  value={keywordForm.country}
-                  onValueChange={(value) => updateKeywordForm({ country: value })}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger id="country" className="h-12">
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {country.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-500">
-                  Select the primary country you're targeting.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="language" className="text-base">Article Language</Label>
-                <Select 
-                  value={keywordForm.language}
-                  onValueChange={(value) => updateKeywordForm({ language: value })}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger id="language" className="h-12">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((language) => (
-                      <SelectItem key={language.code} value={language.code}>
-                        {language.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-500">
-                  Choose the language for your article.
-                </p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <Label className="text-base">Type of Content</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {contentTypeOptions.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`p-3 border rounded-md text-sm font-medium transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-                      selectedContentType === type ? 'border-primary bg-primary/5' : 'border-gray-200'
-                    }`}
-                    onClick={() => {
-                      setSelectedContentType(type);
-                      updateKeywordForm({ contentType: type });
-                    }}
-                    disabled={isLoading}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500">
-                Select the type of content you want to create.
-              </p>
-            </div>
-            
-            {isLoading && (
-              <div className="space-y-2 mt-4">
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">{getLoadingMessage()}</span>
-                  <span className="text-sm font-medium">{progress}%</span>
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Keyword Information</CardTitle>
+            <CardDescription>
+              Provide details about the keyword you want to target.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="keyword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Keyword</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your target keyword" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Country</FormLabel>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {countryOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="language"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Language</FormLabel>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {languageOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="contentType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Content Type</FormLabel>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select content type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {contentTypeOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <Progress value={progress} className="w-full h-2" />
-              </div>
-            )}
-            
-            <div className="flex justify-between pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                disabled={isLoading}
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || !keywordForm.keyword.trim()}
-              >
-                {isLoading ? 'Researching...' : 'Continue'}
-              </Button>
-            </div>
-            
-            {timeoutReached && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-800 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  The request is taking longer than expected. You can wait or try with a different keyword.
-                </p>
-              </div>
-            )}
-          </form>
+                
+                <Separator />
+                
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? "Please wait..." : "Continue"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
         </Card>
+        
+        {isLoading && (
+          <ArticleLoadingOverlay 
+            message="We're Getting Past Search Data for Your Keyword" 
+            subMessage="This may take a minute or two"
+          />
+        )}
       </div>
     </DashboardLayout>
   );

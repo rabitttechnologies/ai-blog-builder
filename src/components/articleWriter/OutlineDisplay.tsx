@@ -15,6 +15,7 @@ interface OutlineDisplayProps {
   onEditChange: (content: string) => void;
   onSelect: () => void;
   isSelected?: boolean;
+  index: number;
 }
 
 const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
@@ -24,7 +25,8 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
   onEdit,
   onEditChange,
   onSelect,
-  isSelected = false
+  isSelected = false,
+  index
 }) => {
   return (
     <Card className={`border-2 transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/40'}`}>
@@ -52,7 +54,7 @@ const OutlineDisplay: React.FC<OutlineDisplayProps> = ({
           <>
             <div className="space-y-4 mb-6">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg">Outline Preview</h3>
+                <h3 className="font-bold text-lg">Outline {index + 1}</h3>
                 {isSelected && (
                   <span className="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
                     <Check className="h-3 w-3 mr-1" /> Selected
