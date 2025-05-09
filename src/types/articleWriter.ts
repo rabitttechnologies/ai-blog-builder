@@ -1,3 +1,4 @@
+
 // Article writer types
 
 // Writing style interface
@@ -108,9 +109,9 @@ export interface TitleDescriptionResponse {
   articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
   articlePrompt?: string;
-  promptforbody?: string;  // Added field
-  Introduction?: string;   // Added field
-  key_takeaways?: string;  // Added field
+  promptforbody?: string;  // Added field for data from title description webhook
+  Introduction?: string;   // Added field for Introduction from title description webhook  
+  key_takeaways?: string;  // Added field for key_takeaways from title description webhook
   additionalData?: any;
 }
 
@@ -145,6 +146,9 @@ export interface KeywordSelectResponse {
   titlesAndShortDescription?: any[];
   articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
+  promptforbody?: string;  // Added field for prompt for body
+  Introduction?: string;   // Added field for Introduction
+  key_takeaways?: string;  // Added field for key_takeaways
   additionalData?: any;
 }
 

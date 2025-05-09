@@ -1,3 +1,4 @@
+
 export interface ArticleOutlineCustomization {
   generateHumanisedArticle: boolean;
   generateComparisonTable: boolean;

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/context/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +43,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
   });
   const [customizationResponse, setCustomizationResponse] = useState<ArticleCustomizationResponse | null>(null);
   
-  // Add new state for the additional fields
+  // Add state for the additional fields
   const [promptForBody, setPromptForBody] = useState<string>('');
   const [introduction, setIntroduction] = useState<string>('');
   const [keyTakeaways, setKeyTakeaways] = useState<string>('');
@@ -204,7 +205,7 @@ export const useOutlineCustomization = (keywordSelectResponse: any) => {
       // Handle case sensitivity differences in API response fields
       const titlesAndShortDescription = source.titlesAndShortDescription || source.titlesandShortDescription || {};
       
-      // Prepare payload
+      // Prepare payload with the new fields
       const payload: ArticleCustomizationPayload = {
         workflowId: source.workflowId || '',
         userId: user.id,

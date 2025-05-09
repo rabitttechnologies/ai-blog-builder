@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -212,8 +213,7 @@ const TitleDescriptionStep = () => {
       // Update the keyword select response with the new data that includes the article outline
       // This is critical to make the outline available to the next step
       setKeywordSelectResponse({
-        ...response,
-        // Ensure any field name variations are handled properly
+        ...keywordSelectResponse,
         articleoutline: response.articleoutline || response.articleOutline,
         promptforbody: response.promptforbody,
         Introduction: response.Introduction,
