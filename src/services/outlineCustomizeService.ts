@@ -1,5 +1,5 @@
-
 import { OutlineOption } from '@/types/outlineCustomize';
+import { corsHeaders } from '@/utils/corsUtils';
 
 export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'] => {
   if (!outlineText) {
@@ -183,7 +183,9 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
       headers: {
         'Content-Type': 'application/json',
         'Origin': window.location.origin,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        ...corsHeaders
       },
       body: JSON.stringify(payload),
       mode: 'cors',
@@ -203,6 +205,18 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     return Array.isArray(data) ? data[0] : data;
   } catch (error) {
     console.error('Error submitting outline customization:', error);
+    
+    // Detailed error message for CORS issues
+    if (error instanceof Error) {
+      if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+        console.error('CORS error detected. Details:', {
+          message: error.message,
+          origin: window.location.origin
+        });
+        throw new Error('Network error: CORS policy restriction. The service may not allow cross-origin requests from this domain.');
+      }
+    }
+    
     throw error;
   }
 };

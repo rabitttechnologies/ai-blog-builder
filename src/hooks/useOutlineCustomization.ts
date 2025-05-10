@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
+import { corsHeaders } from '@/utils/corsUtils';
 
 interface UseOutlineCustomizationProps {
   keywordSelectResponse?: KeywordSelectResponse | null;
@@ -252,13 +253,15 @@ export const useOutlineCustomization = ({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-minute timeout
       
-      // Fix CORS issue by setting up proper headers
+      // Use our utility for CORS-friendly API requests
       const response = await fetch('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Origin': window.location.origin,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          ...corsHeaders
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -291,6 +294,9 @@ export const useOutlineCustomization = ({
     } catch (err: any) {
       if (err.name === 'AbortError') {
         setError('Request timed out. Please try again.');
+      } else if (err.message.includes('CORS') || err.message.includes('Failed to fetch')) {
+        setError('Network error: CORS policy restriction. Try again later or contact support.');
+        console.error('CORS error:', err);
       } else {
         setError(`Failed to generate article: ${err.message}`);
       }

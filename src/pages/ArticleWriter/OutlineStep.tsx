@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -14,6 +13,7 @@ import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
 import { getTitleFromResponse } from '@/utils/articleUtils';
+import { isCorsError } from '@/utils/corsUtils';
 
 const OutlineStep = () => {
   const navigate = useNavigate();
@@ -36,7 +36,9 @@ const OutlineStep = () => {
   // For debugging - output the articleoutline data to console
   useEffect(() => {
     if (keywordSelectResponse) {
-      console.log("OutlineStep - Article Outline Data:", keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline);
+      console.log("OutlineStep - Article Outline Data:", 
+                 keywordSelectResponse.articleoutline || 
+                 keywordSelectResponse.articleOutline);
     }
   }, [keywordSelectResponse]);
   
@@ -140,15 +142,23 @@ const OutlineStep = () => {
         throw new Error('Please select an outline before continuing.');
       }
       
+      console.log("Selected outline for submission:", outlineOptions[selectedOutlineIndex]);
+      
       // Submit outline and customizations
-      await submitOutlineAndCustomizations();
+      const result = await submitOutlineAndCustomizations();
+      
+      if (!result) {
+        throw new Error("Failed to receive a valid response from the outline customization service.");
+      }
+      
+      console.log("Outline submission successful, response:", result);
       
       // Navigate to the next step
       navigate('/article-writer/generated-article');
       
     } catch (err: any) {
-      if (err.message.includes('CORS policy') || err.message.includes('Failed to fetch')) {
-        setError("Network error: Unable to connect to the article customization service. Please try again later.");
+      if (isCorsError(err)) {
+        setError("Network error: Unable to connect to the article customization service due to CORS restrictions. Please try again later or contact support.");
       } else {
         setError(err.message || "An error occurred during outline submission.");
       }
