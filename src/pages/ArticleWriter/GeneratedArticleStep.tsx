@@ -58,28 +58,35 @@ const GeneratedArticleStep = () => {
     console.log("Response structure:", analyzeResponseStructure(keywordSelectResponse));
     
     try {
-      // Get article content from the response
+      // Get article content from the response with extensive debugging
+      console.log("Attempting to extract generated article content");
       const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
       console.log("Generated article content extracted:", generatedArticle ? generatedArticle.substring(0, 100) + "..." : "None");
       
       if (generatedArticle && generatedArticle.length > 0) {
         setArticleContent(generatedArticle);
+        console.log("Article content set in state");
       } else {
         console.warn("No article content found in response");
         setError('No article content available. Please try again.');
       }
       
-      // Get humanized content if available
+      // Get humanized content if available with extensive debugging
+      console.log("Attempting to extract humanized article content");
       const humanized = getHumanizedArticleContent(keywordSelectResponse);
       console.log("Humanized article content extracted:", humanized ? humanized.substring(0, 100) + "..." : "None");
       
       if (humanized && humanized.length > 0) {
         setHumanizedContent(humanized);
+        console.log("Humanized content set in state");
+        
         // If we have humanized content, default to that tab
         setActiveTab('humanized');
+        console.log("Active tab set to 'humanized'");
       }
       
       // Get meta description
+      console.log("Attempting to extract meta description");
       const meta = getMetaDescription(keywordSelectResponse, '');
       console.log("Meta description extracted:", meta);
       
@@ -88,6 +95,7 @@ const GeneratedArticleStep = () => {
       }
       
       setIsInitialized(true);
+      console.log("Component initialization complete");
     } catch (err) {
       console.error("Error processing article data:", err);
       setError('An error occurred while processing the article content.');

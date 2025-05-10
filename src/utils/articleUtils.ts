@@ -85,6 +85,19 @@ export const getDescriptionFromResponse = (response?: any | null, fallback: stri
 };
 
 /**
+ * Remove AI thinking blocks from content - these are not meant for display
+ */
+export const cleanArticleContent = (content: string): string => {
+  if (!content) return '';
+  
+  // Remove <think>...</think> blocks which are AI's internal thinking
+  const cleanedContent = content.replace(/<think>[\s\S]*?<\/think>/g, '');
+  
+  // Trim any excessive whitespace that may have been left
+  return cleanedContent.trim();
+};
+
+/**
  * Get article content from response - enhanced to handle truncated/fragmented content
  */
 export const getGeneratedArticleContent = (response?: any | null, fallback: string = ''): string => {
@@ -95,12 +108,24 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
   
   console.log('Attempting to extract generated article content from response fields:', Object.keys(response));
   
+  // Try to extract from GeneratedArticle field with thinking blocks removed
+  if (typeof response.GeneratedArticle === 'string' && response.GeneratedArticle.length > 20) {
+    console.log('Found article content in GeneratedArticle field');
+    return cleanArticleContent(response.GeneratedArticle);
+  }
+  
+  // Try with lowercase variant
+  if (typeof response.generatedArticle === 'string' && response.generatedArticle.length > 20) {
+    console.log('Found article content in generatedArticle field');
+    return cleanArticleContent(response.generatedArticle);
+  }
+  
   // First, check for complete article content in various naming conventions
   const directContentFields = ['generatedArticle', 'GeneratedArticle', 'generated_article', 'GENERATEDARTICLE'];
   for (const field of directContentFields) {
     if (typeof response[field] === 'string' && response[field].length > 20) {
       console.log(`Found article content in field: ${field}`);
-      return response[field];
+      return cleanArticleContent(response[field]);
     }
   }
   
@@ -151,7 +176,7 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
     if (typeof response[key] === 'string' && response[key].length > 100) {
       if (key.toLowerCase() !== 'humanizedgeneratedarticle' && key.toLowerCase() !== 'humanized_generated_article') {
         console.log(`Using content from field: ${key} as fallback`);
-        return response[key];
+        return cleanArticleContent(response[key]);
       }
     }
   }
@@ -182,7 +207,7 @@ export const getHumanizedArticleContent = (response?: any | null): string | null
   for (const field of humanizedFields) {
     if (typeof response[field] === 'string' && response[field].length > 20) {
       console.log(`Found humanized content in field: ${field}`);
-      return response[field];
+      return cleanArticleContent(response[field]);
     }
   }
   
@@ -192,7 +217,7 @@ export const getHumanizedArticleContent = (response?: any | null): string | null
         response[key].length > 100 && 
         key.toLowerCase().includes('humanized')) {
       console.log(`Found humanized content in field with 'humanized' in name: ${key}`);
-      return response[key];
+      return cleanArticleContent(response[key]);
     }
   }
   

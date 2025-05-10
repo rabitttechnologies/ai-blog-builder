@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import DOMPurify from 'dompurify';
 
 interface ArticleContentEditorProps {
   content: string;
@@ -21,7 +22,9 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
   
   // Update internal state when content prop changes
   useEffect(() => {
-    setEditableContent(content || '');
+    if (content !== undefined) {
+      setEditableContent(content || '');
+    }
   }, [content]);
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -44,11 +47,14 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
   
   // Render as div with HTML for non-editable content
   if (!isEditable) {
+    // Sanitize the HTML to prevent XSS attacks
+    const sanitizedContent = DOMPurify.sanitize(content || '');
+    
     return (
       <div 
         id={id}
-        className={`prose prose-slate max-w-none ${className}`}
-        dangerouslySetInnerHTML={{ __html: content || '' }} 
+        className={`prose prose-slate max-w-none overflow-auto ${className}`}
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
       />
     );
   }
