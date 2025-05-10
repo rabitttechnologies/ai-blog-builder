@@ -8,7 +8,7 @@ import { ChevronLeft, Edit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner'; 
 import '@/styles/article.css';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
@@ -25,7 +25,6 @@ import type { ArticleTabOption } from '@/types/articleWriter';
 
 const GeneratedArticleStep = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const {
     currentStep,

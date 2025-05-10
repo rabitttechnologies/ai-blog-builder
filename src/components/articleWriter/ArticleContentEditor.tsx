@@ -17,11 +17,13 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
   className = '',
   id
 }) => {
-  const [editableContent, setEditableContent] = useState(content);
+  const [editableContent, setEditableContent] = useState(content || '');
   
   // Update internal state when content prop changes
   useEffect(() => {
-    setEditableContent(content);
+    if (content !== undefined) {
+      setEditableContent(content);
+    }
   }, [content]);
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
