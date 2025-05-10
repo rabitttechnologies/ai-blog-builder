@@ -1,4 +1,3 @@
-
 import { OutlineOption } from '@/types/outlineCustomize';
 import { isCorsError, makeCorsApiCall } from '@/utils/corsUtils';
 import { toast } from 'sonner';
@@ -190,25 +189,48 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
       console.log("Article customization response:", result);
       toast.success("Article outline submitted successfully!");
       
-      // Return properly formatted data
-      return Array.isArray(result) ? result[0] : result;
+      // Process and normalize the response to make it easier to work with
+      let normalizedResponse;
+      
+      if (Array.isArray(result)) {
+        // If it's an array, grab the first item
+        normalizedResponse = result[0];
+      } else {
+        // Otherwise, use it as-is
+        normalizedResponse = result;
+      }
+      
+      // Ensure consistency in field naming
+      const processedResponse = {
+        ...normalizedResponse,
+        generatedArticle: normalizedResponse.GeneratedArticle || normalizedResponse.generatedArticle,
+        humanizedGeneratedArticle: normalizedResponse.HumanizedGeneratedArticle,
+        metaTags: normalizedResponse.metaTags,
+      };
+      
+      return processedResponse;
     } catch (apiError: any) {
       console.error('API call failed:', apiError);
       
       if (isCorsError(apiError)) {
-        // Generate a simulated success response for development/testing
-        // This is a fallback mechanism when all CORS methods fail
-        console.log('All CORS bypass methods failed, attempting to generate continuation flow...');
+        // Handle CORS errors with better error message
+        toast.error("Network error: Unable to connect to the outline service");
+        console.log('CORS error detected, attempting to generate continuation flow...');
         
         // In a production environment, you would want to show an error here
         // but for now, we'll simulate success to allow testing of the flow
-        toast.success("Article outline processed (simulated)");
-        
-        // Create a simulated response with the essential data from the payload
         const simulatedResponse = {
           ...payload,
           executionId: `simulated-${Date.now()}`,
-          generatedArticle: "This is a simulated response due to CORS restrictions. In production, this would contain the actual generated article content."
+          generatedArticle: `<h1>${payload.mainKeyword || 'Sample Article'}</h1>
+          <p>This is a simulated article response due to CORS restrictions.</p>
+          <p>In production, this would contain the actual generated article content based on your outline.</p>
+          <h2>Key Points</h2>
+          <ul>
+            <li>Point 1 about ${payload.mainKeyword || 'the topic'}</li>
+            <li>Point 2 with more details</li>
+            <li>Point 3 with conclusions</li>
+          </ul>`
         };
         
         console.log("Generated simulated response:", simulatedResponse);
@@ -219,7 +241,19 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     }
   } catch (error: any) {
     console.error('Error submitting outline customization:', error);
-    toast.error(`Error: ${error.message}`);
+    
+    // Better error message formatting for users
+    const errorMessage = error.message || 'An unknown error occurred';
+    const formattedError = errorMessage.startsWith('Error:') 
+      ? errorMessage 
+      : `Error: ${errorMessage}`;
+    
+    if (errorMessage.toLowerCase().includes('cors')) {
+      toast.error("CORS error: Unable to connect to the outline customization service.");
+    } else {
+      toast.error(formattedError);
+    }
+    
     throw error;
   }
 };
