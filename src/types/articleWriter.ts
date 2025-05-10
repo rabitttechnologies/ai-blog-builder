@@ -48,6 +48,13 @@ export interface TitleDescriptionFormData {
   saveExpertGuidance: boolean;
 }
 
+// Article outline item interface
+export interface ArticleOutlineItem {
+  outline1?: string;
+  outline2?: string;
+  [key: string]: string | undefined;
+}
+
 // Title and short description webhook payload
 export interface TitleDescriptionPayload {
   workflowId: string;
@@ -73,13 +80,6 @@ export interface TitleDescriptionPayload {
   articlePointOfView: string;
   expertGuidance?: string;
   additionalData?: any;
-}
-
-// Article outline interface
-export interface ArticleOutlineItem {
-  outline1?: string;
-  outline2?: string;
-  [key: string]: string | undefined;
 }
 
 // Title and short description response
@@ -142,6 +142,8 @@ export interface KeywordSelectResponse {
   additionalKeyword: string[];
   references: { title: string; url: string }[];
   researchType: string;
+  
+  // Title and descriptions can be in different formats
   titlesandShortDescription?: {
     title: string;
     description: string;
@@ -150,17 +152,25 @@ export interface KeywordSelectResponse {
     title: string;
     description: string;
   } | any[];
-  articleoutline?: ArticleOutlineItem[];
-  articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
-  promptforbody?: string;  // Added field for prompt for body
-  Introduction?: string;   // Added field for Introduction
-  key_takeaways?: string;  // Added field for key_takeaways
-  generatedArticle?: string; // Added field for the generated article content
-  additionalData?: any;
-  title?: string; // Added to fix errors in GeneratedArticleStep
-  description?: string; // Added for direct description access
   
-  // Additional properties needed from TitleDescriptionResponse
+  // Article outline data - can appear in both lowercase and uppercase variants
+  articleoutline?: ArticleOutlineItem[];
+  articleOutline?: ArticleOutlineItem[];
+  
+  // Additional fields from title description response
+  promptforbody?: string;
+  Introduction?: string;
+  key_takeaways?: string;
+  
+  // The generated article
+  generatedArticle?: string;
+  
+  // Additional fields for convenience
+  additionalData?: any;
+  title?: string; 
+  description?: string;
+  
+  // Fields from TitleDescriptionResponse
   headingsCount?: string;
   writingStyle?: string;
   articlePointOfView?: string;

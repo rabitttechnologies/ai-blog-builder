@@ -285,34 +285,63 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     // Normalize the response: if it's an array, extract the first item
     const normalizedResponse = Array.isArray(response) ? response[0] : response;
     
-    // Ensure we preserve the articleoutline data from the response
-    // Since there might be both casing variants, we need to handle both
-    const articleOutline = normalizedResponse.articleOutline || normalizedResponse.articleoutline;
+    // Make a deep copy of the normalized response to avoid reference issues
+    const processedResponse = { ...normalizedResponse };
     
-    // Set the normalized response in state, ensuring the articleoutline field is preserved
-    const processedResponse = {
-      ...normalizedResponse,
-      articleoutline: articleOutline
-    };
+    // Explicitly handle and preserve the articleoutline field
+    if (normalizedResponse.articleoutline) {
+      processedResponse.articleoutline = normalizedResponse.articleoutline;
+      console.log("Preserving articleoutline data:", normalizedResponse.articleoutline);
+    } 
+    // Check for uppercase variant as well
+    else if (normalizedResponse.articleOutline) {
+      processedResponse.articleoutline = normalizedResponse.articleOutline;
+      console.log("Preserving articleOutline data (uppercase):", normalizedResponse.articleOutline);
+    }
+    
+    // Preserve other important fields from title description webhook
+    if (normalizedResponse.promptforbody) {
+      processedResponse.promptforbody = normalizedResponse.promptforbody;
+    }
+    
+    if (normalizedResponse.Introduction) {
+      processedResponse.Introduction = normalizedResponse.Introduction;
+    }
+    
+    if (normalizedResponse.key_takeaways) {
+      processedResponse.key_takeaways = normalizedResponse.key_takeaways;
+    }
     
     setKeywordSelectResponse(processedResponse);
     
     // If normalized response has title descriptions, process them
     const titlesData = normalizedResponse.titlesandShortDescription || normalizedResponse.titlesAndShortDescription;
-    if (normalizedResponse && titlesData && Array.isArray(titlesData) && titlesData.length > 0) {
-      
-      // Format the title descriptions
-      const formattedOptions = titlesData.map((item, index) => ({
-        id: `title-${index}`,
-        title: item.title,
-        description: item.description
-      }));
-      
-      // Update the title description options in state
-      setTitleDescriptionOptions(formattedOptions);
-      console.log("Title description options set:", formattedOptions);
-    } else {
-      console.warn("No title descriptions found in the response:", normalizedResponse);
+    if (normalizedResponse && titlesData) {
+      // Handle both array and object formats for titlesData
+      if (Array.isArray(titlesData) && titlesData.length > 0) {
+        // Format the title descriptions
+        const formattedOptions = titlesData.map((item, index) => ({
+          id: `title-${index}`,
+          title: item.title,
+          description: item.description
+        }));
+        
+        // Update the title description options in state
+        setTitleDescriptionOptions(formattedOptions);
+        console.log("Title description options set:", formattedOptions);
+      } else if (typeof titlesData === 'object' && titlesData.title) {
+        // Handle single title/description object
+        const formattedOption = {
+          id: 'title-0',
+          title: titlesData.title,
+          description: titlesData.description
+        };
+        
+        setTitleDescriptionOptions([formattedOption]);
+        console.log("Single title description option set:", formattedOption);
+      } else {
+        console.warn("No valid title descriptions found in the response:", normalizedResponse);
+      }
     }
   };
   

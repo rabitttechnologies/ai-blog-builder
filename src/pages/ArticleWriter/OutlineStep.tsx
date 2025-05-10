@@ -51,7 +51,7 @@ const OutlineStep = () => {
     parseOutline
   } = useOutlineCustomization({
     keywordSelectResponse,
-    userId: keywordResponse?.userId || '',
+    userId: keywordResponse?.userId || keywordSelectResponse?.userId || '',
     workflowId,
     sessionId
   });
@@ -65,6 +65,16 @@ const OutlineStep = () => {
       navigate('/article-writer/select-keywords');
     }
   }, [keywordSelectResponse, navigate, setCurrentStep]);
+  
+  // Check if we have outlines to display
+  useEffect(() => {
+    if (!keywordSelectResponse?.articleoutline && 
+        !keywordSelectResponse?.articleOutline && 
+        keywordSelectResponse) {
+      console.error("Missing article outline data in keywordSelectResponse:", keywordSelectResponse);
+      setError("No outline data found. Please go back to the previous step and try again.");
+    }
+  }, [keywordSelectResponse]);
 
   // Handle back button
   const handleBack = () => {
@@ -178,24 +188,26 @@ const OutlineStep = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-6">
-                {outlineOptions.map((outline, index) => (
-                  <OutlineDisplay
-                    key={index}
-                    outline={outline}
-                    isEditing={editingOutlineIndex === index}
-                    editedContent={editingOutlineIndex === index ? editedOutlineContent : outline.content}
-                    onEdit={() => handleEditOutline(index)}
-                    onEditChange={handleOutlineContentChange}
-                    onSelect={() => handleSelectOutline(index)}
-                    isSelected={selectedOutlineIndex === index}
-                    index={index}
-                  />
-                ))}
-                
-                {outlineOptions.length === 0 && (
+                {outlineOptions && outlineOptions.length > 0 ? (
+                  outlineOptions.map((outline, index) => (
+                    <OutlineDisplay
+                      key={outline.id || index}
+                      outline={outline}
+                      isEditing={editingOutlineIndex === index}
+                      editedContent={editingOutlineIndex === index ? editedOutlineContent : outline.content}
+                      onEdit={() => handleEditOutline(index)}
+                      onEditChange={handleOutlineContentChange}
+                      onSelect={() => handleSelectOutline(index)}
+                      isSelected={selectedOutlineIndex === index}
+                      index={index}
+                    />
+                  ))
+                ) : (
                   <div className="text-center p-8 border border-dashed rounded-lg">
                     <p className="text-gray-500">
-                      No outlines available. Please go back and try again.
+                      {keywordSelectResponse ? 
+                        "No outlines available. Please go back and try again." :
+                        "Loading outlines..."}
                     </p>
                   </div>
                 )}

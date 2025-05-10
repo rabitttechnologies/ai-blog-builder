@@ -291,18 +291,50 @@ const TitleDescriptionStep = () => {
         throw new Error(`Server responded with status: ${response.status}`);
       }
       
-      const responseData = await response.json();
-      console.log("Title description response:", responseData);
+      // First parse the response as text to validate it's valid JSON
+      const responseText = await response.text();
       
-      // Update the keyword select response with the new data that includes the article outline
-      // This is critical to make the outline available to the next step
-      setKeywordSelectResponse({
-        ...keywordSelectResponse,
-        articleoutline: responseData.articleoutline || responseData.articleOutline,
-        promptforbody: responseData.promptforbody,
-        Introduction: responseData.Introduction,
-        key_takeaways: responseData.key_takeaways
-      });
+      // Safety check for empty response
+      if (!responseText) {
+        throw new Error('Server returned an empty response');
+      }
+
+      // Try to parse the JSON response
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+        console.log("Title description response:", responseData);
+      } catch (jsonError) {
+        console.error('Error parsing JSON response:', jsonError);
+        console.error('Raw response:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
+      
+      // Extract any array from responseData if needed (handle both array and non-array responses)
+      const dataToProcess = Array.isArray(responseData) ? responseData[0] : responseData;
+      
+      // Update the keyword select response with the new data including all fields
+      // This is critical to properly pass the article outline to the next step
+      if (dataToProcess) {
+        // Create a deep copy of the existing response to avoid mutation issues
+        const updatedResponse = { 
+          ...keywordSelectResponse,
+          // Add new fields from response, prioritizing them over existing values
+          ...(dataToProcess.executionId && { executionId: dataToProcess.executionId }),
+          ...(dataToProcess.articleoutline && { articleoutline: dataToProcess.articleoutline }),
+          ...(dataToProcess.promptforbody && { promptforbody: dataToProcess.promptforbody }),
+          ...(dataToProcess.Introduction && { Introduction: dataToProcess.Introduction }),
+          ...(dataToProcess.key_takeaways && { key_takeaways: dataToProcess.key_takeaways }),
+          ...(dataToProcess.headingsCount && { headingsCount: dataToProcess.headingsCount }),
+          ...(dataToProcess.writingStyle && { writingStyle: dataToProcess.writingStyle }),
+          ...(dataToProcess.articlePointOfView && { articlePointOfView: dataToProcess.articlePointOfView })
+        };
+        
+        console.log("Updating keywordSelectResponse with:", updatedResponse);
+        setKeywordSelectResponse(updatedResponse);
+      } else {
+        console.warn("Response data is null or invalid");
+      }
       
       // Navigate to the next step
       navigate('/article-writer/outline');

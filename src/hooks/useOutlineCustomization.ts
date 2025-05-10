@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
@@ -60,10 +61,20 @@ export const useOutlineCustomization = ({
   
   // Parse article outline from markdown to structured headings
   const parseOutline = (content: string): { headings: { level: number; title: string }[] } => {
+    if (!content) {
+      return { headings: [] };
+    }
+    
+    // Handle escaped newlines by replacing them with actual newlines
+    const normalizedContent = content
+      .replace(/\\\\n/g, '\n')
+      .replace(/\\n/g, '\n');
+    
     const headings: { level: number; title: string }[] = [];
-    const lines = content.split('\n');
+    const lines = normalizedContent.split('\n');
     
     lines.forEach(line => {
+      // Match markdown heading syntax (# Heading)
       const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
       if (headingMatch) {
         const level = headingMatch[1].length;
@@ -75,51 +86,95 @@ export const useOutlineCustomization = ({
     return { headings };
   };
   
+  // Debug helper function
+  const debugStructure = (obj: any): string => {
+    try {
+      const basicInfo = {
+        type: typeof obj,
+        isArray: Array.isArray(obj),
+        keys: obj ? (typeof obj === 'object' ? Object.keys(obj) : 'not an object') : 'null/undefined'
+      };
+      return JSON.stringify(basicInfo, null, 2);
+    } catch (error) {
+      return `Error analyzing object: ${error}`;
+    }
+  };
+  
   // Initialize outlines from keywordSelectResponse
   useEffect(() => {
     if (keywordSelectResponse) {
+      console.log("useOutlineCustomization - Processing keywordSelectResponse:", keywordSelectResponse);
+
       // Check both possible casing variants of the articleoutline field
-      const outlineData = keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline;
+      let outlineData = keywordSelectResponse.articleoutline;
+      
+      if (!outlineData && keywordSelectResponse.articleOutline) {
+        outlineData = keywordSelectResponse.articleOutline;
+        console.log("useOutlineCustomization - Found articleOutline (uppercase variant)");
+      }
       
       console.log("useOutlineCustomization - Processing outline data:", outlineData);
+      console.log("Data structure:", debugStructure(outlineData));
       
       if (outlineData && Array.isArray(outlineData)) {
-        // Convert from API format to internal format
-        const parsedOutlines: OutlineOption[] = outlineData.map((item, index) => {
-          // Join all outline fields into a markdown-formatted string
-          const keys = Object.keys(item).filter(key => key.startsWith('outline'));
-          keys.sort(); // Sort to ensure correct order (outline1, outline2, etc.)
+        try {
+          // Convert from API format to internal format
+          const parsedOutlines: OutlineOption[] = [];
           
-          const content = keys.map(key => {
-            const value = item[key];
-            if (value && typeof value === 'string') {
-              // Clean up the outline content by removing excessive escapes
-              return value.replace(/\\\\n/g, '\n');
+          outlineData.forEach((item, index) => {
+            // Check for outline1 field
+            if (item && typeof item.outline1 === 'string') {
+              parsedOutlines.push({
+                id: `outline-${index}-1`,
+                content: item.outline1.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n'),
+                parsed: parseOutline(item.outline1)
+              });
             }
-            return '';
-          }).join('\n\n');
+            
+            // Check for outline2 field
+            if (item && typeof item.outline2 === 'string') {
+              parsedOutlines.push({
+                id: `outline-${index}-2`,
+                content: item.outline2.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n'),
+                parsed: parseOutline(item.outline2)
+              });
+            }
+            
+            // Check for any other outline keys
+            if (item) {
+              Object.keys(item).forEach(key => {
+                if (key.startsWith('outline') && 
+                    key !== 'outline1' && 
+                    key !== 'outline2' && 
+                    typeof item[key] === 'string') {
+                  const outlineNumber = key.replace('outline', '');
+                  parsedOutlines.push({
+                    id: `outline-${index}-${outlineNumber}`,
+                    content: item[key].replace(/\\\\n/g, '\n').replace(/\\n/g, '\n'),
+                    parsed: parseOutline(item[key])
+                  });
+                }
+              });
+            }
+          });
           
-          // Return formatted outline
-          return {
-            id: `outline-${index}`,
-            content,
-            parsed: parseOutline(content)
-          };
-        });
-        
-        console.log("useOutlineCustomization - Parsed outlines:", parsedOutlines);
-        setOutlines(parsedOutlines);
-        
-        // Auto-select first outline if none selected
-        if (parsedOutlines.length > 0 && !selectedOutline) {
-          setSelectedOutline(parsedOutlines[0]);
-          setSelectedOutlineIndex(0);
+          console.log("useOutlineCustomization - Parsed outlines:", parsedOutlines);
+          setOutlines(parsedOutlines);
+          
+          // Auto-select first outline if none selected
+          if (parsedOutlines.length > 0 && selectedOutlineIndex === null) {
+            setSelectedOutline(parsedOutlines[0]);
+            setSelectedOutlineIndex(0);
+          }
+        } catch (parseError) {
+          console.error("Error parsing outlines:", parseError);
+          setError(`Failed to parse outlines: ${parseError.message}`);
         }
       } else {
         console.warn("useOutlineCustomization - No valid outline data found");
       }
     }
-  }, [keywordSelectResponse, selectedOutline]);
+  }, [keywordSelectResponse, selectedOutlineIndex]);
   
   // Update a customization option
   const updateCustomizationOption = (key: keyof ArticleOutlineCustomization, value: any) => {
@@ -151,7 +206,7 @@ export const useOutlineCustomization = ({
         originalKeyword: keywordSelectResponse.originalKeyword,
         country: keywordSelectResponse.country,
         language: keywordSelectResponse.language,
-        typeOfContent: keywordSelectResponse.typeOfContent,
+        typeOfContent: keywordSelectResponse.typeOfContent || '',
         mainKeyword: keywordSelectResponse.mainKeyword,
         additionalKeyword: keywordSelectResponse.additionalKeyword,
         references: keywordSelectResponse.references,
@@ -162,11 +217,11 @@ export const useOutlineCustomization = ({
         headingsCount: keywordSelectResponse.headingsCount || '',
         writingStyle: keywordSelectResponse.writingStyle || '',
         articlePointOfView: keywordSelectResponse.articlePointOfView || 'writer',
-        expertGuidance: keywordSelectResponse.expertGuidance,
+        expertGuidance: keywordSelectResponse.expertGuidance || undefined,
         articleOutline: selectedOutline.content,
         editedArticlePrompt: keywordSelectResponse.promptforbody || '',
-        Introduction: keywordSelectResponse.Introduction,
-        key_takeaways: keywordSelectResponse.key_takeaways,
+        Introduction: keywordSelectResponse.Introduction || '',
+        key_takeaways: keywordSelectResponse.key_takeaways || '',
         // Customization options
         generateHumanisedArticle: customizationOptions.generateHumanisedArticle,
         generateComparisonTable: customizationOptions.generateComparisonTable,
