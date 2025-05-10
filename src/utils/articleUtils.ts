@@ -90,11 +90,61 @@ export const getDescriptionFromResponse = (response?: any | null, fallback: stri
 export const getGeneratedArticleContent = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
-  // Try both possible field names for generated article content
-  if (typeof response.generatedArticle === 'string') return response.generatedArticle;
-  if (typeof response.GeneratedArticle === 'string') return response.GeneratedArticle;
+  // First, check for complete article content in these fields
+  if (typeof response.generatedArticle === 'string' && response.generatedArticle.length > 20) {
+    return response.generatedArticle;
+  }
+  if (typeof response.GeneratedArticle === 'string' && response.GeneratedArticle.length > 20) {
+    return response.GeneratedArticle;
+  }
   
+  // If we have a truncated GeneratedArticle field (as seen in logs), reconstruct it
+  // This handles cases where the content might have been split or truncated
+  const reconstructedContent = [];
+  
+  // Try to gather all possible content pieces
+  if (typeof response.Introduction === 'string') {
+    reconstructedContent.push(response.Introduction);
+  }
+  
+  // Try to extract outlines and any content sections
+  if (response.articleOutline || response.articleoutline) {
+    const outlines = response.articleOutline || response.articleoutline;
+    if (Array.isArray(outlines)) {
+      outlines.forEach(outline => {
+        if (outline && typeof outline === 'object') {
+          Object.values(outline).forEach(value => {
+            if (typeof value === 'string' && value.length > 50) {
+              reconstructedContent.push(value);
+            }
+          });
+        }
+      });
+    }
+  }
+  
+  // If we have any content in key_takeaways, add it
+  if (typeof response.key_takeaways === 'string') {
+    reconstructedContent.push(response.key_takeaways);
+  }
+  
+  // If we found content to reconstruct
+  if (reconstructedContent.length > 0) {
+    return reconstructedContent.join('\n\n');
+  }
+  
+  // Debug what's available in the response
   console.log('Article content not found in response, available keys:', Object.keys(response));
+  
+  // Last resort - try to use any string field that might contain substantial content
+  for (const key of Object.keys(response)) {
+    if (typeof response[key] === 'string' && response[key].length > 100) {
+      if (!key.toLowerCase().includes('humanized')) {
+        return response[key];
+      }
+    }
+  }
+  
   return fallback;
 };
 
@@ -104,9 +154,26 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
 export const getHumanizedArticleContent = (response?: any | null): string | null => {
   if (!response) return null;
   
-  return typeof response.HumanizedGeneratedArticle === 'string' 
-    ? response.HumanizedGeneratedArticle 
-    : null;
+  // First check for the standard field
+  if (typeof response.HumanizedGeneratedArticle === 'string' && response.HumanizedGeneratedArticle.length > 20) {
+    return response.HumanizedGeneratedArticle;
+  }
+  
+  // Try variations of the field name
+  if (typeof response.humanizedGeneratedArticle === 'string' && response.humanizedGeneratedArticle.length > 20) {
+    return response.humanizedGeneratedArticle;
+  }
+  
+  // Look for any field that might contain humanized content
+  for (const key of Object.keys(response)) {
+    if (typeof response[key] === 'string' && 
+        response[key].length > 100 && 
+        key.toLowerCase().includes('humanized')) {
+      return response[key];
+    }
+  }
+  
+  return null;
 };
 
 /**
@@ -115,6 +182,7 @@ export const getHumanizedArticleContent = (response?: any | null): string | null
 export const getMetaDescription = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
+  // Check for metaTags field
   if (typeof response.metaTags === 'string') {
     // Simple extraction of content between the meta description tags
     // This is a basic implementation that assumes metaTags follows the format:

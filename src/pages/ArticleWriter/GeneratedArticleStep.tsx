@@ -19,7 +19,8 @@ import {
   getTitleFromResponse,
   getGeneratedArticleContent,
   getHumanizedArticleContent,
-  getMetaDescription
+  getMetaDescription,
+  analyzeResponseStructure
 } from '@/utils/articleUtils';
 import type { ArticleTabOption } from '@/types/articleWriter';
 
@@ -52,9 +53,12 @@ const GeneratedArticleStep = () => {
     }
     
     console.log("GeneratedArticleStep - keywordSelectResponse:", keywordSelectResponse);
+    console.log("Response structure:", analyzeResponseStructure(keywordSelectResponse));
     
     // Get article content from the response
     const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
+    console.log("Generated article content extracted:", generatedArticle ? generatedArticle.substring(0, 100) + "..." : "None");
+    
     if (generatedArticle) {
       setArticleContent(generatedArticle);
     } else {
@@ -63,12 +67,18 @@ const GeneratedArticleStep = () => {
     
     // Get humanized content if available
     const humanized = getHumanizedArticleContent(keywordSelectResponse);
+    console.log("Humanized article content extracted:", humanized ? humanized.substring(0, 100) + "..." : "None");
+    
     if (humanized) {
       setHumanizedContent(humanized);
+      // If we have humanized content, default to that tab
+      setActiveTab('humanized');
     }
     
     // Get meta description
     const meta = getMetaDescription(keywordSelectResponse, '');
+    console.log("Meta description extracted:", meta);
+    
     if (meta) {
       setMetaDescription(meta);
     }
@@ -92,6 +102,15 @@ const GeneratedArticleStep = () => {
   
   // Content ID to use for exporting articles
   const contentId = activeTab === 'generated' ? 'generated-article-content' : 'humanized-article-content';
+  
+  // If both content pieces are empty, show an error
+  useEffect(() => {
+    if (!articleContent && !humanizedContent) {
+      setError('No article content available. The API response may be incomplete.');
+    } else {
+      setError(null);
+    }
+  }, [articleContent, humanizedContent]);
   
   return (
     <DashboardLayout>

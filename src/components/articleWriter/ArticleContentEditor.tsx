@@ -32,6 +32,18 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
     if (onChange) onChange(newContent);
   };
   
+  // If content is empty or undefined, show a placeholder message
+  if (!content && !isEditable) {
+    return (
+      <div 
+        id={id}
+        className={`prose prose-slate max-w-none ${className}`}
+      >
+        <p className="text-muted-foreground italic">No content available.</p>
+      </div>
+    );
+  }
+  
   if (!isEditable) {
     // If not editable, render as div with HTML content
     return (
