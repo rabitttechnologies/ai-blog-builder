@@ -329,12 +329,13 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
         // Update the title description options in state
         setTitleDescriptionOptions(formattedOptions);
         console.log("Title description options set:", formattedOptions);
-      } else if (typeof titlesData === 'object' && titlesData.title) {
+      } else if (typeof titlesData === 'object' && titlesData !== null) {
+        // Fix TypeScript error - Check if it's a non-null object before trying to access title property
         // Handle single title/description object
         const formattedOption = {
           id: 'title-0',
-          title: titlesData.title,
-          description: titlesData.description
+          title: 'title' in titlesData ? titlesData.title : '',
+          description: 'description' in titlesData ? titlesData.description : ''
         };
         
         setTitleDescriptionOptions([formattedOption]);

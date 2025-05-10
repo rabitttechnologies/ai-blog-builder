@@ -252,11 +252,18 @@ export const useOutlineCustomization = ({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-minute timeout
       
+      // Fix CORS issue by setting up proper headers
       const response = await fetch('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Origin': window.location.origin,
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(payload),
-        signal: controller.signal
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit' // Avoid sending cookies
       });
       
       clearTimeout(timeoutId);

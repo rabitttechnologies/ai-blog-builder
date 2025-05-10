@@ -147,12 +147,19 @@ const OutlineStep = () => {
       navigate('/article-writer/generated-article');
       
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('CORS policy') || err.message.includes('Failed to fetch')) {
+        setError("Network error: Unable to connect to the article customization service. Please try again later.");
+      } else {
+        setError(err.message || "An error occurred during outline submission.");
+      }
       console.error('Error during outline submission:', err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Check if we're waiting for outlines to load
+  const isLoadingOutlines = keywordSelectResponse && outlineOptions.length === 0;
 
   return (
     <DashboardLayout>
@@ -188,7 +195,11 @@ const OutlineStep = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-6">
-                {outlineOptions && outlineOptions.length > 0 ? (
+                {isLoadingOutlines ? (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">Loading outlines...</p>
+                  </div>
+                ) : outlineOptions && outlineOptions.length > 0 ? (
                   outlineOptions.map((outline, index) => (
                     <OutlineDisplay
                       key={outline.id || index}
@@ -246,7 +257,7 @@ const OutlineStep = () => {
           </Button>
           <Button
             onClick={handleContinue}
-            disabled={selectedOutlineIndex === null}
+            disabled={selectedOutlineIndex === null || isLoadingOutlines}
             className="flex items-center"
           >
             Generate Article

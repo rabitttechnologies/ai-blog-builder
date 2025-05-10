@@ -1,3 +1,4 @@
+
 import { OutlineOption } from '@/types/outlineCustomize';
 
 export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'] => {
@@ -176,6 +177,7 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
       console.log('Payload contains key_takeaways:', payload.key_takeaways);
     }
     
+    // Add proper CORS headers to resolve CORS issues
     const response = await fetch('https://n8n.agiagentworld.com/webhook/outlineandcustomise', {
       method: 'POST',
       headers: {
@@ -185,7 +187,7 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
       },
       body: JSON.stringify(payload),
       mode: 'cors',
-      credentials: 'omit'
+      credentials: 'omit' // Avoid sending cookies
     });
     
     if (!response.ok) {

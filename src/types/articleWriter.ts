@@ -48,7 +48,7 @@ export interface TitleDescriptionFormData {
   saveExpertGuidance: boolean;
 }
 
-// Article outline item interface
+// Article outline item interface (matches both outline1, outline2 format from API)
 export interface ArticleOutlineItem {
   outline1?: string;
   outline2?: string;
