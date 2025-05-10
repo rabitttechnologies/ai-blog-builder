@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
@@ -82,12 +81,13 @@ export const useOutlineCustomization = ({
     if (keywordSelectResponse) {
       console.log("useOutlineCustomization - Processing keywordSelectResponse:", keywordSelectResponse);
 
-      // Check both possible casing variants of the articleoutline field
-      let outlineData = keywordSelectResponse.articleoutline;
+      // Check both possible casing variants of the articleOutline field - standardize on camelCase
+      let outlineData = keywordSelectResponse.articleOutline;
       
-      if (!outlineData && keywordSelectResponse.articleOutline) {
-        outlineData = keywordSelectResponse.articleOutline;
-        console.log("useOutlineCustomization - Found articleOutline (uppercase variant)");
+      // For backward compatibility, check lowercase variant too
+      if (!outlineData && keywordSelectResponse.articleoutline) {
+        outlineData = keywordSelectResponse.articleoutline;
+        console.log("useOutlineCustomization - Found articleoutline (lowercase variant)");
       }
       
       console.log("useOutlineCustomization - Processing outline data:", outlineData);

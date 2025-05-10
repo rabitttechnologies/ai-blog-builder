@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -61,10 +60,10 @@ const GeneratedArticleStep = () => {
       return;
     }
     
-    // Check for generated article content
-    if (keywordSelectResponse.GeneratedArticle) {
+    // Check for generated article content (handle different casing)
+    if (keywordSelectResponse?.GeneratedArticle) {
       setArticle(keywordSelectResponse.GeneratedArticle);
-    } else if (keywordSelectResponse.generatedArticle) {
+    } else if (keywordSelectResponse?.generatedArticle) {
       setArticle(keywordSelectResponse.generatedArticle);
     } else {
       setError('No article content available. Please try again.');
