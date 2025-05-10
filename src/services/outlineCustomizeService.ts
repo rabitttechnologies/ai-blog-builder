@@ -81,7 +81,7 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       // Process outline1
       if (item && typeof item.outline1 === 'string') {
         options.push({
-          id: `outline-1`,
+          id: `outline-${index}-1`,
           content: item.outline1,
           parsed: parseArticleOutline(item.outline1)
         });
@@ -90,7 +90,7 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       // Process outline2
       if (item && typeof item.outline2 === 'string') {
         options.push({
-          id: `outline-2`,
+          id: `outline-${index}-2`,
           content: item.outline2,
           parsed: parseArticleOutline(item.outline2)
         });
@@ -102,7 +102,7 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
           if (key.startsWith('outline') && key !== 'outline1' && key !== 'outline2' && typeof item[key] === 'string') {
             const outlineNumber = key.replace('outline', '');
             options.push({
-              id: `outline-${outlineNumber}`,
+              id: `outline-${index}-${outlineNumber}`,
               content: item[key],
               parsed: parseArticleOutline(item[key])
             });
@@ -121,7 +121,7 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       // Process outline1
       if (item && typeof item.outline1 === 'string') {
         options.push({
-          id: `outline-1`,
+          id: `outline-${index}-1`,
           content: item.outline1,
           parsed: parseArticleOutline(item.outline1)
         });
@@ -130,7 +130,7 @@ export const formatOutlineOptions = (response: any): OutlineOption[] => {
       // Process outline2
       if (item && typeof item.outline2 === 'string') {
         options.push({
-          id: `outline-2`,
+          id: `outline-${index}-2`,
           content: item.outline2,
           parsed: parseArticleOutline(item.outline2)
         });
@@ -165,54 +165,55 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
   try {
     console.log('Submitting outline customization payload:', payload);
     
-    // Log the presence of new fields in the payload
-    if (payload.editedArticlePrompt) {
-      console.log('Payload contains editedArticlePrompt:', payload.editedArticlePrompt);
-    }
-    
-    if (payload.Introduction) {
-      console.log('Payload contains Introduction:', payload.Introduction);
-    }
-    
-    if (payload.key_takeaways) {
-      console.log('Payload contains key_takeaways:', payload.key_takeaways);
-    }
-
+    // Log the selected article outline to confirm it's being sent
     if (payload.articleOutline) {
-      console.log('Payload contains articleOutline:', payload.articleOutline);
+      console.log('Sending articleOutline:', payload.articleOutline);
     }
     
     // Create proper request options with CORS headers
     const options = createCorsRequestOptions('POST', payload);
     
-    // Use enhanced CORS error handling
+    // Enhanced error handling for the API call
     try {
-      // Try direct request with proper CORS headers
-      const response = await handleCorsError('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', options);
+      // The API endpoint URL
+      const apiUrl = 'https://n8n.agiagentworld.com/webhook/articleoutlinecustomization';
       
-      // If successful, process the response
+      // Try the request with our enhanced error handling
+      const response = await handleCorsError(apiUrl, options);
+      
+      // Process the response
       const responseText = await response.text();
       if (!responseText) {
         throw new Error("Server returned an empty response");
       }
       
-      const responseData = JSON.parse(responseText);
-      console.log("Article customization response:", responseData);
-      
-      // Normalize response
-      return Array.isArray(responseData) ? responseData[0] : responseData;
-    } catch (fetchError) {
+      try {
+        const responseData = JSON.parse(responseText);
+        console.log("Article customization response:", responseData);
+        
+        // Normalize response
+        return Array.isArray(responseData) ? responseData[0] : responseData;
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError, 'Raw response:', responseText);
+        throw new Error("Invalid response format from server");
+      }
+    } catch (fetchError: any) {
       console.error('Error in fetch operation:', fetchError);
       
-      // Fallback: If we still have CORS issues, try with alternative approaches
       if (isCorsError(fetchError)) {
-        console.error('CORS error persisted after proxy attempt. Please consider alternative solutions.');
-        throw new Error('Network error: CORS policy restriction. The service may not allow cross-origin requests.');
+        // Provide a more detailed error for CORS issues
+        console.error('CORS issue details:', {
+          message: fetchError.message,
+          origin: window.location.origin,
+          targetUrl: 'https://n8n.agiagentworld.com/webhook/articleoutlinecustomization'
+        });
+        
+        throw new Error('The server does not allow cross-origin requests. Try an alternative approach or contact the API provider to enable CORS for your domain.');
       }
       
       throw fetchError;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting outline customization:', error);
     throw error;
   }

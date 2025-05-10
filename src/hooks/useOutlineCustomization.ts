@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
 import { corsHeaders, isCorsError, handleCorsError, createCorsRequestOptions } from '@/utils/corsUtils';
+import { toast } from 'sonner';
 
 interface UseOutlineCustomizationProps {
   keywordSelectResponse?: KeywordSelectResponse | null;
@@ -47,6 +48,7 @@ export const useOutlineCustomization = ({
     imageCount: 3,
     includeInternalLinks: false,
     internalLinkCount: 3,
+    internalLinks: undefined,
     includeExternalLinks: false,
     externalLinkCount: 3,
     generateCoverImage: false,
@@ -177,6 +179,16 @@ export const useOutlineCustomization = ({
     }
   }, [keywordSelectResponse, selectedOutlineIndex]);
   
+  // Update selectedOutline when selectedOutlineIndex changes
+  useEffect(() => {
+    if (selectedOutlineIndex !== null && outlines[selectedOutlineIndex]) {
+      setSelectedOutline(outlines[selectedOutlineIndex]);
+      console.log("Selected outline updated:", outlines[selectedOutlineIndex]);
+    } else {
+      setSelectedOutline(null);
+    }
+  }, [selectedOutlineIndex, outlines]);
+  
   // Update a customization option
   const updateCustomizationOption = (key: keyof ArticleOutlineCustomization, value: any) => {
     setCustomizationOptions(prev => ({
@@ -188,16 +200,20 @@ export const useOutlineCustomization = ({
   // Submit outline and customizations to generate article
   const submitOutlineAndCustomization = async () => {
     if (!selectedOutline) {
+      toast.error("Please select an outline before continuing");
       throw new Error("Please select an outline before continuing");
     }
     
     if (!keywordSelectResponse) {
+      toast.error("Missing keyword data");
       throw new Error("Missing keyword data");
     }
     
     try {
       setLoading(true);
       setError('');
+      
+      console.log("Selected outline for submission:", selectedOutline);
       
       // Prepare payload for customization webhook
       const payload: ArticleCustomizationPayload = {
@@ -219,6 +235,7 @@ export const useOutlineCustomization = ({
         writingStyle: keywordSelectResponse.writingStyle || '',
         articlePointOfView: keywordSelectResponse.articlePointOfView || 'writer',
         expertGuidance: keywordSelectResponse.expertGuidance || undefined,
+        // Important: Use the selected outline's content here
         articleOutline: selectedOutline.content,
         editedArticlePrompt: keywordSelectResponse.promptforbody || '',
         Introduction: keywordSelectResponse.Introduction || '',
@@ -253,39 +270,54 @@ export const useOutlineCustomization = ({
       const options = createCorsRequestOptions('POST', payload);
 
       try {
-        // Use enhanced CORS error handling function
-        const response = await handleCorsError('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', options);
+        // The API endpoint URL
+        const apiUrl = 'https://n8n.agiagentworld.com/webhook/articleoutlinecustomization';
+        
+        // Try the request with our enhanced CORS error handling
+        const response = await handleCorsError(apiUrl, options);
         
         // Process the response
         const responseText = await response.text();
         
         // Check if response is empty
         if (!responseText) {
+          toast.error("Server returned an empty response");
           throw new Error("Server returned an empty response");
         }
         
         try {
           const responseData = JSON.parse(responseText);
           console.log("Article customization response:", responseData);
+          toast.success("Article outline submitted successfully!");
           return responseData;
         } catch (jsonError) {
           console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
+          toast.error("Invalid response format from server");
           throw new Error("Invalid response format from server");
         }
-      } catch (fetchError) {
+      } catch (fetchError: any) {
         // Specific handling for CORS errors
         if (isCorsError(fetchError)) {
           console.error('CORS error detected:', fetchError);
+          toast.error("Network error: Unable to connect to the server due to CORS restrictions");
+          
           setError('Network error: CORS policy restriction. Try again later or contact support.');
           throw new Error('CORS error: Unable to connect to the outline customization service.');
         }
+        
+        // Display a user-friendly error message for other fetch errors
+        const errorMessage = fetchError.message || 'An unknown error occurred';
+        toast.error(`Error: ${errorMessage}`);
         throw fetchError;
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {
+        toast.error("Request timed out. Please try again.");
         setError('Request timed out. Please try again.');
       } else {
-        setError(`Failed to generate article: ${err.message}`);
+        const errorMessage = err.message || 'An unknown error occurred';
+        toast.error(`Failed to generate article: ${errorMessage}`);
+        setError(`Failed to generate article: ${errorMessage}`);
       }
       console.error('Error generating article:', err);
       throw err;

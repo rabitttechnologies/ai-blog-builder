@@ -34,6 +34,7 @@ const OutlineStep = () => {
   const [editingOutlineIndex, setEditingOutlineIndex] = useState<number | null>(null);
   const [editedOutlineContent, setEditedOutlineContent] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
   // For debugging - output the articleoutline data to console
   useEffect(() => {
@@ -49,6 +50,7 @@ const OutlineStep = () => {
     outlineOptions,
     selectedOutlineIndex,
     customizationOptions,
+    selectedOutline,
     setSelectedOutlineIndex,
     updateCustomizationOption,
     submitOutlineAndCustomizations,
@@ -77,6 +79,7 @@ const OutlineStep = () => {
         keywordSelectResponse) {
       console.error("Missing article outline data in keywordSelectResponse:", keywordSelectResponse);
       setError("No outline data found. Please go back to the previous step and try again.");
+      toast.error("No outline data found. Please go back to the previous step and try again.");
     }
   }, [keywordSelectResponse]);
 
@@ -137,18 +140,23 @@ const OutlineStep = () => {
   const handleContinue = async () => {
     setError(null);
     setIsLoading(true);
+    setIsSubmitting(true);
     
     // Validate if outline is selected
     if (selectedOutlineIndex === null || !outlineOptions[selectedOutlineIndex]) {
       setError('Please select an outline before continuing.');
       setIsLoading(false);
+      setIsSubmitting(false);
       toast.error('Please select an outline before continuing.');
       return;
     }
     
+    // Log the selected outline and index
+    console.log("Selected outline index:", selectedOutlineIndex);
+    console.log("Selected outline:", selectedOutline);
+    console.log("Selected outline from array:", outlineOptions[selectedOutlineIndex]);
+    
     try {
-      console.log("Selected outline for submission:", outlineOptions[selectedOutlineIndex]);
-      
       // Submit outline and customizations
       const result = await submitOutlineAndCustomizations();
       
@@ -176,6 +184,7 @@ const OutlineStep = () => {
       }
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -272,16 +281,17 @@ const OutlineStep = () => {
             variant="outline"
             onClick={handleBack}
             className="flex items-center"
+            disabled={isSubmitting}
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
           <Button
             onClick={handleContinue}
-            disabled={selectedOutlineIndex === null || isLoadingOutlines}
+            disabled={selectedOutlineIndex === null || isLoadingOutlines || isSubmitting}
             className="flex items-center"
           >
-            Generate Article
+            {isSubmitting ? 'Processing...' : 'Generate Article'}
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
