@@ -21,9 +21,7 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
   
   // Update internal state when content prop changes
   useEffect(() => {
-    if (content !== undefined) {
-      setEditableContent(content);
-    }
+    setEditableContent(content || '');
   }, [content]);
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -32,8 +30,8 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
     if (onChange) onChange(newContent);
   };
   
-  // If content is empty or undefined, show a placeholder message
-  if (!content && !isEditable) {
+  // Return placeholder for empty content in read-only mode
+  if ((!content || content === '') && !isEditable) {
     return (
       <div 
         id={id}
@@ -44,8 +42,8 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
     );
   }
   
+  // Render as div with HTML for non-editable content
   if (!isEditable) {
-    // If not editable, render as div with HTML content
     return (
       <div 
         id={id}
@@ -55,7 +53,7 @@ const ArticleContentEditor: React.FC<ArticleContentEditorProps> = ({
     );
   }
   
-  // If editable, render as textarea
+  // Render as textarea for editable content
   return (
     <Textarea
       id={id}

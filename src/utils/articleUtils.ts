@@ -85,17 +85,23 @@ export const getDescriptionFromResponse = (response?: any | null, fallback: stri
 };
 
 /**
- * Get article content from response
+ * Get article content from response - enhanced to handle truncated/fragmented content
  */
 export const getGeneratedArticleContent = (response?: any | null, fallback: string = ''): string => {
-  if (!response) return fallback;
-  
-  // First, check for complete article content in these fields
-  if (typeof response.generatedArticle === 'string' && response.generatedArticle.length > 20) {
-    return response.generatedArticle;
+  if (!response) {
+    console.log('No response provided to getGeneratedArticleContent');
+    return fallback;
   }
-  if (typeof response.GeneratedArticle === 'string' && response.GeneratedArticle.length > 20) {
-    return response.GeneratedArticle;
+  
+  console.log('Attempting to extract generated article content from response fields:', Object.keys(response));
+  
+  // First, check for complete article content in various naming conventions
+  const directContentFields = ['generatedArticle', 'GeneratedArticle', 'generated_article', 'GENERATEDARTICLE'];
+  for (const field of directContentFields) {
+    if (typeof response[field] === 'string' && response[field].length > 20) {
+      console.log(`Found article content in field: ${field}`);
+      return response[field];
+    }
   }
   
   // If we have a truncated GeneratedArticle field (as seen in logs), reconstruct it
@@ -104,17 +110,21 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
   
   // Try to gather all possible content pieces
   if (typeof response.Introduction === 'string') {
+    console.log('Adding Introduction to reconstructed content');
     reconstructedContent.push(response.Introduction);
   }
   
   // Try to extract outlines and any content sections
   if (response.articleOutline || response.articleoutline) {
     const outlines = response.articleOutline || response.articleoutline;
+    console.log('Examining article outline for content sections');
+    
     if (Array.isArray(outlines)) {
       outlines.forEach(outline => {
         if (outline && typeof outline === 'object') {
           Object.values(outline).forEach(value => {
             if (typeof value === 'string' && value.length > 50) {
+              console.log('Adding outline section content');
               reconstructedContent.push(value);
             }
           });
@@ -125,43 +135,55 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
   
   // If we have any content in key_takeaways, add it
   if (typeof response.key_takeaways === 'string') {
+    console.log('Adding key_takeaways to reconstructed content');
     reconstructedContent.push(response.key_takeaways);
   }
   
   // If we found content to reconstruct
   if (reconstructedContent.length > 0) {
+    console.log(`Reconstructed content from ${reconstructedContent.length} sections`);
     return reconstructedContent.join('\n\n');
   }
   
-  // Debug what's available in the response
-  console.log('Article content not found in response, available keys:', Object.keys(response));
-  
-  // Last resort - try to use any string field that might contain substantial content
+  // Look for any large text fields that might contain content
+  console.log('Searching for any substantial text field as fallback');
   for (const key of Object.keys(response)) {
     if (typeof response[key] === 'string' && response[key].length > 100) {
-      if (!key.toLowerCase().includes('humanized')) {
+      if (key.toLowerCase() !== 'humanizedgeneratedarticle' && key.toLowerCase() !== 'humanized_generated_article') {
+        console.log(`Using content from field: ${key} as fallback`);
         return response[key];
       }
     }
   }
   
+  console.warn('No suitable article content found in response');
   return fallback;
 };
 
 /**
- * Get humanized article content from response
+ * Get humanized article content from response - enhanced version
  */
 export const getHumanizedArticleContent = (response?: any | null): string | null => {
-  if (!response) return null;
-  
-  // First check for the standard field
-  if (typeof response.HumanizedGeneratedArticle === 'string' && response.HumanizedGeneratedArticle.length > 20) {
-    return response.HumanizedGeneratedArticle;
+  if (!response) {
+    console.log('No response provided to getHumanizedArticleContent');
+    return null;
   }
   
-  // Try variations of the field name
-  if (typeof response.humanizedGeneratedArticle === 'string' && response.humanizedGeneratedArticle.length > 20) {
-    return response.humanizedGeneratedArticle;
+  console.log('Searching for humanized content in fields:', Object.keys(response));
+  
+  // Check all possible field naming variations
+  const humanizedFields = [
+    'HumanizedGeneratedArticle', 
+    'humanizedGeneratedArticle', 
+    'humanized_generated_article',
+    'humanizedgeneratedarticle'
+  ];
+  
+  for (const field of humanizedFields) {
+    if (typeof response[field] === 'string' && response[field].length > 20) {
+      console.log(`Found humanized content in field: ${field}`);
+      return response[field];
+    }
   }
   
   // Look for any field that might contain humanized content
@@ -169,10 +191,12 @@ export const getHumanizedArticleContent = (response?: any | null): string | null
     if (typeof response[key] === 'string' && 
         response[key].length > 100 && 
         key.toLowerCase().includes('humanized')) {
+      console.log(`Found humanized content in field with 'humanized' in name: ${key}`);
       return response[key];
     }
   }
   
+  console.log('No humanized content found in response');
   return null;
 };
 
@@ -182,11 +206,9 @@ export const getHumanizedArticleContent = (response?: any | null): string | null
 export const getMetaDescription = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
-  // Check for metaTags field
+  // Direct field access for metaTags
   if (typeof response.metaTags === 'string') {
     // Simple extraction of content between the meta description tags
-    // This is a basic implementation that assumes metaTags follows the format:
-    // ## Meta Description\nContent here...
     const metaTags = response.metaTags;
     const lines = metaTags.split('\n');
     
@@ -195,9 +217,12 @@ export const getMetaDescription = (response?: any | null, fallback: string = '')
     }
   }
   
-  // Try to find meta description in other fields
-  if (typeof response["Meta description"] === 'string') {
-    return response["Meta description"];
+  // Try alternative field names
+  const metaDescriptionFields = ["Meta description", "meta_description", "metaDescription"];
+  for (const field of metaDescriptionFields) {
+    if (typeof response[field] === 'string') {
+      return response[field];
+    }
   }
   
   return fallback;

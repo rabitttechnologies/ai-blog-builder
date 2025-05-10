@@ -41,6 +41,7 @@ const GeneratedArticleStep = () => {
   const [metaDescription, setMetaDescription] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ArticleTabOption>('generated');
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   
   useEffect(() => {
     // Set step number
@@ -48,6 +49,7 @@ const GeneratedArticleStep = () => {
     
     // If we don't have keyword response data, redirect
     if (!keywordSelectResponse) {
+      console.log("No keywordSelectResponse found, redirecting to keyword entry step");
       navigate('/article-writer/keyword');
       return;
     }
@@ -55,32 +57,40 @@ const GeneratedArticleStep = () => {
     console.log("GeneratedArticleStep - keywordSelectResponse:", keywordSelectResponse);
     console.log("Response structure:", analyzeResponseStructure(keywordSelectResponse));
     
-    // Get article content from the response
-    const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
-    console.log("Generated article content extracted:", generatedArticle ? generatedArticle.substring(0, 100) + "..." : "None");
-    
-    if (generatedArticle) {
-      setArticleContent(generatedArticle);
-    } else {
-      setError('No article content available. Please try again.');
-    }
-    
-    // Get humanized content if available
-    const humanized = getHumanizedArticleContent(keywordSelectResponse);
-    console.log("Humanized article content extracted:", humanized ? humanized.substring(0, 100) + "..." : "None");
-    
-    if (humanized) {
-      setHumanizedContent(humanized);
-      // If we have humanized content, default to that tab
-      setActiveTab('humanized');
-    }
-    
-    // Get meta description
-    const meta = getMetaDescription(keywordSelectResponse, '');
-    console.log("Meta description extracted:", meta);
-    
-    if (meta) {
-      setMetaDescription(meta);
+    try {
+      // Get article content from the response
+      const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
+      console.log("Generated article content extracted:", generatedArticle ? generatedArticle.substring(0, 100) + "..." : "None");
+      
+      if (generatedArticle && generatedArticle.length > 0) {
+        setArticleContent(generatedArticle);
+      } else {
+        console.warn("No article content found in response");
+        setError('No article content available. Please try again.');
+      }
+      
+      // Get humanized content if available
+      const humanized = getHumanizedArticleContent(keywordSelectResponse);
+      console.log("Humanized article content extracted:", humanized ? humanized.substring(0, 100) + "..." : "None");
+      
+      if (humanized && humanized.length > 0) {
+        setHumanizedContent(humanized);
+        // If we have humanized content, default to that tab
+        setActiveTab('humanized');
+      }
+      
+      // Get meta description
+      const meta = getMetaDescription(keywordSelectResponse, '');
+      console.log("Meta description extracted:", meta);
+      
+      if (meta) {
+        setMetaDescription(meta);
+      }
+      
+      setIsInitialized(true);
+    } catch (err) {
+      console.error("Error processing article data:", err);
+      setError('An error occurred while processing the article content.');
     }
     
   }, [keywordSelectResponse, navigate, setCurrentStep]);
@@ -105,12 +115,12 @@ const GeneratedArticleStep = () => {
   
   // If both content pieces are empty, show an error
   useEffect(() => {
-    if (!articleContent && !humanizedContent) {
+    if (isInitialized && !articleContent && !humanizedContent) {
       setError('No article content available. The API response may be incomplete.');
-    } else {
+    } else if (isInitialized && (articleContent || humanizedContent)) {
       setError(null);
     }
-  }, [articleContent, humanizedContent]);
+  }, [articleContent, humanizedContent, isInitialized]);
   
   return (
     <DashboardLayout>
@@ -159,7 +169,7 @@ const GeneratedArticleStep = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-sm text-muted-foreground mb-1">Additional Keywords</h3>
-                  <p>{keywordSelectResponse?.additionalKeyword?.join(', ') || '-'}</p>
+                  <p>{Array.isArray(keywordSelectResponse?.additionalKeyword) ? keywordSelectResponse.additionalKeyword.join(', ') : '-'}</p>
                 </div>
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-sm text-muted-foreground mb-1">Title & Description</h3>
@@ -177,6 +187,7 @@ const GeneratedArticleStep = () => {
             value={activeTab} 
             onValueChange={handleTabChange}
             className="w-full"
+            defaultValue={humanizedContent ? 'humanized' : 'generated'}
           >
             <div className="flex flex-wrap items-center justify-between mb-4">
               <TabsList>
