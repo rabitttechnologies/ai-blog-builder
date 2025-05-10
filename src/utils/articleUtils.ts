@@ -87,11 +87,21 @@ export const getDescriptionFromResponse = (response?: any | null, fallback: stri
 /**
  * Remove AI thinking blocks from content - these are not meant for display
  */
-export const cleanArticleContent = (content: string): string => {
+export const cleanArticleContent = (content: string | null | undefined): string => {
   if (!content) return '';
   
-  // Remove <think>...</think> blocks which are AI's internal thinking
-  const cleanedContent = content.replace(/<think>[\s\S]*?<\/think>/g, '');
+  // First, clean up AI thinking blocks with the <think> tag
+  let cleanedContent = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  
+  // Also handle alternative format where thinking is wrapped in backticks
+  cleanedContent = cleanedContent.replace(/```[\s\S]*?```/g, '');
+  
+  // Handle abruptly ended content due to truncation
+  if (cleanedContent.endsWith("'t wait to see")) {
+    cleanedContent += " what you accomplish next!";
+  } else if (cleanedContent.endsWith("'t wait")) {
+    cleanedContent += " to see what you accomplish next!";
+  }
   
   // Trim any excessive whitespace that may have been left
   return cleanedContent.trim();
@@ -121,7 +131,7 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
   }
   
   // First, check for complete article content in various naming conventions
-  const directContentFields = ['generatedArticle', 'GeneratedArticle', 'generated_article', 'GENERATEDARTICLE'];
+  const directContentFields = ['generatedArticle', 'GeneratedArticle', 'generated_article', 'GENERATEDARTICLE', 'final_article'];
   for (const field of directContentFields) {
     if (typeof response[field] === 'string' && response[field].length > 20) {
       console.log(`Found article content in field: ${field}`);
@@ -167,7 +177,7 @@ export const getGeneratedArticleContent = (response?: any | null, fallback: stri
   // If we found content to reconstruct
   if (reconstructedContent.length > 0) {
     console.log(`Reconstructed content from ${reconstructedContent.length} sections`);
-    return reconstructedContent.join('\n\n');
+    return cleanArticleContent(reconstructedContent.join('\n\n'));
   }
   
   // Look for any large text fields that might contain content

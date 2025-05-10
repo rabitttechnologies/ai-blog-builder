@@ -20,7 +20,8 @@ import {
   getGeneratedArticleContent,
   getHumanizedArticleContent,
   getMetaDescription,
-  analyzeResponseStructure
+  analyzeResponseStructure,
+  cleanArticleContent
 } from '@/utils/articleUtils';
 import type { ArticleTabOption } from '@/types/articleWriter';
 
@@ -64,7 +65,9 @@ const GeneratedArticleStep = () => {
       console.log("Generated article content extracted:", generatedArticle ? generatedArticle.substring(0, 100) + "..." : "None");
       
       if (generatedArticle && generatedArticle.length > 0) {
-        setArticleContent(generatedArticle);
+        // Ensure we clean the article content to remove any AI thinking blocks
+        const cleanedArticleContent = cleanArticleContent(generatedArticle);
+        setArticleContent(cleanedArticleContent);
         console.log("Article content set in state");
       } else {
         console.warn("No article content found in response");
@@ -77,7 +80,9 @@ const GeneratedArticleStep = () => {
       console.log("Humanized article content extracted:", humanized ? humanized.substring(0, 100) + "..." : "None");
       
       if (humanized && humanized.length > 0) {
-        setHumanizedContent(humanized);
+        // Ensure we clean the humanized content to remove any AI thinking blocks
+        const cleanedHumanizedContent = cleanArticleContent(humanized);
+        setHumanizedContent(cleanedHumanizedContent);
         console.log("Humanized content set in state");
         
         // If we have humanized content, default to that tab
