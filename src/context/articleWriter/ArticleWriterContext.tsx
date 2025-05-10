@@ -288,15 +288,15 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     // Make a deep copy of the normalized response to avoid reference issues
     const processedResponse = { ...normalizedResponse };
     
-    // Explicitly handle and preserve the articleOutline field (use consistent casing)
-    if (normalizedResponse.articleOutline) {
-      processedResponse.articleOutline = normalizedResponse.articleOutline;
-      console.log("Preserving articleOutline data:", normalizedResponse.articleOutline);
+    // Explicitly handle and preserve the articleoutline field
+    if (normalizedResponse.articleoutline) {
+      processedResponse.articleoutline = normalizedResponse.articleoutline;
+      console.log("Preserving articleoutline data:", normalizedResponse.articleoutline);
     } 
-    // If there's a lowercase variant, standardize it to the camelCase version
+    // Check for uppercase variant as well
     else if (normalizedResponse.articleOutline) {
-      processedResponse.articleOutline = normalizedResponse.articleOutline;
-      console.log("Converting articleOutline to articleOutline:", normalizedResponse.articleOutline);
+      processedResponse.articleoutline = normalizedResponse.articleOutline;
+      console.log("Preserving articleOutline data (uppercase):", normalizedResponse.articleOutline);
     }
     
     // Preserve other important fields from title description webhook

@@ -172,8 +172,14 @@ const TitleDescriptionStep = () => {
   };
   
   const handleWritingStyleChange = (styleId: string) => {
-    // Define a properly typed WritingStyle object
-    const style: WritingStyle = styleId as WritingStyle;
+    // In a real implementation, you would look up the style
+    // For now, we'll create a placeholder
+    const style: WritingStyle = {
+      id: styleId,
+      name: styleId,
+      description: '',
+      isSaved: false
+    };
     updateTitleDescriptionForm({ writingStyle: style });
   };
   
@@ -259,10 +265,8 @@ const TitleDescriptionStep = () => {
           title: selectedTitleDescription?.title || "",
           description: selectedTitleDescription?.description || ""
         },
-        headingsCount: titleDescriptionForm.headingsCount?.value.toString() || "",
-        writingStyle: typeof titleDescriptionForm.writingStyle === 'string' 
-          ? titleDescriptionForm.writingStyle 
-          : titleDescriptionForm.writingStyle || "",
+        headingsCount: titleDescriptionForm.headingsCount?.count || "",
+        writingStyle: titleDescriptionForm.writingStyle?.name || "",
         articlePointOfView: titleDescriptionForm.pointOfView,
         expertGuidance: titleDescriptionForm.expertGuidance || undefined,
         additionalData: keywordSelectResponse.additionalData || {}

@@ -1,18 +1,21 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import OutlineDisplay from '@/components/articleWriter/OutlineDisplay';
+import OutlineCustomizeForm from '@/components/articleWriter/OutlineCustomizeForm';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
-import OutlineOptionsList from '@/components/articleWriter/OutlineOptionsList';
-import OutlineCustomizationOptions from '@/components/articleWriter/OutlineCustomizationOptions';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
 import { getTitleFromResponse } from '@/utils/articleUtils';
+import { isCorsError } from '@/utils/corsUtils';
+import { toast } from 'sonner';
 
 const OutlineStep = () => {
   const navigate = useNavigate();
@@ -21,110 +24,188 @@ const OutlineStep = () => {
     setCurrentStep,
     keywordForm,
     keywordSelectResponse,
-    setKeywordSelectResponse,
-    isLoading,
-    setIsLoading,
+    keywordResponse,
+    sessionId,
     workflowId,
-    sessionId
+    isLoading,
+    setIsLoading
   } = useArticleWriter();
+
+  const [editingOutlineIndex, setEditingOutlineIndex] = useState<number | null>(null);
+  const [editedOutlineContent, setEditedOutlineContent] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
+  // For debugging - output the articleoutline data to console
+  useEffect(() => {
+    if (keywordSelectResponse) {
+      console.log("OutlineStep - Article Outline Data:", 
+                 keywordSelectResponse.articleoutline || 
+                 keywordSelectResponse.articleOutline);
+    }
+  }, [keywordSelectResponse]);
+  
+  // Use outline customization hook
   const {
-    loading,
-    error,
     outlineOptions,
     selectedOutlineIndex,
-    setSelectedOutlineIndex,
     customizationOptions,
+    selectedOutline,
+    setSelectedOutlineIndex,
     updateCustomizationOption,
-    submitOutlineAndCustomization
+    submitOutlineAndCustomizations,
+    parseOutline
   } = useOutlineCustomization({
     keywordSelectResponse,
-    userId: keywordSelectResponse?.userId || 'defaultUserId',
-    workflowId: workflowId,
-    sessionId: sessionId
+    userId: keywordResponse?.userId || keywordSelectResponse?.userId || '',
+    workflowId,
+    sessionId
   });
-  
-  const [apiError, setApiError] = useState<string | null>(null);
-  
+
   useEffect(() => {
+    // Set step number
     setCurrentStep(4);
     
+    // Check if we have the necessary data
     if (!keywordSelectResponse) {
       navigate('/article-writer/select-keywords');
     }
-    
-    if (keywordSelectResponse) {
-      // Check for the articleOutline field using the correct casing
-      if (keywordSelectResponse.articleOutline) {
-        // Use the data from the keywordSelectResponse
-        if (Array.isArray(keywordSelectResponse.articleOutline)) {
-          console.log("Article outline data is an array:", keywordSelectResponse.articleOutline);
-          // If you need to do anything with the outline data here, you can do it
-        }
-      }
-      // For backward compatibility, check lowercase variant too
-      else if (keywordSelectResponse.articleOutline) {
-        // If the articleOutline (lowercase) exists, copy it to articleOutline (camelCase)
-        setKeywordSelectResponse({
-          ...keywordSelectResponse,
-          articleOutline: keywordSelectResponse.articleOutline
-        });
-      }
-    }
-    
-  }, [keywordSelectResponse, navigate, setCurrentStep, setKeywordSelectResponse]);
+  }, [keywordSelectResponse, navigate, setCurrentStep]);
   
+  // Check if we have outlines to display
+  useEffect(() => {
+    if (!keywordSelectResponse?.articleoutline && 
+        !keywordSelectResponse?.articleOutline && 
+        keywordSelectResponse) {
+      console.error("Missing article outline data in keywordSelectResponse:", keywordSelectResponse);
+      setError("No outline data found. Please go back to the previous step and try again.");
+      toast.error("No outline data found. Please go back to the previous step and try again.");
+    }
+  }, [keywordSelectResponse]);
+
+  // Handle back button
   const handleBack = () => {
     navigate('/article-writer/title-description');
   };
-  
-  const handleSubmit = async () => {
-    try {
-      setApiError(null);
-      setIsLoading(true);
-      
-      // Call the submitOutlineAndCustomization function from the hook
-      await submitOutlineAndCustomization();
-      
-      // If successful, navigate to the next step
-      navigate('/article-writer/generated-article');
-    } catch (err: any) {
-      // Handle errors from the submitOutlineAndCustomization function
-      console.error("Error during outline submission:", err);
-      setApiError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
+
+  // Handle editing outline
+  const handleEditOutline = (index: number) => {
+    if (index === editingOutlineIndex) {
+      // Close editing if already open
+      setEditingOutlineIndex(null);
+      setEditedOutlineContent('');
+    } else {
+      // Open editing for this outline
+      setEditingOutlineIndex(index);
+      setEditedOutlineContent(outlineOptions[index]?.content || '');
     }
   };
-  
-  const handleRegenerate = () => {
-    // Reload the current page
-    window.location.reload();
+
+  // Handle outline content changes while editing
+  const handleOutlineContentChange = (content: string) => {
+    setEditedOutlineContent(content);
   };
-  
+
+  // Handle saving edited outline
+  const handleSaveOutline = () => {
+    if (editingOutlineIndex !== null && editedOutlineContent) {
+      const parsedOutline = parseOutline(editedOutlineContent);
+      outlineOptions[editingOutlineIndex] = {
+        ...outlineOptions[editingOutlineIndex],
+        content: editedOutlineContent,
+        parsed: parsedOutline
+      };
+      
+      // Close editing mode
+      setEditingOutlineIndex(null);
+      setEditedOutlineContent('');
+      
+      // Select this outline
+      setSelectedOutlineIndex(editingOutlineIndex);
+    }
+  };
+
+  // Handle outline selection
+  const handleSelectOutline = (index: number) => {
+    // If we're in editing mode, save the edits first
+    if (editingOutlineIndex === index && editedOutlineContent) {
+      handleSaveOutline();
+    } else {
+      // Otherwise just select the outline
+      setSelectedOutlineIndex(index);
+    }
+  };
+
+  // Handle continue button click with enhanced error handling
+  const handleContinue = async () => {
+    setError(null);
+    setIsLoading(true);
+    setIsSubmitting(true);
+    
+    // Validate if outline is selected
+    if (selectedOutlineIndex === null || !outlineOptions[selectedOutlineIndex]) {
+      setError('Please select an outline before continuing.');
+      setIsLoading(false);
+      setIsSubmitting(false);
+      toast.error('Please select an outline before continuing.');
+      return;
+    }
+    
+    // Log the selected outline and index
+    console.log("Selected outline index:", selectedOutlineIndex);
+    console.log("Selected outline:", selectedOutline);
+    console.log("Selected outline from array:", outlineOptions[selectedOutlineIndex]);
+    
+    try {
+      // Submit outline and customizations
+      const result = await submitOutlineAndCustomizations();
+      
+      if (!result) {
+        throw new Error("Failed to receive a valid response from the outline customization service.");
+      }
+      
+      console.log("Outline submission successful, response:", result);
+      toast.success('Article outline submitted successfully!');
+      
+      // Navigate to the next step
+      navigate('/article-writer/generated-article');
+      
+    } catch (err: any) {
+      console.error('Error during outline submission:', err);
+      
+      if (isCorsError(err)) {
+        const errorMessage = "Network error: Unable to connect to the article customization service due to CORS restrictions. Please try again later or contact support.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        const errorMessage = err.message || "An error occurred during outline submission.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  // Check if we're waiting for outlines to load
+  const isLoadingOutlines = keywordSelectResponse && outlineOptions.length === 0;
+
   return (
     <DashboardLayout>
       <Helmet>
         <title>Article Outline - Article Writer</title>
       </Helmet>
-      
-      <div className="container max-w-5xl py-8">
+      <div className="container max-w-6xl py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Customize Article Outline</h1>
+          <h1 className="text-3xl font-bold mb-2">Article Outline</h1>
           <p className="text-gray-600">
-            Customize the outline and settings for your article about{" "}
+            Select and customize your article outline for{" "}
             <span className="font-medium">
-              {getTitleFromResponse(keywordSelectResponse, keywordForm.keyword)}
+              {getTitleFromResponse(keywordSelectResponse)}
             </span>
           </p>
         </div>
-        
-        {apiError && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{apiError}</AlertDescription>
-          </Alert>
-        )}
         
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -133,58 +214,96 @@ const OutlineStep = () => {
           </Alert>
         )}
         
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            {/* Article Outline Options */}
-            <Card className="mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Outlines Grid - 2 columns on larger screens */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Article Outline Options</CardTitle>
-                  <Button variant="outline" size="sm" onClick={handleRegenerate}>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Regenerate
-                  </Button>
-                </div>
+                <CardTitle>Choose Your Outline</CardTitle>
                 <CardDescription>
-                  Select an outline option to customize your article structure
+                  Select one of the outlines below or edit them to customize the structure of your article
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <OutlineOptionsList
-                  outlines={outlineOptions}
-                  selectedOutlineIndex={selectedOutlineIndex || 0}
-                  onSelect={setSelectedOutlineIndex}
-                />
+              <CardContent className="grid grid-cols-1 gap-6">
+                {isLoadingOutlines ? (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">Loading outlines...</p>
+                  </div>
+                ) : outlineOptions && outlineOptions.length > 0 ? (
+                  outlineOptions.map((outline, index) => (
+                    <OutlineDisplay
+                      key={outline.id || index}
+                      outline={outline}
+                      isEditing={editingOutlineIndex === index}
+                      editedContent={editingOutlineIndex === index ? editedOutlineContent : outline.content}
+                      onEdit={() => handleEditOutline(index)}
+                      onEditChange={handleOutlineContentChange}
+                      onSelect={() => handleSelectOutline(index)}
+                      isSelected={selectedOutlineIndex === index}
+                      index={index}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">
+                      {keywordSelectResponse ? 
+                        "No outlines available. Please go back and try again." :
+                        "Loading outlines..."}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
           
-          {/* Article Customization Options */}
-          <div>
-            <OutlineCustomizationOptions
-              customizationOptions={customizationOptions}
-              updateCustomizationOption={updateCustomizationOption}
-            />
+          {/* Customization Options Sidebar */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Customization</CardTitle>
+                <CardDescription>
+                  Customize your article's content and features
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OutlineCustomizeForm
+                  customizationOptions={customizationOptions}
+                  onChange={updateCustomizationOption}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
         
+        {/* Navigation Buttons */}
         <div className="flex justify-between mt-8">
-          <Button variant="outline" onClick={handleBack} className="flex items-center">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="flex items-center"
+            disabled={isSubmitting}
+          >
             <ChevronLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
           <Button
-            onClick={handleSubmit}
-            disabled={loading}
+            onClick={handleContinue}
+            disabled={selectedOutlineIndex === null || isLoadingOutlines || isSubmitting}
             className="flex items-center"
           >
-            {loading ? "Generating..." : "Continue"}
+            {isSubmitting ? 'Processing...' : 'Generate Article'}
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
+        
+        {/* Loading Overlay */}
+        {isLoading && (
+          <ArticleLoadingOverlay 
+            message="We're Creating Your Content" 
+            subMessage="This may take a minute or two"
+          />
+        )}
       </div>
-      
-      {isLoading && <ArticleLoadingOverlay />}
     </DashboardLayout>
   );
 };

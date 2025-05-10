@@ -96,7 +96,6 @@ export interface ArticleCustomizationResponse {
     title: string;
     description: string;
   };
-  titlesandShortDescription?: any; // Alternative casing
   headingsCount: string;
   writingStyle: string;
   articlePointOfView: string;
@@ -126,8 +125,5 @@ export interface ArticleCustomizationResponse {
   includeGeneralGuidance: boolean | null;
   generalGuidance?: string;
   generatedArticle?: string;
-  GeneratedArticle?: string; // Alternative casing
-  HumanizedGeneratedArticle?: string;
-  metaTags?: string;
   additionalData?: any;
 }
