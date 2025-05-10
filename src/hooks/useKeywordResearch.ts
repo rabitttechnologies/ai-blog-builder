@@ -39,6 +39,7 @@ export const useKeywordResearch = ({
   const [response, setResponse] = useState<KeywordResponse | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
+  const retryCountRef = useRef<number>(0);
 
   // Clean up on unmount
   useEffect(() => {
@@ -141,6 +142,24 @@ export const useKeywordResearch = ({
     return ERROR_MESSAGES[status as keyof typeof ERROR_MESSAGES] || ERROR_MESSAGES.default;
   };
 
+  // Retry logic
+  const retryWithBackoff = async (fn: () => Promise<any>, maxRetries: number) => {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (retryCountRef.current >= maxRetries) {
+        throw error; // Give up after max retries
+      }
+      
+      const delay = Math.pow(2, retryCountRef.current) * 1000; // Exponential backoff
+      console.log(`Retrying request (${retryCountRef.current + 1}/${maxRetries}) after ${delay}ms`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      retryCountRef.current++;
+      return retryWithBackoff(fn, maxRetries);
+    }
+  };
+
   const submitKeywordResearch = async (
     formData: KeywordFormData, 
     options: KeywordResearchOptions = {}
@@ -154,6 +173,7 @@ export const useKeywordResearch = ({
     setTimeoutReached(false);
     setResponse(null);
     setProgress(0);
+    retryCountRef.current = 0;
 
     // Cancel any ongoing request
     if (abortControllerRef.current) {
@@ -190,14 +210,52 @@ export const useKeywordResearch = ({
         }
       }, timeoutDuration);
 
-      const response = await fetch('https://n8n.agiagentworld.com/webhook/keywordresearch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
-        signal: abortControllerRef.current.signal
-      });
+      // Create the request function that we might retry
+      const makeRequest = async () => {
+        // Check if already aborted
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new Error("Request was aborted");
+        }
+
+        const response = await fetch('https://n8n.agiagentworld.com/webhook/keywordresearch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': window.location.origin
+          },
+          body: JSON.stringify(payload),
+          signal: abortControllerRef.current?.signal,
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        // Check for empty response
+        if (!response.ok) {
+          const errorMessage = handleHttpError(response.status);
+          throw new Error(errorMessage);
+        }
+
+        const responseText = await response.text();
+        
+        // Check if response is empty
+        if (!responseText || responseText.trim() === '') {
+          throw new Error("Server returned an empty response");
+        }
+        
+        try {
+          return JSON.parse(responseText);
+        } catch (e) {
+          console.error("Failed to parse JSON:", e);
+          console.log("Raw response:", responseText);
+          throw new Error("Invalid JSON response from server");
+        }
+      };
+
+      // Execute request with retry logic if configured
+      const responseData = await (retryAttempts > 0 
+        ? retryWithBackoff(makeRequest, retryAttempts)
+        : makeRequest());
 
       // Clear timeout and progress interval
       clearTimeout(timeoutId);
@@ -208,23 +266,11 @@ export const useKeywordResearch = ({
       
       // Set progress to 100% on successful response
       setProgress(100);
-
-      // Handle HTTP errors
-      if (!response.ok) {
-        const errorMessage = handleHttpError(response.status);
-        toast({
-          title: `Error (${response.status})`,
-          description: errorMessage,
-          variant: "destructive"
-        });
-        return null;
-      }
-
-      const responseData = await response.json();
-      console.log("Keyword research raw response:", responseData);
       
       // Process and validate successful response
       if (responseData) {
+        console.log("Keyword research raw response:", responseData);
+        
         const validatedResponse = validateResponse(responseData);
         
         if (validatedResponse) {
@@ -268,7 +314,7 @@ export const useKeywordResearch = ({
           variant: "destructive"
         });
       }
-      return null;
+      throw error; // Re-throw to handle in component
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;

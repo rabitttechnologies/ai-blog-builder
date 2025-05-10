@@ -37,6 +37,7 @@ import { useAuth } from '@/context/auth';
 import { useArticleWriter } from '@/context/articleWriter/ArticleWriterContext';
 import { Separator } from '@/components/ui/separator';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
+import { useKeywordResearch } from '@/hooks/useKeywordResearch';
 
 // Form schema
 const formSchema = z.object({
@@ -113,6 +114,13 @@ const KeywordEntryStep = () => {
     },
   });
 
+  // Using the hook for better error handling and progress tracking
+  const { submitKeywordResearch, progress } = useKeywordResearch({
+    userId: user?.id || 'anonymous',
+    sessionId: sessionId,
+    workflowId: workflowId
+  });
+
   const onSubmit = async (values: FormValues) => {
     try {
       setIsLoading(true);
@@ -128,64 +136,38 @@ const KeywordEntryStep = () => {
       
       setCurrentStep(1);
       
-      // Prepare payload
-      const payload = {
+      // Use the hook to submit keyword research
+      const responseData = await submitKeywordResearch({
         keyword: values.keyword,
         country: values.country,
         language: values.language,
-        contentType: values.contentType,
-        userId: user?.id || 'anonymous',
-        sessionId: sessionId,
-        workflowId: workflowId,
-      };
-      
-      console.log("Submitting keyword research payload:", payload);
-      
-      // Add timeout handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout
-      
-      const response = await fetch('https://n8n.agiagentworld.com/webhook/keywordresearch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
+        contentType: values.contentType
+      }, { 
+        timeoutDuration: 120000, // 2-minute timeout
+        retryAttempts: 1
       });
       
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
+      if (!responseData) {
+        throw new Error("Failed to retrieve keyword research data");
       }
       
-      const responseText = await response.text();
+      console.log("Keyword research response:", responseData);
       
-      // Check if response is empty
-      if (!responseText) {
-        throw new Error("Server returned an empty response");
-      }
+      // Store the response in context
+      setKeywordResponse(responseData);
       
-      try {
-        const responseData = JSON.parse(responseText);
-        console.log("Keyword research response:", responseData);
-        
-        // Store the response in context
-        setKeywordResponse(responseData);
-        
-        // Navigate to the next step
-        navigate('/article-writer/select-keywords');
-      } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
-        throw new Error("Invalid response format from server");
-      }
+      // Navigate to the next step
+      navigate('/article-writer/select-keywords');
       
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        setError('Request timed out. Please try again.');
-      } else {
-        setError(`Failed to submit: ${err.message}`);
-      }
+      const errorMessage = err.message || 'An unknown error occurred';
+      setError(`Failed to submit: ${errorMessage}`);
       console.error('Error submitting keyword:', err);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -339,7 +321,7 @@ const KeywordEntryStep = () => {
         {isLoading && (
           <ArticleLoadingOverlay 
             message="We're Getting Past Search Data for Your Keyword" 
-            subMessage="This may take a minute or two"
+            subMessage={`This may take a minute or two (${progress}% complete)`}
           />
         )}
       </div>
