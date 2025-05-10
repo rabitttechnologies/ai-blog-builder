@@ -91,7 +91,7 @@ export interface KeywordSelectResponse {
   writingStyle: string;
   articlePointOfView: string;
   expertGuidance?: string;
-  articleOutline: any; // Standardize on articleOutline (camelCase)
+  articleOutline: any; // Use camelCase for consistency
   articleOutline1?: string;
   articleOutline2?: string;
   promptforbody?: string;

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -62,11 +63,11 @@ const OutlineStep = () => {
         }
       }
       // For backward compatibility, check lowercase variant too
-      else if (keywordSelectResponse.articleoutline) {
-        // If the articleoutline (lowercase) exists, copy it to articleOutline (camelCase)
+      else if (keywordSelectResponse.articleOutline) {
+        // If the articleOutline (lowercase) exists, copy it to articleOutline (camelCase)
         setKeywordSelectResponse({
           ...keywordSelectResponse,
-          articleOutline: keywordSelectResponse.articleoutline
+          articleOutline: keywordSelectResponse.articleOutline
         });
       }
     }

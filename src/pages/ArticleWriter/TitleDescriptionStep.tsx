@@ -173,7 +173,7 @@ const TitleDescriptionStep = () => {
   
   const handleWritingStyleChange = (styleId: string) => {
     // Define a properly typed WritingStyle object
-    const style: WritingStyle = styleId;
+    const style: WritingStyle = styleId as WritingStyle;
     updateTitleDescriptionForm({ writingStyle: style });
   };
   

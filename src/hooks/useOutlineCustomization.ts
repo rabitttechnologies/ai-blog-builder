@@ -85,9 +85,9 @@ export const useOutlineCustomization = ({
       let outlineData = keywordSelectResponse.articleOutline;
       
       // For backward compatibility, check lowercase variant too
-      if (!outlineData && keywordSelectResponse.articleoutline) {
-        outlineData = keywordSelectResponse.articleoutline;
-        console.log("useOutlineCustomization - Found articleoutline (lowercase variant)");
+      if (!outlineData && keywordSelectResponse.articleOutline) {
+        outlineData = keywordSelectResponse.articleOutline;
+        console.log("useOutlineCustomization - Found articleOutline (lowercase variant)");
       }
       
       console.log("useOutlineCustomization - Processing outline data:", outlineData);

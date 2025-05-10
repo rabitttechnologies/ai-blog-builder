@@ -294,9 +294,9 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
       console.log("Preserving articleOutline data:", normalizedResponse.articleOutline);
     } 
     // If there's a lowercase variant, standardize it to the camelCase version
-    else if (normalizedResponse.articleoutline) {
-      processedResponse.articleOutline = normalizedResponse.articleoutline;
-      console.log("Converting articleoutline to articleOutline:", normalizedResponse.articleoutline);
+    else if (normalizedResponse.articleOutline) {
+      processedResponse.articleOutline = normalizedResponse.articleOutline;
+      console.log("Converting articleOutline to articleOutline:", normalizedResponse.articleOutline);
     }
     
     // Preserve other important fields from title description webhook
