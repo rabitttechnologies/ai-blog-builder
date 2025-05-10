@@ -1,11 +1,9 @@
 
-import { KeywordSelectResponse } from '@/types/articleWriter';
-
 /**
  * Safely gets title from a KeywordSelectResponse, handling different
  * possible structure variants
  */
-export const getTitleFromResponse = (response?: KeywordSelectResponse | null, fallback: string = ''): string => {
+export const getTitleFromResponse = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
   // Case 1: Direct title property
@@ -48,7 +46,7 @@ export const getTitleFromResponse = (response?: KeywordSelectResponse | null, fa
  * Safely gets description from a KeywordSelectResponse, handling different
  * possible structure variants
  */
-export const getDescriptionFromResponse = (response?: KeywordSelectResponse | null, fallback: string = ''): string => {
+export const getDescriptionFromResponse = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
   // Check for direct description field
@@ -89,39 +87,49 @@ export const getDescriptionFromResponse = (response?: KeywordSelectResponse | nu
 /**
  * Get article content from response
  */
-export const getGeneratedArticleContent = (response?: KeywordSelectResponse | null, fallback: string = ''): string => {
+export const getGeneratedArticleContent = (response?: any | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
   // Try both possible field names for generated article content
-  if (response.generatedArticle) return response.generatedArticle;
-  if (response.GeneratedArticle) return response.GeneratedArticle;
+  if (typeof response.generatedArticle === 'string') return response.generatedArticle;
+  if (typeof response.GeneratedArticle === 'string') return response.GeneratedArticle;
   
+  console.log('Article content not found in response, available keys:', Object.keys(response));
   return fallback;
 };
 
 /**
  * Get humanized article content from response
  */
-export const getHumanizedArticleContent = (response?: KeywordSelectResponse | null): string | null => {
+export const getHumanizedArticleContent = (response?: any | null): string | null => {
   if (!response) return null;
   
-  return response.HumanizedGeneratedArticle || null;
+  return typeof response.HumanizedGeneratedArticle === 'string' 
+    ? response.HumanizedGeneratedArticle 
+    : null;
 };
 
 /**
  * Extract meta description from meta tags field
  */
-export const getMetaDescription = (response?: KeywordSelectResponse | null, fallback: string = ''): string => {
-  if (!response || !response.metaTags) return fallback;
+export const getMetaDescription = (response?: any | null, fallback: string = ''): string => {
+  if (!response) return fallback;
   
-  // Simple extraction of content between the meta description tags
-  // This is a basic implementation that assumes metaTags follows the format:
-  // ## Meta Description\nContent here...
-  const metaTags = response.metaTags;
-  const lines = metaTags.split('\n');
+  if (typeof response.metaTags === 'string') {
+    // Simple extraction of content between the meta description tags
+    // This is a basic implementation that assumes metaTags follows the format:
+    // ## Meta Description\nContent here...
+    const metaTags = response.metaTags;
+    const lines = metaTags.split('\n');
+    
+    if (lines.length > 1) {
+      return lines.slice(1).join('\n').trim();
+    }
+  }
   
-  if (lines.length > 1) {
-    return lines.slice(1).join('\n').trim();
+  // Try to find meta description in other fields
+  if (typeof response["Meta description"] === 'string') {
+    return response["Meta description"];
   }
   
   return fallback;

@@ -51,6 +51,8 @@ const GeneratedArticleStep = () => {
       return;
     }
     
+    console.log("GeneratedArticleStep - keywordSelectResponse:", keywordSelectResponse);
+    
     // Get article content from the response
     const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
     if (generatedArticle) {
@@ -103,7 +105,7 @@ const GeneratedArticleStep = () => {
           <p className="text-gray-600">
             Your article on{" "}
             <span className="font-medium">
-              {getTitleFromResponse(keywordSelectResponse, keywordForm.keyword)}
+              {getTitleFromResponse(keywordSelectResponse, keywordForm?.keyword || '')}
             </span>{" "}
             has been generated
           </p>
