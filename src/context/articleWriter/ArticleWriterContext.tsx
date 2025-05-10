@@ -285,8 +285,17 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     // Normalize the response: if it's an array, extract the first item
     const normalizedResponse = Array.isArray(response) ? response[0] : response;
     
-    // Set the normalized response in state
-    setKeywordSelectResponse(normalizedResponse);
+    // Ensure we preserve the articleoutline data from the response
+    // Since there might be both casing variants, we need to handle both
+    const articleOutline = normalizedResponse.articleOutline || normalizedResponse.articleoutline;
+    
+    // Set the normalized response in state, ensuring the articleoutline field is preserved
+    const processedResponse = {
+      ...normalizedResponse,
+      articleoutline: articleOutline
+    };
+    
+    setKeywordSelectResponse(processedResponse);
     
     // If normalized response has title descriptions, process them
     const titlesData = normalizedResponse.titlesandShortDescription || normalizedResponse.titlesAndShortDescription;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -31,6 +32,13 @@ const OutlineStep = () => {
   const [editingOutlineIndex, setEditingOutlineIndex] = useState<number | null>(null);
   const [editedOutlineContent, setEditedOutlineContent] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  
+  // For debugging - output the articleoutline data to console
+  useEffect(() => {
+    if (keywordSelectResponse) {
+      console.log("OutlineStep - Article Outline Data:", keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline);
+    }
+  }, [keywordSelectResponse]);
   
   // Use outline customization hook
   const {

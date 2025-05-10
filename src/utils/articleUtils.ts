@@ -37,8 +37,8 @@ export const getTitleFromResponse = (response?: KeywordSelectResponse | null, fa
 export const getDescriptionFromResponse = (response?: KeywordSelectResponse | null, fallback: string = ''): string => {
   if (!response) return fallback;
   
-  // Case 1: Check for description field (not excerpt)
-  if (response.description) return response.description;
+  // Check for direct description field
+  if (typeof response.description === 'string') return response.description;
   
   // Case 2: Description in titlesAndShortDescription object
   const titlesAndDesc = response.titlesAndShortDescription || response.titlesandShortDescription;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
@@ -79,7 +78,10 @@ export const useOutlineCustomization = ({
   // Initialize outlines from keywordSelectResponse
   useEffect(() => {
     if (keywordSelectResponse) {
+      // Check both possible casing variants of the articleoutline field
       const outlineData = keywordSelectResponse.articleoutline || keywordSelectResponse.articleOutline;
+      
+      console.log("useOutlineCustomization - Processing outline data:", outlineData);
       
       if (outlineData && Array.isArray(outlineData)) {
         // Convert from API format to internal format
@@ -91,7 +93,8 @@ export const useOutlineCustomization = ({
           const content = keys.map(key => {
             const value = item[key];
             if (value && typeof value === 'string') {
-              return value;
+              // Clean up the outline content by removing excessive escapes
+              return value.replace(/\\\\n/g, '\n');
             }
             return '';
           }).join('\n\n');
@@ -104,6 +107,7 @@ export const useOutlineCustomization = ({
           };
         });
         
+        console.log("useOutlineCustomization - Parsed outlines:", parsedOutlines);
         setOutlines(parsedOutlines);
         
         // Auto-select first outline if none selected
@@ -111,6 +115,8 @@ export const useOutlineCustomization = ({
           setSelectedOutline(parsedOutlines[0]);
           setSelectedOutlineIndex(0);
         }
+      } else {
+        console.warn("useOutlineCustomization - No valid outline data found");
       }
     }
   }, [keywordSelectResponse, selectedOutline]);
@@ -248,7 +254,7 @@ export const useOutlineCustomization = ({
     editingOutlineId,
     customizationOptions,
     // Properties to match what OutlineStep expects
-    outlineOptions,
+    outlineOptions: outlines,
     selectedOutlineIndex,
     setSelectedOutlineIndex,
     setOutlines,
@@ -257,7 +263,7 @@ export const useOutlineCustomization = ({
     setEditingOutlineId,
     updateCustomizationOption,
     submitOutlineAndCustomization,
-    submitOutlineAndCustomizations,
+    submitOutlineAndCustomizations: submitOutlineAndCustomization,
     parseOutline
   };
 };
