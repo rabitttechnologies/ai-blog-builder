@@ -171,8 +171,8 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
       console.log('Sending articleOutline:', payload.articleOutline);
     }
     
-    // The API endpoint URL
-    const apiUrl = 'https://n8n.agiagentworld.com/webhook/articleoutlinecustomization';
+    // Updated API endpoint URL to the correct webhook
+    const apiUrl = 'https://n8n.agiagentworld.com/webhook/outlineandcustomise';
     
     // Use our enhanced CORS handling function
     try {
