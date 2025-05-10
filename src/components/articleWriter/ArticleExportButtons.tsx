@@ -1,248 +1,140 @@
-
 import React from 'react';
-import { Download, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { Download, Share2, FileText } from 'lucide-react';
+import { saveAs } from 'file-saver';
+import { toast } from 'sonner';
 
 interface ArticleExportButtonsProps {
   title: string;
   contentId: string;
-  onDownload?: () => void;
-  onShare?: () => void;
 }
 
-const ArticleExportButtons: React.FC<ArticleExportButtonsProps> = ({ 
-  title,
-  contentId,
-  onDownload,
-  onShare
-}) => {
-  const { toast } = useToast();
+const ArticleExportButtons: React.FC<ArticleExportButtonsProps> = ({ title, contentId }) => {
+  const sanitizedTitle = title.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
   
-  // Prepare filename based on title
-  const getFileName = () => {
-    return `${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
-  };
-  
-  // Download as HTML
-  const downloadAsHTML = () => {
+  const getContentHTML = (): string => {
     const element = document.getElementById(contentId);
     if (!element) {
-      toast({
-        title: "Export failed",
-        description: "Content element not found",
-        variant: "destructive"
-      });
-      return;
+      toast.error("Content not found");
+      return '<p>Content not available</p>';
     }
     
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${title}</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
-          h1, h2, h3, h4, h5, h6 { margin-top: 28px; margin-bottom: 14px; }
-          p { margin-bottom: 16px; }
-        </style>
-      </head>
-      <body>
-        <h1>${title}</h1>
-        ${element.innerHTML}
-      </body>
-      </html>
-    `;
+    // If it's a textarea, get the value
+    if (element instanceof HTMLTextAreaElement) {
+      return element.value;
+    }
     
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${getFileName()}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "HTML Export Successful",
-      description: "Your article has been downloaded as HTML."
-    });
-    
-    if (onDownload) onDownload();
+    // Otherwise get the inner HTML
+    return element.innerHTML;
   };
   
-  // Download as Plain Text (DOCX-like)
-  const downloadAsDoc = () => {
-    const element = document.getElementById(contentId);
-    if (!element) {
-      toast({
-        title: "Export failed",
-        description: "Content element not found",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Get text content and clean it
-    const content = element.innerText || element.textContent || '';
-    const textContent = `${title}\n\n${content}`;
-    
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${getFileName()}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "DOC Export Successful",
-      description: "Your article has been downloaded as DOC."
-    });
-    
-    if (onDownload) onDownload();
-  };
-  
-  // Download as PDF
-  const downloadAsPDF = async () => {
-    const element = document.getElementById(contentId);
-    if (!element) {
-      toast({
-        title: "Export failed",
-        description: "Content element not found",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+  const exportAsHTML = () => {
     try {
-      toast({
-        title: "Preparing PDF",
-        description: "Please wait while we generate your PDF..."
-      });
+      const content = getContentHTML();
+      const htmlDocument = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${title}</title>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2em; }
+            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
+            p { margin: 1em 0; }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          ${content}
+        </body>
+        </html>
+      `;
       
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        logging: false,
-        useCORS: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      // Add title
-      pdf.setFontSize(20);
-      pdf.text(title, 20, 20);
-      
-      // Calculate dimensions to fit the PDF page
-      const imgWidth = 170; // mm width
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Add content
-      pdf.addImage(imgData, 'PNG', 20, 30, imgWidth, imgHeight);
-      
-      pdf.save(`${getFileName()}.pdf`);
-      
-      toast({
-        title: "PDF Export Successful",
-        description: "Your article has been downloaded as PDF."
-      });
-      
-      if (onDownload) onDownload();
-      
+      const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' });
+      saveAs(blob, `${sanitizedTitle}.html`);
+      toast.success("HTML file exported successfully!");
     } catch (error) {
-      console.error('PDF generation failed:', error);
-      toast({
-        title: "PDF Export Failed",
-        description: "There was a problem generating your PDF. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("Failed to export as HTML");
+      console.error("HTML export error:", error);
     }
   };
   
-  // Handle share functionality
-  const handleShare = async () => {
+  const exportAsDOC = () => {
+    try {
+      const content = getContentHTML();
+      const docDocument = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8">
+          <title>${title}</title>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          ${content}
+        </body>
+        </html>
+      `;
+      
+      const blob = new Blob([docDocument], { type: 'application/msword;charset=utf-8' });
+      saveAs(blob, `${sanitizedTitle}.doc`);
+      toast.success("DOC file exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export as DOC");
+      console.error("DOC export error:", error);
+    }
+  };
+  
+  const exportAsPDF = () => {
+    try {
+      // For PDF export, we would typically use jsPDF and html2canvas
+      // But since we don't have those installed, we'll show a toast message
+      toast.info("PDF export functionality requires jsPDF library. You can install it with 'npm install jspdf html2canvas'");
+    } catch (error) {
+      toast.error("Failed to export as PDF");
+      console.error("PDF export error:", error);
+    }
+  };
+  
+  const handleShare = () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: 'Check out this article!',
-          url: window.location.href,
-        });
-        
-        toast({
-          title: "Shared Successfully",
-          description: "The article was shared successfully."
-        });
-        
-        if (onShare) onShare();
-      } catch (error) {
-        console.error('Share failed:', error);
-        toast({
-          title: "Share Failed",
-          description: "There was a problem sharing the article.",
-          variant: "destructive"
-        });
-      }
-    } else {
-      // Fallback for browsers that don't support sharing
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        toast({
-          title: "URL Copied",
-          description: "The article URL has been copied to your clipboard."
-        });
-      }).catch(() => {
-        toast({
-          title: "Copy Failed",
-          description: "Failed to copy URL to clipboard.",
-          variant: "destructive"
-        });
+      navigator.share({
+        title: title,
+        text: `Check out this article: ${title}`,
+        url: window.location.href,
+      })
+      .then(() => toast.success("Shared successfully!"))
+      .catch((error) => {
+        console.error("Share error:", error);
+        toast.error("Failed to share");
       });
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      try {
+        navigator.clipboard.writeText(window.location.href);
+        toast.success("URL copied to clipboard!");
+      } catch (error) {
+        console.error("Copy error:", error);
+        toast.error("Failed to copy URL");
+      }
     }
   };
   
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center">
-            <Download className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Download</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={downloadAsHTML}>
-            Download as HTML
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={downloadAsDoc}>
-            Download as DOC
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={downloadAsPDF}>
-            Download as PDF
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      
-      <Button variant="outline" size="sm" onClick={handleShare} className="flex items-center">
-        <Share2 className="h-4 w-4 mr-2" />
-        <span className="hidden sm:inline">Share</span>
+      <Button variant="outline" size="sm" onClick={exportAsHTML} title="Export as HTML">
+        <FileText className="h-4 w-4 mr-1" />
+        HTML
+      </Button>
+      <Button variant="outline" size="sm" onClick={exportAsDOC} title="Export as DOC">
+        <FileText className="h-4 w-4 mr-1" />
+        DOC
+      </Button>
+      <Button variant="outline" size="sm" onClick={exportAsPDF} title="Export as PDF">
+        <Download className="h-4 w-4 mr-1" />
+        PDF
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleShare} title="Share article">
+        <Share2 className="h-4 w-4" />
       </Button>
     </div>
   );

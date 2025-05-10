@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { countWords } from '@/utils/articleUtils';
 
 interface ArticleContentEditorProps {
   content: string;
