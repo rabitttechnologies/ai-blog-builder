@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Download, Share2, FileText } from 'lucide-react';
@@ -123,15 +124,15 @@ const ArticleExportButtons: React.FC<ArticleExportButtonsProps> = ({ title, cont
     <div className="flex items-center gap-2">
       <Button variant="outline" size="sm" onClick={exportAsHTML} title="Export as HTML">
         <FileText className="h-4 w-4 mr-1" />
-        HTML
+        <span className="hidden sm:inline">HTML</span>
       </Button>
       <Button variant="outline" size="sm" onClick={exportAsDOC} title="Export as DOC">
         <FileText className="h-4 w-4 mr-1" />
-        DOC
+        <span className="hidden sm:inline">DOC</span>
       </Button>
       <Button variant="outline" size="sm" onClick={exportAsPDF} title="Export as PDF">
         <Download className="h-4 w-4 mr-1" />
-        PDF
+        <span className="hidden sm:inline">PDF</span>
       </Button>
       <Button variant="outline" size="sm" onClick={handleShare} title="Share article">
         <Share2 className="h-4 w-4" />

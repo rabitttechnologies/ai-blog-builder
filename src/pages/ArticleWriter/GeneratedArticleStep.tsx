@@ -21,7 +21,9 @@ import {
   getHumanizedArticleContent,
   getMetaDescription,
   analyzeResponseStructure,
-  cleanArticleContent
+  cleanArticleContent,
+  parseTitlesAndDescriptions,
+  formatKeywords
 } from '@/utils/articleUtils';
 import type { ArticleTabOption } from '@/types/articleWriter';
 
@@ -43,6 +45,7 @@ const GeneratedArticleStep = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ArticleTabOption>('generated');
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [titlesAndDescriptions, setTitlesAndDescriptions] = useState<{ title: string, description: string }[]>([]);
   
   useEffect(() => {
     // Set step number
@@ -51,6 +54,7 @@ const GeneratedArticleStep = () => {
     // If we don't have keyword response data, redirect
     if (!keywordSelectResponse) {
       console.log("No keywordSelectResponse found, redirecting to keyword entry step");
+      toast.error("Missing keyword data. Redirecting to keyword entry.");
       navigate('/article-writer/keyword');
       return;
     }
@@ -59,6 +63,10 @@ const GeneratedArticleStep = () => {
     console.log("Response structure:", analyzeResponseStructure(keywordSelectResponse));
     
     try {
+      // Parse titles and descriptions
+      const parsedTitlesAndDescriptions = parseTitlesAndDescriptions(keywordSelectResponse);
+      setTitlesAndDescriptions(parsedTitlesAndDescriptions);
+      
       // Get article content from the response with extensive debugging
       console.log("Attempting to extract generated article content");
       const generatedArticle = getGeneratedArticleContent(keywordSelectResponse, '');
@@ -104,6 +112,7 @@ const GeneratedArticleStep = () => {
     } catch (err) {
       console.error("Error processing article data:", err);
       setError('An error occurred while processing the article content.');
+      toast.error("Error processing article data. Please try again.");
     }
     
   }, [keywordSelectResponse, navigate, setCurrentStep]);
@@ -126,6 +135,9 @@ const GeneratedArticleStep = () => {
   // Content ID to use for exporting articles
   const contentId = activeTab === 'generated' ? 'generated-article-content' : 'humanized-article-content';
   
+  // Get the title for the current article
+  const articleTitle = getTitleFromResponse(keywordSelectResponse, keywordForm?.keyword || 'Generated Article');
+  
   // If both content pieces are empty, show an error
   useEffect(() => {
     if (isInitialized && !articleContent && !humanizedContent) {
@@ -139,11 +151,12 @@ const GeneratedArticleStep = () => {
     <DashboardLayout>
       <Helmet>
         <title>Generated Article - Article Writer</title>
+        <meta name="description" content={metaDescription} />
       </Helmet>
       
-      <div className="container py-8">
-        <div className="max-w-6xl mx-auto mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your Generated Article</h1>
+      <div className="container py-6 md:py-8">
+        <div className="max-w-6xl mx-auto mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Your Generated Article</h1>
           <p className="text-gray-600">
             Your article on{" "}
             <span className="font-medium">
@@ -182,15 +195,29 @@ const GeneratedArticleStep = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-sm text-muted-foreground mb-1">Additional Keywords</h3>
-                  <p>{Array.isArray(keywordSelectResponse?.additionalKeyword) ? keywordSelectResponse.additionalKeyword.join(', ') : '-'}</p>
+                  <p>{formatKeywords(keywordSelectResponse?.additionalKeyword)}</p>
                 </div>
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-sm text-muted-foreground mb-1">Title & Description</h3>
-                  <p className="font-medium">{getTitleFromResponse(keywordSelectResponse, '')}</p>
+                  <p className="font-medium">{articleTitle}</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {metaDescription}
                   </p>
                 </div>
+                
+                {titlesAndDescriptions.length > 1 && (
+                  <div className="md:col-span-2 mt-2">
+                    <h3 className="font-medium text-sm text-muted-foreground mb-1">Alternative Titles & Descriptions</h3>
+                    <ul className="space-y-2 mt-2">
+                      {titlesAndDescriptions.slice(1, 3).map((item, idx) => (
+                        <li key={idx} className="text-sm">
+                          <p className="font-medium">{item.title}</p>
+                          <p className="text-muted-foreground">{item.description}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -202,7 +229,7 @@ const GeneratedArticleStep = () => {
             className="w-full"
             defaultValue={humanizedContent ? 'humanized' : 'generated'}
           >
-            <div className="flex flex-wrap items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
               <TabsList>
                 <TabsTrigger value="generated">Generated Article</TabsTrigger>
                 {humanizedContent && (
@@ -210,7 +237,7 @@ const GeneratedArticleStep = () => {
                 )}
               </TabsList>
               
-              <div className="flex items-center gap-4 mt-4 sm:mt-0">
+              <div className="flex items-center gap-2 sm:gap-4 justify-between sm:justify-end">
                 {/* Word count */}
                 {activeTab === 'generated' ? (
                   <WordCount content={articleContent} />
@@ -220,7 +247,7 @@ const GeneratedArticleStep = () => {
                 
                 {/* Export buttons */}
                 <ArticleExportButtons 
-                  title={getTitleFromResponse(keywordSelectResponse, 'Generated Article')}
+                  title={articleTitle}
                   contentId={contentId}
                 />
               </div>
@@ -288,7 +315,7 @@ const GeneratedArticleStep = () => {
           </Card>
         </div>
         
-        <div className="flex justify-between max-w-6xl mx-auto mt-8">
+        <div className="flex justify-between max-w-6xl mx-auto mt-6 md:mt-8">
           <Button
             variant="outline"
             onClick={handleBack}

@@ -96,6 +96,9 @@ export const cleanArticleContent = (content: string | null | undefined): string 
   // Also handle alternative format where thinking is wrapped in backticks
   cleanedContent = cleanedContent.replace(/```[\s\S]*?```/g, '');
   
+  // Handle cases where markdown code blocks might be present
+  cleanedContent = cleanedContent.replace(/```[a-z]*\n[\s\S]*?\n```/g, '');
+  
   // Handle abruptly ended content due to truncation
   if (cleanedContent.endsWith("'t wait to see")) {
     cleanedContent += " what you accomplish next!";
@@ -245,11 +248,8 @@ export const getMetaDescription = (response?: any | null, fallback: string = '')
   if (typeof response.metaTags === 'string') {
     // Simple extraction of content between the meta description tags
     const metaTags = response.metaTags;
-    const lines = metaTags.split('\n');
-    
-    if (lines.length > 1) {
-      return lines.slice(1).join('\n').trim();
-    }
+    const metaDescription = metaTags.replace(/^## Meta Description\s+/i, '').trim();
+    return metaDescription;
   }
   
   // Try alternative field names
@@ -300,4 +300,58 @@ export const analyzeResponseStructure = (response: any): string => {
   }
   
   return JSON.stringify(structure, null, 2);
+};
+
+/**
+ * Parse titles and short descriptions from the API response
+ */
+export const parseTitlesAndDescriptions = (response?: any | null): { title: string, description: string }[] => {
+  if (!response) return [];
+  
+  const titlesAndDesc = response.titlesAndShortDescription || response.titlesandShortDescription;
+  
+  if (!titlesAndDesc) return [];
+  
+  // Handle JSON string format
+  if (typeof titlesAndDesc === 'string') {
+    try {
+      const parsed = JSON.parse(titlesAndDesc);
+      if (Array.isArray(parsed)) {
+        return parsed.map(item => ({
+          title: item.title || '',
+          description: item.description || ''
+        }));
+      }
+      return [{ title: parsed.title || '', description: parsed.description || '' }];
+    } catch (e) {
+      console.error('Failed to parse titlesAndShortDescription string:', e);
+      return [];
+    }
+  }
+  
+  // Handle array format
+  if (Array.isArray(titlesAndDesc)) {
+    return titlesAndDesc.map(item => ({
+      title: item.title || '',
+      description: item.description || ''
+    }));
+  }
+  
+  // Handle object format
+  if (typeof titlesAndDesc === 'object' && titlesAndDesc !== null) {
+    return [{ 
+      title: titlesAndDesc.title || '', 
+      description: titlesAndDesc.description || '' 
+    }];
+  }
+  
+  return [];
+};
+
+/**
+ * Format the keywords array for display
+ */
+export const formatKeywords = (keywords?: string[] | null): string => {
+  if (!keywords || !Array.isArray(keywords) || keywords.length === 0) return '-';
+  return keywords.join(', ');
 };
