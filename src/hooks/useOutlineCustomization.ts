@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { KeywordSelectResponse } from '@/types/articleWriter';
 import { ArticleOutlineCustomization, ArticleCustomizationPayload, OutlineOption } from '@/types/outlineCustomize';
-import { corsHeaders } from '@/utils/corsUtils';
+import { corsHeaders, isCorsError, handleCorsError, createCorsRequestOptions } from '@/utils/corsUtils';
 
 interface UseOutlineCustomizationProps {
   keywordSelectResponse?: KeywordSelectResponse | null;
@@ -213,8 +213,8 @@ export const useOutlineCustomization = ({
         references: keywordSelectResponse.references,
         researchType: keywordSelectResponse.researchType,
         titlesAndShortDescription: keywordSelectResponse.titlesAndShortDescription || 
-                                  (keywordSelectResponse.titlesandShortDescription as any) || 
-                                  { title: '', description: '' },
+                               (keywordSelectResponse.titlesandShortDescription as any) || 
+                               { title: '', description: '' },
         headingsCount: keywordSelectResponse.headingsCount || '',
         writingStyle: keywordSelectResponse.writingStyle || '',
         articlePointOfView: keywordSelectResponse.articlePointOfView || 'writer',
@@ -249,54 +249,41 @@ export const useOutlineCustomization = ({
       
       console.log('Submitting article customization:', payload);
       
-      // Add timeout handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-minute timeout
-      
-      // Use our utility for CORS-friendly API requests
-      const response = await fetch('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Origin': window.location.origin,
-          'Accept': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          ...corsHeaders
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-        mode: 'cors',
-        credentials: 'omit' // Avoid sending cookies
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-      
-      const responseText = await response.text();
-      
-      // Check if response is empty
-      if (!responseText) {
-        throw new Error("Server returned an empty response");
-      }
-      
+      // Create proper request options
+      const options = createCorsRequestOptions('POST', payload);
+
       try {
-        const responseData = JSON.parse(responseText);
-        console.log("Article customization response:", responseData);
-        return responseData;
-      } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
-        throw new Error("Invalid response format from server");
+        // Use enhanced CORS error handling function
+        const response = await handleCorsError('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', options);
+        
+        // Process the response
+        const responseText = await response.text();
+        
+        // Check if response is empty
+        if (!responseText) {
+          throw new Error("Server returned an empty response");
+        }
+        
+        try {
+          const responseData = JSON.parse(responseText);
+          console.log("Article customization response:", responseData);
+          return responseData;
+        } catch (jsonError) {
+          console.error("Failed to parse JSON response:", jsonError, "Raw response:", responseText);
+          throw new Error("Invalid response format from server");
+        }
+      } catch (fetchError) {
+        // Specific handling for CORS errors
+        if (isCorsError(fetchError)) {
+          console.error('CORS error detected:', fetchError);
+          setError('Network error: CORS policy restriction. Try again later or contact support.');
+          throw new Error('CORS error: Unable to connect to the outline customization service.');
+        }
+        throw fetchError;
       }
-      
     } catch (err: any) {
       if (err.name === 'AbortError') {
         setError('Request timed out. Please try again.');
-      } else if (err.message.includes('CORS') || err.message.includes('Failed to fetch')) {
-        setError('Network error: CORS policy restriction. Try again later or contact support.');
-        console.error('CORS error:', err);
       } else {
         setError(`Failed to generate article: ${err.message}`);
       }

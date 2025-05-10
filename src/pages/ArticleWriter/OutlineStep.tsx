@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -14,6 +15,7 @@ import { useOutlineCustomization } from '@/hooks/useOutlineCustomization';
 import ArticleLoadingOverlay from '@/components/articleWriter/ArticleLoadingOverlay';
 import { getTitleFromResponse } from '@/utils/articleUtils';
 import { isCorsError } from '@/utils/corsUtils';
+import { toast } from 'sonner';
 
 const OutlineStep = () => {
   const navigate = useNavigate();
@@ -131,17 +133,20 @@ const OutlineStep = () => {
     }
   };
 
-  // Handle continue button click
+  // Handle continue button click with enhanced error handling
   const handleContinue = async () => {
     setError(null);
     setIsLoading(true);
     
+    // Validate if outline is selected
+    if (selectedOutlineIndex === null || !outlineOptions[selectedOutlineIndex]) {
+      setError('Please select an outline before continuing.');
+      setIsLoading(false);
+      toast.error('Please select an outline before continuing.');
+      return;
+    }
+    
     try {
-      // Check if an outline is selected
-      if (selectedOutlineIndex === null || !outlineOptions[selectedOutlineIndex]) {
-        throw new Error('Please select an outline before continuing.');
-      }
-      
       console.log("Selected outline for submission:", outlineOptions[selectedOutlineIndex]);
       
       // Submit outline and customizations
@@ -152,17 +157,23 @@ const OutlineStep = () => {
       }
       
       console.log("Outline submission successful, response:", result);
+      toast.success('Article outline submitted successfully!');
       
       // Navigate to the next step
       navigate('/article-writer/generated-article');
       
     } catch (err: any) {
-      if (isCorsError(err)) {
-        setError("Network error: Unable to connect to the article customization service due to CORS restrictions. Please try again later or contact support.");
-      } else {
-        setError(err.message || "An error occurred during outline submission.");
-      }
       console.error('Error during outline submission:', err);
+      
+      if (isCorsError(err)) {
+        const errorMessage = "Network error: Unable to connect to the article customization service due to CORS restrictions. Please try again later or contact support.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        const errorMessage = err.message || "An error occurred during outline submission.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

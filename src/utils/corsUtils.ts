@@ -19,10 +19,61 @@ export const isCorsError = (error: any): boolean => {
   );
 };
 
-// Function to create a proxy URL for bypassing CORS (if available)
+// Enhanced proxy URL function for bypassing CORS
 export const getProxyUrl = (url: string): string => {
-  // If you have a CORS proxy service, you could use it here
-  // Example: return `https://your-proxy-service.com/${encodeURIComponent(url)}`;
-  // For now, return the original URL
+  // Check if the URL is for our n8n webhook
+  if (url.includes('n8n.agiagentworld.com/webhook/')) {
+    // Use a CORS proxy service
+    return `https://cors-anywhere.herokuapp.com/${url}`;
+  }
+  
+  // For other URLs, return as is or implement alternative proxies if needed
   return url;
+};
+
+// Function to create fetch options with proper CORS headers
+export const createCorsRequestOptions = (method: string = 'POST', body?: any): RequestInit => {
+  return {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Origin': window.location.origin,
+      'Accept': 'application/json',
+      ...corsHeaders
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    mode: 'cors',
+    credentials: 'omit' // Avoid sending cookies
+  };
+};
+
+// Function to handle CORS errors with fallback mechanisms
+export const handleCorsError = async (url: string, options: RequestInit): Promise<Response> => {
+  try {
+    // First attempt: Direct request with CORS headers
+    const response = await fetch(url, options);
+    if (response.ok) {
+      return response;
+    }
+    
+    throw new Error(`Server responded with status: ${response.status}`);
+  } catch (error) {
+    // If CORS error, try with proxy
+    if (isCorsError(error)) {
+      console.log('CORS error detected, trying with proxy...');
+      const proxyUrl = getProxyUrl(url);
+      
+      if (proxyUrl !== url) {
+        // Second attempt: Use proxy
+        const proxyResponse = await fetch(proxyUrl, options);
+        if (proxyResponse.ok) {
+          return proxyResponse;
+        }
+        throw new Error(`Proxy request failed with status: ${proxyResponse.status}`);
+      }
+    }
+    
+    // Re-throw original error if no proxy available or if proxy failed
+    throw error;
+  }
 };

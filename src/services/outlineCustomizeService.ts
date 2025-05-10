@@ -1,5 +1,6 @@
+
 import { OutlineOption } from '@/types/outlineCustomize';
-import { corsHeaders } from '@/utils/corsUtils';
+import { corsHeaders, handleCorsError, createCorsRequestOptions, isCorsError } from '@/utils/corsUtils';
 
 export const parseArticleOutline = (outlineText: string): OutlineOption['parsed'] => {
   if (!outlineText) {
@@ -166,7 +167,7 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     
     // Log the presence of new fields in the payload
     if (payload.editedArticlePrompt) {
-      console.log('Payload contains editedArticlePrompt (promptforbody):', payload.editedArticlePrompt);
+      console.log('Payload contains editedArticlePrompt:', payload.editedArticlePrompt);
     }
     
     if (payload.Introduction) {
@@ -176,47 +177,43 @@ export const submitOutlineCustomization = async (payload: any): Promise<any> => 
     if (payload.key_takeaways) {
       console.log('Payload contains key_takeaways:', payload.key_takeaways);
     }
-    
-    // Add proper CORS headers to resolve CORS issues
-    const response = await fetch('https://n8n.agiagentworld.com/webhook/outlineandcustomise', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin,
-        'Accept': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        ...corsHeaders
-      },
-      body: JSON.stringify(payload),
-      mode: 'cors',
-      credentials: 'omit' // Avoid sending cookies
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error(`Webhook error: ${response.status}`);
+
+    if (payload.articleOutline) {
+      console.log('Payload contains articleOutline:', payload.articleOutline);
     }
     
-    const data = await response.json();
-    console.log('Outline Customization Response:', data);
+    // Create proper request options with CORS headers
+    const options = createCorsRequestOptions('POST', payload);
     
-    // Normalize response
-    return Array.isArray(data) ? data[0] : data;
+    // Use enhanced CORS error handling
+    try {
+      // Try direct request with proper CORS headers
+      const response = await handleCorsError('https://n8n.agiagentworld.com/webhook/articleoutlinecustomization', options);
+      
+      // If successful, process the response
+      const responseText = await response.text();
+      if (!responseText) {
+        throw new Error("Server returned an empty response");
+      }
+      
+      const responseData = JSON.parse(responseText);
+      console.log("Article customization response:", responseData);
+      
+      // Normalize response
+      return Array.isArray(responseData) ? responseData[0] : responseData;
+    } catch (fetchError) {
+      console.error('Error in fetch operation:', fetchError);
+      
+      // Fallback: If we still have CORS issues, try with alternative approaches
+      if (isCorsError(fetchError)) {
+        console.error('CORS error persisted after proxy attempt. Please consider alternative solutions.');
+        throw new Error('Network error: CORS policy restriction. The service may not allow cross-origin requests.');
+      }
+      
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Error submitting outline customization:', error);
-    
-    // Detailed error message for CORS issues
-    if (error instanceof Error) {
-      if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-        console.error('CORS error detected. Details:', {
-          message: error.message,
-          origin: window.location.origin
-        });
-        throw new Error('Network error: CORS policy restriction. The service may not allow cross-origin requests from this domain.');
-      }
-    }
-    
     throw error;
   }
 };
