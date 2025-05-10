@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   WritingStyle, 
@@ -196,6 +197,21 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
         }));
         
         setTitleDescriptionOptions(formattedOptions);
+      } else if (typeof titlesData === 'string') {
+        try {
+          // Try to parse the JSON string
+          const parsed = JSON.parse(titlesData);
+          if (Array.isArray(parsed)) {
+            const formattedOptions = parsed.map((item, index) => ({
+              id: `title-${index}`,
+              title: item.title,
+              description: item.description
+            }));
+            setTitleDescriptionOptions(formattedOptions);
+          }
+        } catch (error) {
+          console.error('Error parsing titlesandShortDescription string:', error);
+        }
       }
     }
   }, [keywordSelectResponse, titleDescriptionOptions]);
@@ -288,15 +304,15 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
     // Make a deep copy of the normalized response to avoid reference issues
     const processedResponse = { ...normalizedResponse };
     
-    // Explicitly handle and preserve the articleoutline field
-    if (normalizedResponse.articleoutline) {
-      processedResponse.articleoutline = normalizedResponse.articleoutline;
-      console.log("Preserving articleoutline data:", normalizedResponse.articleoutline);
+    // Explicitly handle and preserve the articleOutline field
+    if (normalizedResponse.articleOutline) {
+      processedResponse.articleOutline = normalizedResponse.articleOutline;
+      console.log("Preserving articleOutline data:", normalizedResponse.articleOutline);
     } 
-    // Check for uppercase variant as well
-    else if (normalizedResponse.articleOutline) {
-      processedResponse.articleoutline = normalizedResponse.articleOutline;
-      console.log("Preserving articleOutline data (uppercase):", normalizedResponse.articleOutline);
+    // Check for lowercase variant as well, but store in uppercase property
+    else if (normalizedResponse.articleoutline) {
+      processedResponse.articleOutline = normalizedResponse.articleoutline;
+      console.log("Preserving articleoutline data (lowercase):", normalizedResponse.articleoutline);
     }
     
     // Preserve other important fields from title description webhook
@@ -312,13 +328,46 @@ export const ArticleWriterProvider: React.FC<{ children: ReactNode }> = ({ child
       processedResponse.key_takeaways = normalizedResponse.key_takeaways;
     }
     
+    // Preserve generated article fields
+    if (normalizedResponse.GeneratedArticle) {
+      processedResponse.GeneratedArticle = normalizedResponse.GeneratedArticle;
+    }
+    
+    if (normalizedResponse.HumanizedGeneratedArticle) {
+      processedResponse.HumanizedGeneratedArticle = normalizedResponse.HumanizedGeneratedArticle;
+    }
+    
+    if (normalizedResponse.metaTags) {
+      processedResponse.metaTags = normalizedResponse.metaTags;
+    }
+    
     setKeywordSelectResponse(processedResponse);
     
     // If normalized response has title descriptions, process them
     const titlesData = normalizedResponse.titlesandShortDescription || normalizedResponse.titlesAndShortDescription;
     if (normalizedResponse && titlesData) {
+      if (typeof titlesData === 'string') {
+        try {
+          // Try to parse JSON string
+          const parsed = JSON.parse(titlesData);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Format the title descriptions
+            const formattedOptions = parsed.map((item, index) => ({
+              id: `title-${index}`,
+              title: item.title,
+              description: item.description
+            }));
+            
+            // Update the title description options in state
+            setTitleDescriptionOptions(formattedOptions);
+            console.log("Title description options set from parsed string:", formattedOptions);
+          }
+        } catch (error) {
+          console.error('Error parsing titlesandShortDescription string:', error);
+        }
+      }
       // Handle both array and object formats for titlesData
-      if (Array.isArray(titlesData) && titlesData.length > 0) {
+      else if (Array.isArray(titlesData) && titlesData.length > 0) {
         // Format the title descriptions
         const formattedOptions = titlesData.map((item, index) => ({
           id: `title-${index}`,

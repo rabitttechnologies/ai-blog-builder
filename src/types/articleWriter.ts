@@ -106,7 +106,6 @@ export interface TitleDescriptionResponse {
   writingStyle: string;
   articlePointOfView: string;
   expertGuidance?: string;
-  articleoutline?: ArticleOutlineItem[];
   articleOutline?: ArticleOutlineItem[];  // Handle both casing variants
   articlePrompt?: string;
   promptforbody?: string;  // Added field for data from title description webhook
@@ -147,11 +146,11 @@ export interface KeywordSelectResponse {
   titlesandShortDescription?: {
     title: string;
     description: string;
-  } | any[];
+  } | any[] | string;
   titlesAndShortDescription?: {
     title: string;
     description: string;
-  } | any[];
+  } | any[] | string;
   
   // Article outline data - can appear in both lowercase and uppercase variants
   articleoutline?: ArticleOutlineItem[];
@@ -161,6 +160,11 @@ export interface KeywordSelectResponse {
   promptforbody?: string;
   Introduction?: string;
   key_takeaways?: string;
+  
+  // Generated article fields from outline and customize webhook
+  GeneratedArticle?: string;
+  HumanizedGeneratedArticle?: string;
+  metaTags?: string;
   
   // The generated article
   generatedArticle?: string;
@@ -175,6 +179,7 @@ export interface KeywordSelectResponse {
   writingStyle?: string;
   articlePointOfView?: string;
   expertGuidance?: string;
+  numberofheadings?: string;
 }
 
 // Selected keyword data
@@ -222,3 +227,6 @@ export interface TitleDescriptionFormState {
   expertGuidance: string;
   saveExpertGuidance: boolean;
 }
+
+// Generated article tab options
+export type ArticleTabOption = 'generated' | 'humanized';
